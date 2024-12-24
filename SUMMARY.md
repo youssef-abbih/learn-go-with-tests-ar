@@ -1,58 +1,25 @@
-# Table of contents
+<div dir="rtl">
 
-* [Learn Go with Tests](gb-readme.md)
+### **أساسيات لغة غو**
+- **التثبيت والإعداد**: تعليمات لتثبيت غو وإعداد بيئة العمل.
+- **المفاهيم الأساسية**: يشمل مواضيع مثل "مرحباً، عالم" ، الأعداد الصحيحة، التكرار، المصفوفات، الشرائح، والمزيد.
+- **المفاهيم المتقدمة**: تغطي الهياكل، والطرق، والواجهات، والمؤشرات، والأخطاء، والخرائط، وحقن التبعية، والمحاكاة، والتوازي، والانعاكاسات.
+- **الميزات الإضافية**: استكشاف عميق لإدارة السياق، والرياضيات، وقراءة الملفات، والقوالب، والجينيريكس.
 
-## Go fundamentals
+### **أساسيات الاختبار**
+- **تقنيات الاختبار**: تقديم لاختبارات القبول، وتوسيع نطاق اختبارات القبول، والعمل بدون المحاكاة.
+- **إعادة هيكلة الكود**: قائمة مرجعية لإعادة هيكلة الكود وتحسين الاختبارات.
 
-* [Install Go](install-go.md)
-* [Hello, World](hello-world.md)
-* [Integers](integers.md)
-* [Iteration](iteration.md)
-* [Arrays and slices](arrays-and-slices.md)
-* [Structs, methods & interfaces](structs-methods-and-interfaces.md)
-* [Pointers & errors](pointers-and-errors.md)
-* [Maps](maps.md)
-* [Dependency Injection](dependency-injection.md)
-* [Mocking](mocking.md)
-* [Concurrency](concurrency.md)
-* [Select](select.md)
-* [Reflection](reflection.md)
-* [Sync](sync.md)
-* [Context](context.md)
-* [Intro to property based tests](roman-numerals.md)
-* [Maths](math.md)
-* [Reading files](reading-files.md)
-* [Templating](html-templates.md)
-* [Generics](generics.md)
-* [Revisiting arrays and slices with generics](revisiting-arrays-and-slices-with-generics.md)
+### **بناء تطبيق**
+- **التطبيقات على الويب**: تعلم كيفية بناء خادم HTTP، التوجيه، ومعالجة JSON.
+- **المدخلات والإخراج والمهارات الأخرى**: مناقشة المدخلات والإخراج، هياكل سطر الأوامر، التعامل مع الوقت، والعمل مع WebSockets.
 
-## Testing fundamentals
+### **الأسئلة والإجابات**
+- يقدم حلولاً للمشاكل الشائعة مثل استخدام أوامر النظام (OS exec)، وإنشاء أنواع الأخطاء، وإدارة القراء المعتمدين على السياق، وتحسين المعالجات HTTP.
 
-* [Introduction to acceptance tests](intro-to-acceptance-tests.md)
-* [Scaling acceptance tests](scaling-acceptance-tests.md)
-* [Working without mocks](working-without-mocks.md)
-* [Refactoring Checklist](refactoring-checklist.md)
+### **الميتا / المساهمة**
+- **لماذا اختبارات الوحدة**: أهمية اختبارات الوحدة وتجنب الأنماط الخاطئة الشائعة.
+- **المساهمة**: إرشادات للمساهمة في المشروع.
 
-## Build an application
-
-* [Intro](app-intro.md)
-* [HTTP server](http-server.md)
-* [JSON, routing and embedding](json.md)
-* [IO and sorting](io.md)
-* [Command line & package structure](command-line.md)
-* [Time](time.md)
-* [WebSockets](websockets.md)
-
-## Questions and answers
-
-* [OS Exec](os-exec.md)
-* [Error types](error-types.md)
-* [Context-aware Reader](context-aware-reader.md)
-* [Revisiting HTTP Handlers](http-handlers-revisited.md)
-
-## Meta
-
-* [Why unit tests and how to make them work for you](why.md)
-* [Anti-patterns](anti-patterns.md)
-* [Contributing](contributing.md)
-* [Chapter Template](template.md)
+يركز هذا الدليل على تعلم غو من خلال أمثلة عملية واختبارات، مما يساعد على تعلم اللغة بشكل تدريجي وفعال.
+</div>
