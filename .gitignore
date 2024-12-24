@@ -11,3 +11,6 @@ _book/
 
 game.db.json
 .DS_Store
+
+# vscode
+.vscode/
