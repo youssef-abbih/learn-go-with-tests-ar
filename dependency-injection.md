@@ -1,19 +1,19 @@
-# Dependency Injection
+# حقن التبعية
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/di)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/di)**
 
-It is assumed that you have read the [structs section](./structs-methods-and-interfaces.md) before as some understanding of interfaces will be needed for this.
+نفترض أنك قرأت [قسم البنى](./structs-methods-and-interfaces.md) من قبل، إذ ستحتاج هنا إلى بعض الفهم للواجهات (interfaces).
 
-There are _a lot_ of misunderstandings around dependency injection around the programming community. Hopefully, this guide will show you how
+ثمة _كثير_ من سوء الفهم حول حقن التبعية (dependency injection) في مجتمع البرمجة. وأرجو أن يبيّن لك هذا الدليل كيف أنه
 
-* You don't need a framework
-* It does not overcomplicate your design
-* It facilitates testing
-* It allows you to write great, general-purpose functions.
+* لا يحتاج إلى إطار عمل
+* لا يعقّد تصميمك أكثر من اللازم
+* يسهّل الاختبار
+* يتيح لك كتابة دوال رائعة متعددة الأغراض.
 
-We want to write a function that greets someone, just like we did in the hello-world chapter but this time we are going to be testing the _actual printing_.
+نريد أن نكتب دالة (function) تحيّي شخصاً ما، تماماً كما فعلنا في فصل "مرحباً يا عالم"، لكننا سنختبر هذه المرة _الطباعة الفعلية_.
 
-Just to recap, here is what that function could look like
+وللتذكير فقط، إليك كيف قد تبدو تلك الدالة
 
 ```go
 func Greet(name string) {
@@ -21,15 +21,15 @@ func Greet(name string) {
 }
 ```
 
-But how can we test this? Calling `fmt.Printf` prints to stdout, which is pretty hard for us to capture using the testing framework.
+لكن كيف نختبر هذا؟ استدعاء `fmt.Printf` يطبع إلى `stdout`، ومن الصعب علينا التقاط ذلك باستعمال إطار الاختبار.
 
-What we need to do is to be able to **inject** \(which is just a fancy word for pass in\) the dependency of printing.
+ما نحتاج إليه هو أن نستطيع **حقن** (وهي مجرد كلمة منمقة تعني تمرير) تبعية الطباعة.
 
-**Our function doesn't need to care _where_ or _how_ the printing happens, so we should accept an _interface_ rather than a concrete type.**
+**لا تحتاج دالتنا إلى الاهتمام بـ_مكان_ الطباعة أو _كيفيتها_، لذا ينبغي أن تقبل _واجهة_ بدلاً من نوع ملموس.**
 
-If we do that, we can then change the implementation to print to something we control so that we can test it. In "real life" you would inject in something that writes to stdout.
+إن فعلنا ذلك، يمكننا تغيير التنفيذ ليطبع إلى شيء نتحكم به كي نستطيع اختباره. وفي "الحياة الحقيقية" ستحقن شيئاً يكتب إلى `stdout`.
 
-If you look at the source code of [`fmt.Printf`](https://pkg.go.dev/fmt#Printf) you can see a way for us to hook in
+إن نظرت إلى الشيفرة المصدرية للدالة [`fmt.Printf`](https://pkg.go.dev/fmt#Printf) فسترى طريقة يمكننا التدخل من خلالها
 
 ```go
 // It returns the number of bytes written and any write error encountered.
@@ -38,9 +38,9 @@ func Printf(format string, a ...interface{}) (n int, err error) {
 }
 ```
 
-Interesting! Under the hood `Printf` just calls `Fprintf` passing in `os.Stdout`.
+مثير للاهتمام! ففي الخفاء، لا تفعل `Printf` إلا أن تستدعي `Fprintf` وتمرر إليها `os.Stdout`.
 
-What exactly _is_ an `os.Stdout`? What does `Fprintf` expect to get passed to it for the 1st argument?
+ما هو `os.Stdout` بالضبط؟ وما الذي تتوقع `Fprintf` أن يُمرَّر إليها في الوسيط (argument) الأول؟
 
 ```go
 func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
@@ -52,7 +52,7 @@ func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
 }
 ```
 
-An `io.Writer`
+إنه `io.Writer`
 
 ```go
 type Writer interface {
@@ -60,13 +60,13 @@ type Writer interface {
 }
 ```
 
-From this we can infer that `os.Stdout` implements `io.Writer`; `Printf` passes `os.Stdout` to `Fprintf` which expects an `io.Writer`.
+نستنتج من هذا أن `os.Stdout` يحقق `io.Writer`؛ فالدالة `Printf` تمرر `os.Stdout` إلى `Fprintf` التي تتوقع `io.Writer`.
 
-As you write more Go code you will find this interface popping up a lot because it's a great general purpose interface for "put this data somewhere".
+وكلما كتبت مزيداً من شيفرة (code) غو (Go)، ستجد هذه الواجهة تظهر كثيراً، لأنها واجهة رائعة متعددة الأغراض لفكرة "ضع هذه البيانات في مكان ما".
 
-So we know under the covers we're ultimately using `Writer` to send our greeting somewhere. Let's use this existing abstraction to make our code testable and more reusable.
+نعرف إذن أننا في الخفاء نستعمل `Writer` في النهاية لإرسال تحيتنا إلى مكان ما. فلنستعمل هذا التجريد الموجود لجعل شيفرتنا قابلة للاختبار وأكثر قابلية لإعادة الاستعمال.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestGreet(t *testing.T) {
@@ -82,21 +82,21 @@ func TestGreet(t *testing.T) {
 }
 ```
 
-The `Buffer` type from the `bytes` package implements the `Writer` interface, because it has the method `Write(p []byte) (n int, err error)`.
+النوع `Buffer` من الحزمة `bytes` يحقق الواجهة `Writer`، لأن لديه الطريقة `Write(p []byte) (n int, err error)`.
 
-So we'll use it in our test to send in as our `Writer` and then we can check what was written to it after we invoke `Greet`
+لذا سنستعمله في اختبارنا (test) لنمرره على أنه `Writer`، ثم نتحقق مما كُتب فيه بعد أن نستدعي `Greet`
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
-The test will not compile
+لن يُصرَّف الاختبار
 
 ```text
 ./di_test.go:10:2: undefined: Greet
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-_Listen to the compiler_ and fix the problem.
+_أصغِ إلى المصرِّف_ وأصلح المشكلة.
 
 ```go
 func Greet(writer *bytes.Buffer, name string) {
@@ -106,11 +106,11 @@ func Greet(writer *bytes.Buffer, name string) {
 
 `Hello, Chris di_test.go:16: got '' want 'Hello, Chris'`
 
-The test fails. Notice that the name is getting printed out, but it's going to stdout.
+يفشل الاختبار. لاحظ أن الاسم يُطبع، لكنه يذهب إلى `stdout`.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Use the writer to send the greeting to the buffer in our test. Remember `fmt.Fprintf` is like `fmt.Printf` but instead takes a `Writer` to send the string to, whereas `fmt.Printf` defaults to stdout.
+استعمل الكاتب لإرسال التحية إلى المخزن المؤقت في اختبارنا. وتذكّر أن `fmt.Fprintf` تشبه `fmt.Printf`، لكنها تأخذ `Writer` ترسل إليه السلسلة النصية، بينما تكتب `fmt.Printf` افتراضياً إلى `stdout`.
 
 ```go
 func Greet(writer *bytes.Buffer, name string) {
@@ -118,13 +118,13 @@ func Greet(writer *bytes.Buffer, name string) {
 }
 ```
 
-The test now passes.
+ينجح الاختبار الآن.
 
-## Refactor
+## أعد الهيكلة
 
-Earlier the compiler told us to pass in a pointer to a `bytes.Buffer`. This is technically correct but not very useful.
+أخبرنا المصرِّف سابقاً أن نمرر مؤشراً إلى `bytes.Buffer`. وهذا صحيح تقنياً، لكنه ليس مفيداً جداً.
 
-To demonstrate this, try wiring up the `Greet` function into a Go application where we want it to print to stdout.
+لتوضيح ذلك، جرّب ربط الدالة `Greet` بتطبيق غو نريد أن يطبع فيه إلى `stdout`.
 
 ```go
 func main() {
@@ -134,9 +134,9 @@ func main() {
 
 `./di.go:14:7: cannot use os.Stdout (type *os.File) as type *bytes.Buffer in argument to Greet`
 
-As discussed earlier `fmt.Fprintf` allows you to pass in an `io.Writer` which we know both `os.Stdout` and `bytes.Buffer` implement.
+كما ناقشنا سابقاً، تتيح لك `fmt.Fprintf` تمرير `io.Writer`، ونعرف أن `os.Stdout` و`bytes.Buffer` كليهما يحققانها.
 
-If we change our code to use the more general purpose interface we can now use it in both tests and in our application.
+إن غيّرنا شيفرتنا لتستعمل الواجهة الأعم، يمكننا الآن استعمالها في الاختبارات وفي تطبيقنا معاً.
 
 ```go
 package main
@@ -156,13 +156,13 @@ func main() {
 }
 ```
 
-## More on io.Writer
+## المزيد عن `io.Writer`
 
-What other places can we write data to using `io.Writer`? Just how general purpose is our `Greet` function?
+ما الأماكن الأخرى التي يمكننا كتابة البيانات إليها باستعمال `io.Writer`؟ وإلى أي حد دالتنا `Greet` متعددة الأغراض؟
 
-### The Internet
+### الإنترنت
 
-Run the following
+شغّل ما يلي
 
 ```go
 package main
@@ -187,32 +187,32 @@ func main() {
 }
 ```
 
-Run the program and go to [http://localhost:5001](http://localhost:5001). You'll see your greeting function being used.
+شغّل البرنامج واذهب إلى [http://localhost:5001](http://localhost:5001). سترى دالة التحية مستعملة.
 
-HTTP servers will be covered in a later chapter so don't worry too much about the details.
+سنتناول خوادم HTTP في فصل لاحق، فلا تقلق كثيراً بشأن التفاصيل.
 
-When you write an HTTP handler, you are given an `http.ResponseWriter` and the `http.Request` that was used to make the request. When you implement your server you _write_ your response using the writer.
+حين تكتب معالجاً (handler) لطلبات HTTP، تُعطى `http.ResponseWriter` و`http.Request` الذي استُعمل لإرسال الطلب. وحين تنفّذ خادمك، فإنك _تكتب_ ردك باستعمال الكاتب.
 
-You can probably guess that `http.ResponseWriter` also implements `io.Writer` so this is why we could re-use our `Greet` function inside our handler.
+لعلك تخمّن أن `http.ResponseWriter` يحقق أيضاً `io.Writer`، ولهذا استطعنا إعادة استعمال الدالة `Greet` داخل معالجنا.
 
-## Wrapping up
+## الخلاصة
 
-Our first round of code was not easy to test because it wrote data to somewhere we couldn't control.
+لم تكن جولتنا الأولى من الشيفرة سهلة الاختبار، لأنها كانت تكتب البيانات إلى مكان لا نتحكم به.
 
-_Motivated by our tests_ we refactored the code so we could control _where_ the data was written by **injecting a dependency** which allowed us to:
+_وبدافع من اختباراتنا_ أعدنا هيكلة الشيفرة كي نتحكم بـ_مكان_ كتابة البيانات عن طريق **حقن تبعية**، مما أتاح لنا:
 
-* **Test our code** If you can't test a function _easily_, it's usually because of dependencies hard-wired into a function _or_ global state. If you have a global database connection pool for instance that is used by some kind of service layer, it is likely going to be difficult to test and they will be slow to run. DI will motivate you to inject in a database dependency \(via an interface\) which you can then mock out with something you can control in your tests.
-* **Separate our concerns**, decoupling _where the data goes_ from _how to generate it_. If you ever feel like a method/function has too many responsibilities \(generating data _and_ writing to a db? handling HTTP requests _and_ doing domain level logic?\) DI is probably going to be the tool you need.
-* **Allow our code to be re-used in different contexts** The first "new" context our code can be used in is inside tests. But further on if someone wants to try something new with your function they can inject their own dependencies.
+* **اختبار شيفرتنا**: إن لم تستطع اختبار دالة _بسهولة_، فالسبب عادةً تبعيات مثبّتة داخل الدالة _أو_ حالة عامة. فإن كان لديك مثلاً مجمّع اتصالات عام بقاعدة البيانات تستعمله طبقة خدمات ما، فالأرجح أن اختبارها سيكون صعباً وأنها ستكون بطيئة التشغيل. وسيدفعك حقن التبعية إلى حقن تبعية قاعدة البيانات (عبر واجهة)، يمكنك بعد ذلك استبدالها ببديل وهمي (mock) تتحكم به في اختباراتك.
+* **فصل الاهتمامات**، أي فك الاقتران بين _مكان ذهاب البيانات_ و_كيفية توليدها_. فإن شعرت يوماً أن لطريقة أو دالة مسؤوليات كثيرة جداً (توليد البيانات _و_ الكتابة إلى قاعدة بيانات؟ معالجة طلبات HTTP _و_ تنفيذ منطق المجال؟)، فالأرجح أن حقن التبعية هو الأداة التي تحتاج إليها.
+* **إتاحة إعادة استعمال شيفرتنا في سياقات مختلفة**: أول سياق "جديد" يمكن استعمال شيفرتنا فيه هو داخل الاختبارات. لكن لاحقاً، إن أراد أحدهم تجربة شيء جديد بدالتك، فيمكنه حقن تبعياته الخاصة.
 
-### What about mocking? I hear you need that for DI and also it's evil
+### ماذا عن المحاكاة؟ سمعت أنها لازمة لحقن التبعية، وأنها شريرة أيضاً
 
-Mocking will be covered in detail later \(and it's not evil\). You use mocking to replace real things you inject with a pretend version that you can control and inspect in your tests. In our case though, the standard library had something ready for us to use.
+سنتناول المحاكاة بالتفصيل لاحقاً (وهي ليست شريرة). فأنت تستعمل المحاكاة لاستبدال الأشياء الحقيقية التي تحقنها بنسخة زائفة تستطيع التحكم بها وفحصها في اختباراتك. لكن في حالتنا، كان في المكتبة القياسية شيء جاهز لنستعمله.
 
-### The Go standard library is really good, take time to study it
+### مكتبة غو القياسية جيدة حقاً، فخذ وقتك في دراستها
 
-By having some familiarity with the `io.Writer` interface we are able to use `bytes.Buffer` in our test as our `Writer` and then we can use other `Writer`s from the standard library to use our function in a command line app or in web server.
+بفضل بعض الألفة بالواجهة `io.Writer`، استطعنا استعمال `bytes.Buffer` في اختبارنا على أنه `Writer`، ثم يمكننا استعمال أنواع `Writer` أخرى من المكتبة القياسية لاستعمال دالتنا في تطبيق سطر أوامر أو في خادم ويب.
 
-The more familiar you are with the standard library the more you'll see these general purpose interfaces which you can then re-use in your own code to make your software reusable in a number of contexts.
+وكلما ازددت ألفة بالمكتبة القياسية، سترى مزيداً من هذه الواجهات متعددة الأغراض، التي يمكنك إعادة استعمالها في شيفرتك لجعل برمجياتك قابلة لإعادة الاستعمال في سياقات عديدة.
 
-This example is heavily influenced by a chapter in [The Go Programming language](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440), so if you enjoyed this, go buy it!
+هذا المثال متأثر كثيراً بفصل من كتاب [The Go Programming language](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440)، فإن أعجبك هذا، فاذهب واشترِه!

@@ -179,3 +179,12 @@
 | immutable | غير قابل للتغيير | مقترح |  |
 | language specification | مواصفات اللغة | مقترح |  |
 | CRUD | CRUD | مقترح | الإنشاء والقراءة والتحديث والحذف؛ يبقى بالإنجليزية |
+| inject | حقن | مقترح | الفعل: حقن |
+| abstraction | تجريد | مقترح |  |
+| buffer | مخزن مؤقت | مقترح |  |
+| writer | كاتب | مقترح | النوع نفسه يبقى `io.Writer` |
+| separation of concerns | فصل الاهتمامات | مقترح |  |
+| general-purpose | متعدد الأغراض | مقترح |  |
+| connection pool | مجمّع اتصالات | مقترح |  |
+| service layer | طبقة خدمات | مقترح |  |
+| HTTP server | خادم HTTP | مقترح |  |
