@@ -1,29 +1,29 @@
-# Mathematics
+# الرياضيات
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/math)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/math)**
 
-For all the power of modern computers to perform huge sums at
-lightning speed, the average developer rarely uses any mathematics
-to do their job. But not today! Today we'll use mathematics to
-solve a _real_ problem. And not boring mathematics - we're going
-to use trigonometry and vectors and all sorts of stuff that you
-always said you'd never have to use after highschool.
+رغم كل ما تملكه الحواسيب الحديثة من قدرة على إجراء عمليات حسابية ضخمة
+بسرعة البرق، فإن المطور العادي نادراً ما يستعمل أي رياضيات
+في عمله. لكن ليس اليوم! سنستعمل اليوم الرياضيات
+لحل مشكلة _حقيقية_. وليست رياضيات مملة، بل سنستعمل
+حساب المثلثات والمتجهات وكل تلك الأشياء التي
+طالما قلت إنك لن تحتاج إليها أبداً بعد المدرسة الثانوية.
 
-## The Problem
+## المشكلة
 
-You want to make an SVG of a clock. Not a digital clock - no, that
-would be easy - an _analogue_ clock, with hands. You're not looking for anything
-fancy, just a nice function that takes a `Time` from the `time` package and
-spits out an SVG of a clock with all the hands - hour, minute and second -
-pointing in the right direction. How hard can that be?
+تريد صنع صورة SVG لساعة. ليست ساعة رقمية، لا، فتلك
+ستكون سهلة، بل ساعة _تناظرية_ بعقارب. لا تبحث عن أي شيء
+فاخر، بل مجرد دالة (function) لطيفة تأخذ قيمة `Time` من الحزمة (package) `time`
+وتُخرج صورة SVG لساعة بكل عقاربها، عقرب الساعات وعقرب الدقائق وعقرب الثواني،
+مشيرة إلى الاتجاه الصحيح. ما مدى صعوبة ذلك؟
 
-First we're going to need an SVG of a clock for us to play with. SVGs are a
-fantastic image format to manipulate programmatically because they're written as
-a series of shapes, described in XML. So this clock:
+أولاً سنحتاج إلى صورة SVG لساعة نتلاعب بها. وصيغة SVG
+صيغة صور رائعة للتعامل معها برمجياً، لأنها تُكتب
+كسلسلة من الأشكال الموصوفة بلغة XML. فهذه الساعة:
 
-![an svg of a clock](math/example_clock.svg)
+![صورة SVG لساعة](math/example_clock.svg)
 
-is described like this:
+توصف هكذا:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -51,46 +51,46 @@ is described like this:
 </svg>
 ```
 
-It's a circle with three lines, each of the lines starting in the middle of the
-circle (x=150, y=150), and ending some distance away.
+إنها دائرة فيها ثلاثة خطوط، يبدأ كل منها من منتصف
+الدائرة (x=150، y=150) وينتهي على مسافة ما منه.
 
-So what we're going to do is reconstruct the above somehow, but change the lines
-so they point in the appropriate directions for a given time.
+ما سنفعله إذن هو إعادة بناء ما سبق بطريقة ما، مع تغيير الخطوط
+بحيث تشير إلى الاتجاهات المناسبة لوقت معيّن.
 
-## An Acceptance Test
+## اختبار قبول
 
-Before we get too stuck in, lets think about an acceptance test.
+قبل أن نغوص في العمل، لنفكر في اختبار قبول (acceptance test).
 
-Wait, you don't know what an acceptance test is yet. Look, let me try to
-explain.
+مهلاً، أنت لا تعرف ما اختبار القبول بعد. اسمع، دعني أحاول
+الشرح.
 
-Let me ask you: what does winning look like? How do we know we've finished
-work? TDD provides a good way of knowing when you've finished: when the test
-passes. Sometimes it's nice - actually, almost all of the time it's nice -
-to write a test that tells you when you've finished writing the whole usable
-feature. Not just a test that tells you that a particular function is
-working in the way you expect, but a test that tells you that the whole
-thing you're trying to achieve - the 'feature' - is complete.
+دعني أسألك: كيف يبدو الفوز؟ كيف نعرف أننا أنهينا
+العمل؟ يوفر `TDD` طريقة جيدة لمعرفة متى انتهيت: حين ينجح
+الاختبار. ومن الجميل أحياناً، بل في كل الأحيان تقريباً،
+أن تكتب اختباراً يخبرك متى انتهيت من كتابة الميزة
+القابلة للاستعمال كلها. لا مجرد اختبار يخبرك بأن دالة معيّنة
+تعمل بالطريقة التي تتوقعها، بل اختبار يخبرك بأن الشيء
+الذي تحاول تحقيقه كله، أي "الميزة"، قد اكتمل.
 
-These tests are sometimes called 'acceptance tests', sometimes called
-'feature tests'. The idea is that you write a really high level test to
-describe what you're trying to achieve - a user clicks a button on a website,
-and they see a complete list of the Pokémon they've caught, for instance.
-When we've written that test, we can then write more tests - unit tests -
-that build towards a working system that will pass the acceptance test. So
-for our example these tests might be about rendering a webpage with a button,
-testing route handlers on a web server, performing database look ups, etc.
-All of these things will be TDD'd, and all of them will go towards making
-the original acceptance test pass.
+تسمى هذه الاختبارات أحياناً "اختبارات القبول"، وأحياناً
+"اختبارات الميزات". والفكرة أن تكتب اختباراً عالي المستوى جداً
+يصف ما تحاول تحقيقه، كأن ينقر مستخدم زراً في موقع ويب
+فيرى قائمة كاملة بالبوكيمونات التي اصطادها مثلاً.
+وحين نكتب ذلك الاختبار، يمكننا بعد ذلك كتابة مزيد من الاختبارات، أي اختبارات الوحدة (unit tests)،
+التي تبني نحو نظام يعمل وينجح في اختبار القبول. ففي
+مثالنا قد تتعلق هذه الاختبارات بعرض صفحة ويب فيها زر،
+واختبار معالجات المسارات في خادم ويب، وإجراء عمليات بحث في قاعدة البيانات، وغير ذلك.
+وكل هذه الأشياء ستُبنى بـ`TDD`، وكلها ستسهم في جعل
+اختبار القبول الأصلي ينجح.
 
-Something like this _classic_ picture by Nat Pryce and Steve Freeman
+شيء يشبه هذه الصورة _الكلاسيكية_ لنات برايس وستيف فريمان
 
-![Outside-in feedback loops in TDD](TDD-outside-in.jpg)
+![حلقات التغذية الراجعة من الخارج إلى الداخل في TDD](TDD-outside-in.jpg)
 
-Anyway, let's try and write that acceptance test - the one that will let us
-know when we're done.
+على أي حال، لنحاول كتابة اختبار القبول ذاك، الذي سيخبرنا
+متى ننتهي.
 
-We've got an example clock, so let's think about what the important parameters are going to be.
+لدينا ساعة مثال، فلنفكر في المعاملات (parameters) المهمة.
 
 
 ```
@@ -98,34 +98,34 @@ We've got an example clock, so let's think about what the important parameters a
         style="fill:none;stroke:#000;stroke-width:7px;"/>
 ```
 
-The centre of the clock (the attributes `x1` and `y1` for this line) is the same
-for each hand of the clock. The numbers that need to change for each hand of the
-clock - the parameters to whatever builds the SVG - are the `x2` and `y2`
-attributes. We'll need an X and a Y for each of the hands of the clock.
+مركز الساعة (السمتان `x1` و`y1` لهذا الخط) هو نفسه
+لكل عقرب من عقارب الساعة. والأعداد التي تحتاج إلى التغير مع كل عقرب،
+أي المعاملات التي تُمرَّر إلى ما يبني صورة SVG، هي السمتان `x2` و`y2`.
+سنحتاج إلى X وY لكل عقرب من عقارب الساعة.
 
-I _could_ think about more parameters - the radius of the clockface circle, the
-size of the SVG, the colours of the hands, their shape, etc... but it's better
-to start off by solving a simple, concrete problem with a simple, concrete
-solution, and then to start adding parameters to make it generalised.
+_كان بإمكاني_ التفكير في معاملات أكثر، مثل نصف قطر دائرة وجه الساعة،
+وحجم صورة SVG، وألوان العقارب، وشكلها، وغير ذلك... لكن من الأفضل
+أن نبدأ بحل مشكلة بسيطة ومحددة بحل بسيط ومحدد،
+ثم نبدأ بإضافة المعاملات لتعميمه.
 
-So we'll say that
-- every clock has a centre of (150, 150)
-- the hour hand is 50 long
-- the minute hand is 80 long
-- the second hand is 90 long.
+لذا سنقول إن
+- مركز كل ساعة هو (150، 150)
+- طول عقرب الساعات 50
+- طول عقرب الدقائق 80
+- طول عقرب الثواني 90.
 
-A thing to note about SVGs: the origin - point (0,0) - is at the _top left_ hand
-corner, not the _bottom left_ as we might expect. It'll be important to remember
-this when we're working out where what numbers to plug in to our lines.
+ملاحظة عن صور SVG: نقطة الأصل، أي النقطة (0،0)، تقع في الزاوية _العلوية اليسرى_،
+لا _السفلية اليسرى_ كما قد نتوقع. وسيكون من المهم تذكر
+هذا حين نحدد الأعداد التي نضعها في خطوطنا.
 
-Finally, I'm not deciding _how_ to construct the SVG - we could use a template
-from the [`text/template`][texttemplate] package, or we could just send bytes into
-a `bytes.Buffer` or a writer. But we know we'll need those numbers, so let's
-focus on testing something that creates them.
+وأخيراً، لن أقرر _كيف_ نبني صورة SVG، فيمكننا استعمال قالب
+من الحزمة [`text/template`][texttemplate]، أو يمكننا ببساطة إرسال البايتات إلى
+`bytes.Buffer` أو إلى كاتب. لكننا نعرف أننا سنحتاج إلى تلك الأعداد، فلنركز
+على اختبار شيء يُنشئها.
 
-### Write the test first
+### اكتب الاختبار أولاً
 
-So my first test looks like this:
+فيبدو اختباري الأول هكذا:
 
 ```go
 package clockface_test
@@ -148,14 +148,14 @@ func TestSecondHandAtMidnight(t *testing.T) {
 }
 ```
 
-Remember how SVGs plot their coordinates from the top left hand corner? To place
-the second hand at midnight we expect that it hasn't moved from the centre of
-the clockface on the X axis - still 150 - and the Y axis is the length of the
-hand 'up' from the centre; 150 minus 90.
+هل تذكر كيف ترسم صور SVG إحداثياتها من الزاوية العلوية اليسرى؟ لوضع
+عقرب الثواني عند منتصف الليل، نتوقع ألا يكون قد تحرك من مركز
+وجه الساعة على المحور X، أي ما زال 150، وأن يكون المحور Y هو طول
+العقرب "صعوداً" من المركز؛ أي 150 ناقص 90.
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
-This drives out the expected failures around the missing functions and types:
+هذا يُظهر حالات الفشل المتوقعة المتعلقة بالدوال والأنواع الناقصة:
 
 ```
 --- FAIL: TestSecondHandAtMidnight (0.00s)
@@ -163,11 +163,11 @@ This drives out the expected failures around the missing functions and types:
 ./clockface_test.go:14:9: undefined: clockface.SecondHand
 ```
 
-So a `Point` where the tip of the second hand should go, and a function to get it.
+إذن نحتاج إلى `Point` حيث ينبغي أن يكون طرف عقرب الثواني، ودالة للحصول عليه.
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Let's implement those types to get the code to compile
+لننفّذ هذه الأنواع كي تُصرَّف الشيفرة (code)
 
 ```go
 package clockface
@@ -187,7 +187,7 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-and now we get:
+ونحصل الآن على:
 
 ```
 --- FAIL: TestSecondHandAtMidnight (0.00s)
@@ -197,9 +197,9 @@ exit status 1
 FAIL	learn-go-with-tests/math/clockface	0.006s
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-When we get the expected failure, we can fill in the return value of `SecondHand`:
+حين نحصل على الفشل المتوقع، يمكننا ملء القيمة المعادة من `SecondHand`:
 
 ```go
 // SecondHand is the unit vector of the second hand of an analogue clock at time `t`
@@ -209,23 +209,23 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-Behold, a passing test.
+ها هو اختبار ناجح.
 
 ```
 PASS
 ok  	    clockface	0.006s
 ```
 
-### Refactor
+### أعد الهيكلة
 
-No need to refactor yet - there's barely enough code!
+لا حاجة إلى إعادة الهيكلة بعد، فالشيفرة بالكاد تكفي!
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-We probably need to do some work here that doesn't just involve returning
-a clock that shows midnight for every time...
+علينا على الأرجح القيام ببعض العمل هنا، لا يقتصر على إعادة
+ساعة تشير إلى منتصف الليل في كل الأوقات...
 
-### Write the test first
+### اكتب الاختبار أولاً
 
 ```go
 func TestSecondHandAt30Seconds(t *testing.T) {
@@ -240,94 +240,94 @@ func TestSecondHandAt30Seconds(t *testing.T) {
 }
 ```
 
-Same idea, but now the second hand is pointing _downwards_ so we _add_ the
-length to the Y axis.
+الفكرة نفسها، لكن عقرب الثواني يشير الآن إلى _الأسفل_، لذا _نضيف_
+الطول إلى إحداثي Y الخاص به.
 
-This will compile... but how do we make it pass?
+هذا سيُصرَّف... لكن كيف نجعله ينجح؟
 
-## Thinking time
+## وقت التفكير
 
-How are we going to solve this problem?
+كيف سنحل هذه المشكلة؟
 
-Every minute the second hand goes through the same 60 states, pointing in 60
-different directions. When it's 0 seconds it points to the top of the clockface,
-when it's 30 seconds it points to the bottom of the clockface. Easy enough.
+في كل دقيقة يمر عقرب الثواني بالحالات الـ60 نفسها، مشيراً إلى 60
+اتجاهاً مختلفاً. فحين تكون الثواني 0 يشير إلى أعلى وجه الساعة،
+وحين تكون 30 ثانية يشير إلى أسفله. سهل بما يكفي.
 
-So if I wanted to think about in what direction the second hand was pointing at,
-say, 37 seconds, I'd want the angle between 12 o'clock and 37/60ths around the
-circle. In degrees this is `(360 / 60 ) * 37 = 222`, but it's easier just to
-remember that it's `37/60` of a complete rotation.
+فإن أردت أن أفكر في الاتجاه الذي يشير إليه عقرب الثواني عند،
+لنقل، 37 ثانية، فسأريد الزاوية بين الساعة 12 و37/60 من محيط
+الدائرة. وبالدرجات هذا هو `(360 / 60 ) * 37 = 222`، لكن الأسهل أن
+نتذكر أنه `37/60` من دورة كاملة.
 
-But the angle is only half the story; we need to know the X and Y coordinate
-that the tip of the second hand is pointing at. How can we work that out?
+لكن الزاوية ليست إلا نصف القصة؛ فنحن نحتاج إلى معرفة الإحداثيين X وY
+اللذين يشير إليهما طرف عقرب الثواني. كيف نحسب ذلك؟
 
-## Math
+## الرياضيات
 
-Imagine a circle with a radius of 1 drawn around the origin - the coordinate `0,
+تخيّل دائرة نصف قطرها 1 مرسومة حول نقطة الأصل، أي الإحداثي `0,
 0`.
 
-![picture of the unit circle](math/images/unit_circle.png)
+![صورة دائرة الوحدة](math/images/unit_circle.png)
 
-This is called the 'unit circle' because... well, the radius is 1 unit!
+تسمى هذه "دائرة الوحدة" لأن... حسناً، نصف قطرها وحدة واحدة!
 
-The circumference of the circle is made of points on the grid - more
-coordinates. The x and y components of each of these coordinates form
-a triangle, the hypotenuse of which is always 1 (i.e. the radius of the circle).
+يتكون محيط الدائرة من نقاط على الشبكة، أي مزيد من
+الإحداثيات. ويشكّل المكونان x وy لكل من هذه الإحداثيات
+مثلثاً، وتره دائماً 1 (أي نصف قطر الدائرة).
 
-![picture of the unit circle with a point defined on the circumference](math/images/unit_circle_coords.png)
+![صورة دائرة الوحدة مع نقطة محددة على المحيط](math/images/unit_circle_coords.png)
 
-Now, trigonometry will let us work out the lengths of X and Y for each triangle
-if we know the angle they make with the origin. The X coordinate will be cos(a),
-and the Y coordinate will be sin(a), where a is the angle made between the line
-and the (positive) x axis.
+يتيح لنا حساب المثلثات الآن حساب طولي X وY لكل مثلث
+إن عرفنا الزاوية التي يصنعها مع نقطة الأصل. فسيكون الإحداثي X هو cos(a)،
+والإحداثي Y هو sin(a)، حيث a الزاوية بين الخط
+والمحور x (الموجب).
 
-![picture of the unit circle with the x and y elements of a ray defined as cos(a) and sin(a) respectively, where a is the angle made by the ray with the x axis](math/images/unit_circle_params.png)
+![صورة دائرة الوحدة مع مركبتي x وy لشعاع معرّفتين بـ cos(a) وsin(a) على الترتيب، حيث a الزاوية التي يصنعها الشعاع مع المحور x](math/images/unit_circle_params.png)
 
-(If you don't believe this, [go and look at Wikipedia...][circle])
+(إن لم تصدّق هذا، [فاذهب وانظر في ويكيبيديا...][circle])
 
-One final twist - because we want to measure the angle from 12 o'clock rather
-than from the X axis (3 o'clock), we need to swap the axis around; now
-x = sin(a) and y = cos(a).
+ولمسة أخيرة: لأننا نريد قياس الزاوية من الساعة 12 بدلاً
+من المحور X (الساعة 3)، علينا تبديل المحورين، فيصبح الآن
+x = sin(a) وy = cos(a).
 
-![unit circle ray defined from by angle from y axis](math/images/unit_circle_12_oclock.png)
+![شعاع في دائرة الوحدة معرّف بزاويته من المحور y](math/images/unit_circle_12_oclock.png)
 
-So now we know how to get the angle of the second hand (1/60th of a circle for
-each second) and the X and Y coordinates. We'll need functions for both `sin`
-and `cos`.
+صرنا نعرف الآن كيف نحصل على زاوية عقرب الثواني (1/60 من الدائرة
+لكل ثانية) وعلى الإحداثيين X وY. وسنحتاج إلى دالتين لكل من `sin`
+و`cos`.
 
-## `math`
+## الحزمة `math`
 
-Happily the Go `math` package has both, with one small snag we'll need to get
-our heads around; if we look at the description of [`math.Cos`][mathcos]:
+لحسن الحظ في الحزمة `math` في غو (Go) الدالتان كلتاهما، مع عقبة صغيرة علينا
+استيعابها؛ فإن نظرنا إلى وصف [`math.Cos`][mathcos]:
 
-> Cos returns the cosine of the radian argument x.
+> تعيد `Cos` جيب التمام للوسيط `x` المقدّر بالراديان.
 
-It wants the angle to be in radians. So what's a radian? Instead of defining the full turn of a circle to be made up of 360 degrees, we define a full turn as being 2π radians. There are good reasons to do this that we won't go in to.[^2]
+إنها تريد الزاوية بالراديان. فما الراديان؟ بدلاً من تعريف الدورة الكاملة للدائرة بأنها 360 درجة، نعرّفها بأنها 2π راديان. وهناك أسباب وجيهة لذلك لن نخوض فيها.[^2]
 
-Now that we've done some reading, some learning and some thinking, we can write
-our next test.
+والآن بعد أن قرأنا وتعلّمنا وفكّرنا قليلاً، يمكننا كتابة
+اختبارنا التالي.
 
-### Write the test first
+### اكتب الاختبار أولاً
 
-All this maths is hard and confusing. I'm not confident I understand what's
-going on - so let's write a test! We don't need to solve the whole problem in
-one go - let's start off with working out the correct angle, in radians, for the
-second hand at a particular time.
+كل هذه الرياضيات صعبة ومربكة. لست واثقاً من أنني أفهم ما
+يجري، لذا لنكتب اختباراً! لا نحتاج إلى حل المشكلة كلها
+دفعة واحدة، فلنبدأ بحساب الزاوية الصحيحة بالراديان لعقرب
+الثواني في وقت معيّن.
 
-I'm going to _comment out_ the acceptance test that I was working on while
-I'm working on these tests - I don't want to get distracted by that test while
-I'm getting this one to pass.
+سأحوّل اختبار القبول الذي كنت أعمل عليه إلى _تعليق_ ريثما
+أعمل على هذه الاختبارات، فلا أريد أن يشتتني ذلك الاختبار بينما
+أجعل هذا الاختبار ينجح.
 
-### A recap on packages
+### تذكير بالحزم
 
-At the moment, our acceptance tests are in the `clockface_test` package. Our tests can 
-be outside of the `clockface` package - as long as their name ends with `_test.go` they 
-can be run.
+حالياً، اختبارات القبول لدينا في الحزمة `clockface_test`. ويمكن لاختباراتنا
+أن تكون خارج الحزمة `clockface`، فما دامت أسماء ملفاتها تنتهي بـ`_test.go`
+فيمكن تشغيلها.
 
-I'm going to write these radians tests _within_ the `clockface` package; they may never
-get exported, and they may get deleted (or moved) once I have a better grip on
-what's going on. I'll rename my acceptance test file to `clockface_acceptance_test.go`, 
-so that I can create a _new_ file called `clockface_test` to test seconds in radians.
+سأكتب اختبارات الراديان هذه _داخل_ الحزمة `clockface`، فقد لا تُصدَّر
+أبداً، وقد تُحذف (أو تُنقل) بعد أن أفهم ما يجري
+بشكل أفضل. وسأغيّر اسم ملف اختبار القبول إلى `clockface_acceptance_test.go`،
+كي أستطيع إنشاء ملف _جديد_ باسم `clockface_test` لاختبار الثواني بالراديان.
 
 ```go
 package clockface
@@ -349,19 +349,19 @@ func TestSecondsInRadians(t *testing.T) {
 }
 ```
 
-Here we're testing that 30 seconds past the minute should put the
-second hand at halfway around the clock. And it's our first use of
-the `math` package! If a full turn of a circle is 2π radians, we
-know that halfway round should just be π radians. `math.Pi` provides
-us with a value for π.
+نختبر هنا أن مرور 30 ثانية على الدقيقة ينبغي أن يضع
+عقرب الثواني في منتصف الساعة. وهذا أول استعمال لنا
+للحزمة `math`! فإن كانت الدورة الكاملة للدائرة 2π راديان،
+فإننا نعرف أن نصفها ينبغي أن يكون π راديان فقط. وتوفر لنا `math.Pi`
+قيمة π.
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 ./clockface_test.go:12:9: undefined: secondsInRadians
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -373,7 +373,7 @@ func secondsInRadians(t time.Time) float64 {
 clockface_test.go:15: Wanted 3.141592653589793 radians, but got 0
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -386,15 +386,15 @@ PASS
 ok  	clockface	0.011s
 ```
 
-### Refactor
+### أعد الهيكلة
 
-Nothing needs refactoring yet
+لا شيء يحتاج إلى إعادة هيكلة بعد
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-Now we can extend the test to cover a few more scenarios. I'm going to skip
-forward a bit and show some already refactored test code - it should be clear
-enough how I got where I want to.
+يمكننا الآن توسيع الاختبار ليغطي بعض السيناريوهات الأخرى. سأقفز
+قليلاً إلى الأمام وأعرض شيفرة اختبار أُعيدت هيكلتها بالفعل، وينبغي أن يكون واضحاً
+بما يكفي كيف وصلت إلى ما أريد.
 
 ```go
 func TestSecondsInRadians(t *testing.T) {
@@ -419,11 +419,11 @@ func TestSecondsInRadians(t *testing.T) {
 }
 ```
 
-I added a couple of helper functions to make writing this table based test
-a little less tedious. `testName` converts a time into a digital watch
-format (HH:MM:SS), and `simpleTime` constructs a `time.Time` using only the
-parts we actually care about (again, hours, minutes and seconds).[^1] Here
-they are:
+أضفت دالتين مساعدتين لجعل كتابة هذا الاختبار الجدولي
+أقل مللاً قليلاً. تحوّل `testName` الوقت إلى صيغة الساعة
+الرقمية (HH:MM:SS)، وتبني `simpleTime` قيمة `time.Time` باستعمال
+الأجزاء التي تهمنا فعلاً فقط (مرة أخرى: الساعات والدقائق والثواني).[^1] وإليك
+الدالتين:
 
 ```go
 func simpleTime(hours, minutes, seconds int) time.Time {
@@ -435,10 +435,10 @@ func testName(t time.Time) string {
 }
 ```
 
-These two functions should help make these tests (and future tests) a little
-easier to write and maintain.
+ينبغي أن تساعد هاتان الدالتان على جعل هذه الاختبارات (والاختبارات المستقبلية) أسهل
+قليلاً في الكتابة والصيانة.
 
-This gives us some nice test output:
+وهذا يعطينا مخرجات اختبار جميلة:
 
 
 ```
@@ -447,7 +447,7 @@ clockface_test.go:24: Wanted 0 radians, but got 3.141592653589793
 clockface_test.go:24: Wanted 4.71238898038469 radians, but got 3.141592653589793
 ```
 
-Time to implement all of that maths stuff we were talking about above:
+حان وقت تنفيذ كل تلك الرياضيات التي تحدثنا عنها أعلاه:
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -455,50 +455,50 @@ func secondsInRadians(t time.Time) float64 {
 }
 ```
 
-One second is (2π / 60) radians... cancel out the 2 and we get π/30 radians.
-Multiply that by the number of seconds (as a `float64`) and we should now have
-all the tests passing...
+الثانية الواحدة تساوي (2π / 60) راديان... نختصر الـ2 فنحصل على π/30 راديان.
+ونضرب ذلك في عدد الثواني (كقيمة `float64`)، فينبغي أن تنجح الآن
+كل الاختبارات...
 
 
 ```
 clockface_test.go:24: Wanted 3.141592653589793 radians, but got 3.1415926535897936
 ```
 
-Wait, what?
+مهلاً، ماذا؟
 
-### Floats are horrible
+### الأعداد العشرية فظيعة
 
-Floating point arithmetic is [notoriously inaccurate][floatingpoint]. Computers
-can only really handle integers, and rational numbers to some extent. Decimal
-numbers start to become inaccurate, especially when we factor them up and down
-as we are in the `secondsInRadians` function. By dividing `math.Pi` by 30 and
-then by multiplying it by 30 we've ended up with _a number that's no longer the
-same as `math.Pi`_.
+حساب الفاصلة العائمة [معروف بعدم دقته][floatingpoint]. فالحواسيب
+لا تستطيع حقاً التعامل إلا مع الأعداد الصحيحة، ومع الأعداد النسبية إلى حد ما. أما الأعداد
+العشرية فتبدأ بفقدان دقتها، خصوصاً حين نضربها ونقسمها
+كما نفعل في الدالة `secondsInRadians`. فبقسمة `math.Pi` على 30
+ثم ضربها في 30 انتهى بنا الأمر إلى _عدد لم يعد مساوياً
+لـ`math.Pi`_.
 
-There are two ways around this:
+هناك طريقتان للتعامل مع هذا:
 
-1. Live with it
-2. Refactor our function by refactoring our equation
+1. أن نتعايش معه
+2. أن نعيد هيكلة دالتنا بإعادة ترتيب المعادلة
 
-Now (1) may not seem all that appealing, but it's often the only way to make
-floating point equality work. Being inaccurate by some infinitesimal fraction
-is frankly not going to matter for the purposes of drawing a clockface, so we
-could write a function that defines a 'close enough' equality for our angles.
-But there's a simple way we can get the accuracy back: we rearrange the equation
-so that we're no longer dividing down and then multiplying up. We can do it all
-by just dividing.
+قد لا يبدو الخيار (1) جذاباً، لكنه كثيراً ما يكون الطريقة الوحيدة لجعل
+مقارنة المساواة بين الأعداد العشرية تعمل. فعدم الدقة بكسر متناهٍ في الصغر
+لن يهم بصراحة لأغراض رسم وجه ساعة، لذا
+يمكننا كتابة دالة تعرّف مساواة "قريبة بما يكفي" لزوايانا.
+لكن هناك طريقة بسيطة لاستعادة الدقة: نعيد ترتيب المعادلة
+بحيث لا نقسم ثم نضرب. ويمكننا فعل كل شيء
+بالقسمة فقط.
 
-So instead of
+فبدلاً من
 
 	numberOfSeconds * π / 30
 
-we can write
+يمكننا أن نكتب
 
 	π / (30 / numberOfSeconds)
 
-which is equivalent.
+وهما متكافئتان.
 
-In Go:
+وفي غو:
 
 ```go
 func secondsInRadians(t time.Time) float64 {
@@ -506,20 +506,20 @@ func secondsInRadians(t time.Time) float64 {
 }
 ```
 
-And we get a pass.
+وينجح الاختبار.
 
 ```
 PASS
 ok      clockface     0.005s
 ```
 
-It should all look [something like this](https://github.com/quii/learn-go-with-tests/tree/main/math/v3/clockface).
+ينبغي أن يبدو كل شيء [شيئاً كهذا](https://github.com/quii/learn-go-with-tests/tree/main/math/v3/clockface).
 
-### A note on dividing by zero
+### ملاحظة عن القسمة على صفر
 
-Computers often don't like dividing by zero because infinity is a bit strange.
+كثيراً ما لا تحب الحواسيب القسمة على صفر، لأن اللانهاية أمر غريب بعض الشيء.
 
-In Go if you try to explicitly divide by zero you will get a compilation error.
+في غو، إن حاولت القسمة على صفر صراحةً فستحصل على خطأ تصريف.
 
 ```go
 package main
@@ -533,9 +533,9 @@ func main() {
 }
 ```
 
-Obviously the compiler can't always predict that you'll divide by zero, such as our `t.Second()`
+ومن الواضح أن المصرِّف (compiler) لا يستطيع دائماً التنبؤ بأنك ستقسم على صفر، كما في حالة `t.Second()`
 
-Try this
+جرّب هذا
 
 ```go
 func main() {
@@ -547,7 +547,7 @@ func zero() float64 {
 }
 ```
 
-It will print `+Inf` (infinity). Dividing by +Inf seems to result in zero and we can see this with the following:
+سيطبع `+Inf` (اللانهاية). ويبدو أن القسمة على `+Inf` تعطي صفراً، ويمكننا رؤية ذلك بما يلي:
 
 ```go
 package main
@@ -570,17 +570,17 @@ func secondsinradians() float64 {
 }
 ```
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-So we've got the first part covered here - we know what angle the second hand
-will be pointing at in radians. Now we need to work out the coordinates.
+غطّينا إذن الجزء الأول هنا، فنحن نعرف الزاوية التي سيشير إليها عقرب الثواني
+بالراديان. والآن علينا حساب الإحداثيات.
 
-Again, let's keep this as simple as possible and only work with the _unit
-circle_; the circle with a radius of 1. This means that our hands will all have
-a length of one but, on the bright side, it means that the maths will be easy
-for us to swallow.
+مرة أخرى، لنُبقِ الأمر بأبسط ما يمكن ونعمل فقط مع _دائرة
+الوحدة_، أي الدائرة التي نصف قطرها 1. وهذا يعني أن طول عقاربنا كلها
+سيكون واحداً، لكن من الجانب المشرق يعني أن الرياضيات ستكون سهلة
+الهضم.
 
-### Write the test first
+### اكتب الاختبار أولاً
 
 ```go
 func TestSecondHandPoint(t *testing.T) {
@@ -602,13 +602,13 @@ func TestSecondHandPoint(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 ./clockface_test.go:40:11: undefined: secondHandPoint
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func secondHandPoint(t time.Time) Point {
@@ -620,7 +620,7 @@ func secondHandPoint(t time.Time) Point {
 clockface_test.go:42: Wanted {0 -1} Point, but got {0 0}
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func secondHandPoint(t time.Time) Point {
@@ -633,7 +633,7 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
 ```go
 func TestSecondHandPoint(t *testing.T) {
@@ -656,23 +656,23 @@ func TestSecondHandPoint(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_test.go:43: Wanted {-1 0} Point, but got {0 -1}
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Remember our unit circle picture?
+هل تذكر صورة دائرة الوحدة؟
 
-![picture of the unit circle with the x and y elements of a ray defined as cos(a) and sin(a) respectively, where a is the angle made by the ray with the x axis](math/images/unit_circle_params.png)
+![صورة دائرة الوحدة مع مركبتي x وy لشعاع معرّفتين بـ cos(a) وsin(a) على الترتيب، حيث a الزاوية التي يصنعها الشعاع مع المحور x](math/images/unit_circle_params.png)
 
-Also recall that we want to measure the angle from 12 o'clock which is the Y axis instead of from the X axis which we would like measuring the angle between the second hand and 3 o'clock.
+وتذكّر أيضاً أننا نريد قياس الزاوية من الساعة 12، أي من المحور Y، بدلاً من المحور X الذي كان سيجعلنا نقيس الزاوية بين عقرب الثواني والساعة 3.
 
-![unit circle ray defined from by angle from y axis](math/images/unit_circle_12_oclock.png)
+![شعاع في دائرة الوحدة معرّف بزاويته من المحور y](math/images/unit_circle_12_oclock.png)
 
-We now want the equation that produces X and Y. Let's write it into seconds:
+نريد الآن المعادلة التي تُنتج X وY. لنكتبها للثواني:
 
 ```go
 func secondHandPoint(t time.Time) Point {
@@ -683,7 +683,7 @@ func secondHandPoint(t time.Time) Point {
 	return Point{x, y}
 }
 ```
-Now we get
+نحصل الآن على
 
 
 ```
@@ -692,15 +692,15 @@ clockface_test.go:43: Wanted {0 -1} Point, but got {1.2246467991473515e-16 -1}
 clockface_test.go:43: Wanted {-1 0} Point, but got {-1 -1.8369701987210272e-16}
 ```
 
-Wait, what (again)? Looks like we've been cursed by the floats once more - both
-of those unexpected numbers are _infinitesimal_ - way down at the 16th decimal
-place. So again we can either choose to try to increase precision, or to just
-say that they're roughly equal and get on with our lives.
+مهلاً، ماذا (مرة أخرى)؟ يبدو أن لعنة الأعداد العشرية أصابتنا مجدداً، فكلا
+العددين غير المتوقعين _متناهيان في الصغر_، في المنزلة العشرية السادسة عشرة.
+لذا يمكننا مرة أخرى إما محاولة زيادة الدقة، أو أن نقول ببساطة
+إنهما متساويان تقريباً ونمضي في حياتنا.
 
-One option to increase the accuracy of these angles would be to use the rational
-type `Rat` from the `math/big` package. But given the objective is to draw an
-SVG and not land on the moon, I think we can live with a bit of
-fuzziness.
+من خيارات زيادة دقة هذه الزوايا استعمال النوع النسبي
+`Rat` من الحزمة `math/big`. لكن بما أن الهدف رسم
+صورة SVG لا الهبوط على القمر، فأظن أننا نستطيع التعايش مع قليل من
+عدم الدقة.
 
 ```go
 func TestSecondHandPoint(t *testing.T) {
@@ -733,32 +733,32 @@ func roughlyEqualPoint(a, b Point) bool {
 }
 ```
 
-We've defined two functions to define approximate equality between two
-`Points` - they'll work if the X and Y elements are within 0.0000001 of each
-other.  That's still pretty accurate.
+عرّفنا دالتين لتعريف المساواة التقريبية بين قيمتين
+من `Points`، وستعملان إن كان الفرق بين عنصري X وY في كل منهما ضمن 0.0000001.
+وهذا ما زال دقيقاً جداً.
 
-And now we get:
+ونحصل الآن على:
 
 ```
 PASS
 ok  	clockface	0.007s
 ```
 
-### Refactor
+### أعد الهيكلة
 
-I'm still pretty happy with this.
+ما زلت راضياً عن هذا تماماً.
 
 
-Here's [what it looks like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v4/clockface)
+إليك [كيف تبدو الآن](https://github.com/quii/learn-go-with-tests/tree/main/math/v4/clockface)
 
 <!---
 v4 ends
 -->
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-Well, saying _new_ isn't entirely accurate - really what we can do now is get
-that acceptance test passing! Let's remind ourselves of what it looks like:
+حسناً، قول _جديدة_ ليس دقيقاً تماماً، فما يمكننا فعله حقاً الآن هو جعل
+اختبار القبول ذاك ينجح! لنذكّر أنفسنا كيف يبدو:
 
 
 ```go
@@ -774,24 +774,24 @@ func TestSecondHandAt30Seconds(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 
 ```
 clockface_acceptance_test.go:28: Got {150 60}, wanted {150 240}
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We need to do three things to convert our unit vector into a point on the SVG:
+علينا فعل ثلاثة أشياء لتحويل متجه الوحدة إلى نقطة على صورة SVG الخاصة بنا:
 
-1. Scale it to the length of the hand
-2. Flip it over the X axis to account for the SVG having an origin in
-   the top left hand corner
-3. Translate it to the right position (so that it's coming from an origin of
-   (150,150))
+1. تحجيمه إلى طول العقرب
+2. قلبه حول المحور X لمراعاة أن نقطة أصل SVG في
+   الزاوية العلوية اليسرى
+3. إزاحته إلى الموضع الصحيح (بحيث ينطلق من نقطة أصل
+   هي (150،150))
 
-Fun times!
+أوقات ممتعة!
 
 ```go
 // SecondHand is the unit vector of the second hand of an analogue clock at time `t`
@@ -805,17 +805,17 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-Scale, flip, and translate in exactly that order. Hooray maths!
+التحجيم ثم القلب ثم الإزاحة، بهذا الترتيب بالضبط. تحيا الرياضيات!
 
 ```
 PASS
 ok  	clockface	0.007s
 ```
 
-### Refactor
+### أعد الهيكلة
 
-There's a few magic numbers here that should get pulled out as constants, so
-let's do that
+هناك بعض الأعداد السحرية هنا ينبغي استخراجها كثوابت، لذا
+لنفعل ذلك
 
 ```go
 const secondHandLength = 90
@@ -833,17 +833,17 @@ func SecondHand(t time.Time) Point {
 }
 ```
 
-## Draw the clock
+## ارسم الساعة
 
-Well... the second hand anyway...
+حسناً... عقرب الثواني على الأقل...
 
-Let's do this thing - because there's nothing worse than not delivering some
-value when it's just sitting there waiting to get out into the world to dazzle
-people. Let's draw a second hand!
+لننجز هذا، فلا شيء أسوأ من عدم تقديم قيمة ما
+وهي جاهزة تنتظر أن تخرج إلى العالم لتبهر
+الناس. لنرسم عقرب الثواني!
 
-We're going to stick a new directory under our main `clockface` package
-directory, called (confusingly), `clockface`. In there we'll put the `main`
-package that will create the binary that will build an SVG:
+سنضع مجلداً جديداً تحت مجلد الحزمة الرئيسية `clockface`،
+ونسميه (بشكل محيّر) `clockface`. وسنضع فيه الحزمة `main`
+التي ستُنشئ الملف التنفيذي الذي يبني صورة SVG المطلوبة:
 
 ```
 |-- clockface
@@ -853,8 +853,8 @@ package that will create the binary that will build an SVG:
 |-- clockface_test.go
 ```
 
-Inside `main.go`, you'll start with this code but change the import for the
-clockface package to point at your own version:
+داخل `main.go` ستبدأ بهذه الشيفرة، لكن غيّر سطر الاستيراد الخاص بالحزمة
+`clockface` ليشير إلى نسختك الخاصة:
 
 ```go
 package main
@@ -894,47 +894,47 @@ const bezel = `<circle cx="150" cy="150" r="100" style="fill:#fff;stroke:#000;st
 const svgEnd = `</svg>`
 ```
 
-Oh boy am I not trying to win any prizes for beautiful code with _this_ mess -
-but it does the job. It's writing an SVG out to `os.Stdout` - one string at
-a time.
+يا للهول، لست أسعى إلى الفوز بأي جوائز على جمال الشيفرة بـ_هذه_ الفوضى،
+لكنها تؤدي المهمة. فهي تكتب صورة SVG إلى `os.Stdout`، سلسلة نصية
+تلو الأخرى.
 
-If we build this
+إن بنينا هذا
 
 ```
 go build
 ```
 
-and run it, sending the output into a file
+وشغّلناه، مرسلين المخرجات إلى ملف
 
 ```
 ./clockface > clock.svg
 ```
 
-We should see something like
+فينبغي أن نرى شيئاً مثل
 
-![a clock with only a second hand](math/v6/clockface/clockface/clock.svg)
+![ساعة بعقرب ثوانٍ فقط](math/v6/clockface/clockface/clock.svg)
 
-And this is [how the code looks](https://github.com/quii/learn-go-with-tests/tree/main/math/v6/clockface).
+وهذه [هي الشيفرة](https://github.com/quii/learn-go-with-tests/tree/main/math/v6/clockface).
 
 <!--
 Here ends v6
 -->
 
 
-### Refactor
+### أعد الهيكلة
 
-This stinks. Well, it doesn't quite _stink_ stink, but I'm not happy about it.
+هذه رائحتها كريهة. حسناً، ليست _كريهة_ تماماً، لكنني لست راضياً عنها.
 
-1. That whole `SecondHand` function is _super_ tied to being an SVG... without
-   mentioning SVGs or actually producing an SVG...
-2. ... while at the same time I'm not testing any of my SVG code.
+1. الدالة `SecondHand` كلها مرتبطة _بشدة_ بصيغة SVG... دون
+   أن تذكرها أو تُنتج فعلاً صورة SVG حقيقية...
+2. ... وفي الوقت نفسه لا أختبر أي جزء من شيفرة SVG لدي.
 
-Yeah, I guess I screwed up. This feels wrong. Let's try to recover with a more
-SVG-centric test.
+نعم، أظنني أفسدت الأمر. هذا يبدو خاطئاً. لنحاول التعافي باختبار
+يتمحور أكثر حول صيغة SVG نفسها.
 
-What are our options? Well, we could try testing that the characters spewing out
-of the `SVGWriter` contain things that look like the sort of SVG tag we're
-expecting for a particular time. For instance:
+ما خياراتنا؟ حسناً، يمكننا محاولة اختبار أن المحارف التي تتدفق
+من `SVGWriter` تحتوي على أشياء تشبه وسم SVG الذي
+نتوقعه لوقت معيّن. على سبيل المثال:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -952,39 +952,39 @@ func TestSVGWriterAtMidnight(t *testing.T) {
 }
 ```
 
-But is this really an improvement?
+لكن هل هذا تحسين حقاً؟
 
-Not only will it still pass if I don't produce a valid SVG (as it's only testing
-that a string appears in the output), but it will also fail if I make the
-smallest, unimportant change to that string - if I add an extra space between
-the attributes, for instance.
+فهو لن يظل ينجح حتى لو لم أُنتج صورة SVG صالحة فحسب (لأنه يختبر فقط
+ظهور سلسلة نصية في المخرجات)، بل سيفشل أيضاً إن أجريت
+أصغر تغيير غير مهم على تلك السلسلة، كأن أضيف مسافة إضافية بين
+السمات مثلاً.
 
-The _biggest_ smell is that I'm testing a data structure - XML - by looking
-at its representation as a series of characters - as a string. This is _never_,
-_ever_ a good idea as it produces problems just like the ones I outline above:
-a test that's both too fragile and not sensitive enough. A test that's testing
-the wrong thing!
+أكبر _رائحة_ هنا أنني أختبر هيكل بيانات، هو XML، بالنظر
+إلى تمثيله كسلسلة من المحارف، أي كسلسلة نصية. وهذه _ليست أبداً_
+فكرة جيدة، لأنها تُنتج مشكلات كالتي وصفتها للتو:
+اختبار هش جداً وغير حساس بما يكفي في آن واحد. اختبار يختبر
+الشيء الخطأ!
 
-So the only solution is to test the output _as XML_. And to do that we'll need
-to parse it.
+لذا فالحل الوحيد هو اختبار المخرجات _بوصفها XML_. ولفعل ذلك علينا
+تحليلها.
 
-## Parsing XML
+## تحليل XML
 
-[`encoding/xml`][xml] is the Go package that can handle all things to do with
-simple XML parsing.
+الحزمة [`encoding/xml`][xml] هي حزمة غو التي تتولى كل ما يتعلق
+بتحليل XML البسيط.
 
 
-The function [`xml.Unmarshal`](https://pkg.go.dev/encoding/xml#Unmarshal) takes
-a `[]byte` of XML data, and a pointer to a struct for it to get unmarshalled in
-to.
+تأخذ الدالة [`xml.Unmarshal`](https://pkg.go.dev/encoding/xml#Unmarshal)
+قيمة `[]byte` من بيانات XML، ومؤشراً (pointer) إلى بنية (struct) تُفكّ البيانات
+فيها.
 
-So we'll need a struct to unmarshall our XML into. We could spend some time
-working out what the correct names for all of the nodes and attributes, and how
-to write the correct structure but, happily, someone has written
-[`zek`](https://github.com/miku/zek) a program that will automate all of that
-hard work for us.  Even better, there's an online version at
-[https://xml-to-go.github.io/](https://xml-to-go.github.io/). Just
-paste the SVG from the top of the file into one box and - bam - out pops:
+سنحتاج إذن إلى بنية نفكّ فيها XML. يمكننا قضاء بعض الوقت
+في معرفة الأسماء الصحيحة لكل العقد والسمات، وكيفية
+كتابة البنية الصحيحة، لكن لحسن الحظ كتب أحدهم
+[`zek`](https://github.com/miku/zek)، وهو برنامج يؤتمت كل ذلك
+العمل الشاق عنا. والأفضل من ذلك أن هناك نسخة على الإنترنت على
+[https://xml-to-go.github.io/](https://xml-to-go.github.io/). فقط
+الصق صورة SVG الموجودة في أعلى الملف في أحد المربعين، وفجأة يظهر:
 
 ```go
 type Svg struct {
@@ -1013,9 +1013,9 @@ type Svg struct {
 }
 ```
 
-We could make adjustments to this if we needed to (like changing the name of the
-struct to `SVG`) but it's definitely good enough to start us off. Paste the
-struct into the `clockface_acceptance_test` file and let's write a test with it:
+يمكننا إجراء تعديلات على هذا إن احتجنا (كتغيير اسم
+البنية إلى `SVG`)، لكنه بالتأكيد جيد بما يكفي لنبدأ. الصق
+البنية في الملف `clockface_acceptance_test` ولنكتب اختباراً بها:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -1040,18 +1040,18 @@ func TestSVGWriterAtMidnight(t *testing.T) {
 }
 ```
 
-We write the output of `clockface.SVGWriter` to a `bytes.Buffer`
-and then `Unmarshal` it into an `Svg`. We then look at each `Line` in the `Svg`
-to see if any of them have the expected `X2` and `Y2` values. If we get a match
-we return early (passing the test); if not we fail with a (hopefully)
-informative message.
+نكتب مخرجات `clockface.SVGWriter` إلى `bytes.Buffer`
+ثم نفكّها بـ`Unmarshal` إلى `Svg`. ثم ننظر إلى كل `Line` في `Svg`
+لنرى إن كان لأي منها قيمتا `X2` و`Y2` المتوقعتان. فإن وجدنا تطابقاً
+نعود مبكراً (فينجح الاختبار)، وإلا نفشل برسالة
+(نأمل أن تكون) مفيدة.
 
 
 ```sh
 ./clockface_acceptance_test.go:41:2: undefined: clockface.SVGWriter
 ```
 
-Looks like we'd better create `SVGWriter.go`...
+يبدو أن علينا إنشاء `SVGWriter.go`...
 
 ```go
 package clockface
@@ -1097,7 +1097,7 @@ const bezel = `<circle cx="150" cy="150" r="100" style="fill:#fff;stroke:#000;st
 const svgEnd = `</svg>`
 ```
 
-The most beautiful SVG writer? No. But hopefully it'll do the job...
+أجمل كاتب SVG؟ لا. لكن نأمل أن يؤدي المهمة...
 
 ```
 clockface_acceptance_test.go:56: Expected to find the second hand with x2 of 150 and y2 of 60, in the SVG output <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -1109,30 +1109,30 @@ clockface_acceptance_test.go:56: Expected to find the second hand with x2 of 150
          version="2.0"><circle cx="150" cy="150" r="100" style="fill:#fff;stroke:#000;stroke-width:5px;"/><line x1="150" y1="150" x2="150.000000" y2="60.000000" style="fill:none;stroke:#f00;stroke-width:3px;"/></svg>
 ```
 
-Oooops! The `%f` format directive is printing our coordinates to the default
-level of precision - six decimal places. We should be explicit as to what level
-of precision we're expecting for the coordinates. Let's say three decimal
-places.
+عفواً! موجّه التنسيق `%f` يطبع إحداثياتنا بمستوى الدقة
+الافتراضي، أي ست منازل عشرية. ينبغي أن نكون صريحين بشأن مستوى
+الدقة الذي نتوقعه للإحداثيات. لنقل ثلاث منازل
+عشرية.
 
 ```go
 	fmt.Fprintf(w, `<line x1="150" y1="150" x2="%.3f" y2="%.3f" style="fill:none;stroke:#f00;stroke-width:3px;"/>`, p.X, p.Y)
 ```
 
-And after we update our expectations in the test
+وبعد أن نحدّث توقعاتنا في الاختبار
 
 ```go
 	x2 := "150.000"
 	y2 := "60.000"
 ```
 
-We get:
+نحصل على:
 
 ```
 PASS
 ok  	clockface	0.006s
 ```
 
-We can now shorten our `main` function:
+يمكننا الآن تقصير الدالة `main`:
 
 ```go
 package main
@@ -1150,28 +1150,28 @@ func main() {
 }
 ```
 
-This is what [things should look like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v7b/clockface).
+هذا ما [ينبغي أن تبدو عليه الأمور الآن](https://github.com/quii/learn-go-with-tests/tree/main/math/v7b/clockface).
 
-And we can write a test for another time following the same pattern, but not
-before...
+ويمكننا كتابة اختبار لوقت آخر باتباع النمط نفسه، لكن ليس
+قبل...
 
 <!--
 Here ends 7b
 -->
 
-### Refactor
+### أعد الهيكلة
 
-Three things stick out:
+ثلاثة أشياء تلفت النظر:
 
-1. We're not really testing for all of the information we need to ensure is
-   present - what about the `x1` values, for instance?
-2. Also, those attributes for `x1` etc. aren't really `strings` are they? They're
-   numbers!
-3. Do I really care about the `style` of the hand? Or, for that matter, the
-   empty `Text` node that's been generated by `zak`?
+1. لا نختبر حقاً كل المعلومات التي نحتاج إلى التأكد من
+   وجودها، فماذا عن قيم `x1` مثلاً؟
+2. وكذلك، هل سمات `x1` وغيرها هي حقاً من النوع `strings`؟ إنها
+   أعداد!
+3. هل يهمني حقاً `style` الخاص بالعقرب؟ أو، في هذا الشأن، العقدة
+   `Text` الفارغة التي ولّدها `zak`؟
 
-We can do better. Let's make a few adjustments to the `Svg` struct, and the
-tests, to sharpen everything up.
+يمكننا أن نفعل أفضل. لنُجرِ بعض التعديلات على البنية `Svg`، وعلى
+الاختبارات، لنجعل كل شيء أكثر دقة.
 
 ```go
 type SVG struct {
@@ -1199,15 +1199,15 @@ type Line struct {
 }
 ```
 
-Here I've
+هنا قمت بما يلي
 
-- Made the important parts of the struct named types -- the `Line` and the
-  `Circle`
-- Turned the numeric attributes into `float64`s instead of `string`s.
-- Deleted unused attributes like `Style` and `Text`
-- Renamed `Svg` to `SVG` because _it's the right thing to do_.
+- جعلت الأجزاء المهمة من البنية أنواعاً مسماة، أي `Line`
+  و`Circle`
+- حوّلت السمات العددية إلى قيم `float64` بدلاً من `string`.
+- حذفت السمات غير المستعملة مثل `Style` و`Text`
+- غيّرت اسم `Svg` إلى `SVG` لأن _هذا هو الصواب_.
 
-This will let us assert more precisely on the line we're looking for:
+سيتيح لنا هذا التوكيد بدقة أكبر على الخط الذي نبحث عنه:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -1232,9 +1232,9 @@ func TestSVGWriterAtMidnight(t *testing.T) {
 }
 ```
 
-Finally we can take a leaf out of the unit tests' tables, and we can write
-a helper function `containsLine(line Line, lines []Line) bool` to really make
-these tests shine:
+وأخيراً يمكننا الاستفادة من جداول اختبارات الوحدة، وكتابة
+دالة مساعدة `containsLine(line Line, lines []Line) bool` لنجعل
+هذه الاختبارات تتألق حقاً:
 
 ```go
 func TestSVGWriterSecondHand(t *testing.T) {
@@ -1277,17 +1277,17 @@ func containsLine(l Line, ls []Line) bool {
 }
 ```
 
-Here's what [it looks like](https://github.com/quii/learn-go-with-tests/tree/main/math/v7c/clockface)
+إليك [كيف يبدو](https://github.com/quii/learn-go-with-tests/tree/main/math/v7c/clockface)
 
-Now _that's_ what I call an acceptance test!
+_هذا_ ما أسميه اختبار قبول!
 
 <!--
 Here ends v7c
 -->
 
-### Write the test first
+### اكتب الاختبار أولاً
 
-So that's the second hand done. Now let's get started on the minute hand.
+انتهينا إذن من عقرب الثواني. لنبدأ الآن بعقرب الدقائق.
 
 ```go
 func TestSVGWriterMinuteHand(t *testing.T) {
@@ -1317,16 +1317,16 @@ func TestSVGWriterMinuteHand(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_acceptance_test.go:87: Expected to find the minute hand line {X1:150 Y1:150 X2:150 Y2:70}, in the SVG lines [{X1:150 Y1:150 X2:150 Y2:60}]
 ```
 
-We'd better start building some other clock hands, Much in the same way as we
-produced the tests for the second hand, we can iterate to produce the following
-set of tests. Again we'll comment out our acceptance test while we get this
-working:
+علينا أن نبدأ ببناء عقارب الساعة الأخرى. وبالطريقة نفسها التي
+أنتجنا بها اختبارات عقرب الثواني، يمكننا التقدم خطوة خطوة لإنتاج
+مجموعة الاختبارات التالية. ومرة أخرى سنحوّل اختبار القبول إلى تعليق ريثما نجعل هذا
+يعمل:
 
 ```go
 func TestMinutesInRadians(t *testing.T) {
@@ -1348,13 +1348,13 @@ func TestMinutesInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 ./clockface_test.go:59:11: undefined: minutesInRadians
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func minutesInRadians(t time.Time) float64 {
@@ -1362,12 +1362,12 @@ func minutesInRadians(t time.Time) float64 {
 }
 ```
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-Well, OK - now let's make ourselves do some _real_ work. We could model the
-minute hand as only moving every full minute - so that it 'jumps' from 30 to 31
-minutes past without moving in between. But that would look a bit rubbish. What
-we want it to do is move a _tiny little bit_ every second.
+حسناً، لنجبر أنفسنا الآن على القيام ببعض العمل _الحقيقي_. يمكننا نمذجة
+عقرب الدقائق بحيث لا يتحرك إلا مع كل دقيقة كاملة، فـ"يقفز" من 30 إلى 31
+دقيقة دون أن يتحرك بينهما. لكن هذا سيبدو سيئاً بعض الشيء. ما
+نريده هو أن يتحرك _قليلاً جداً_ مع كل ثانية.
 
 ```go
 func TestMinutesInRadians(t *testing.T) {
@@ -1390,24 +1390,24 @@ func TestMinutesInRadians(t *testing.T) {
 }
 ```
 
-How much is that tiny little bit? Well...
+كم يبلغ هذا القليل جداً؟ حسناً...
 
-- Sixty seconds in a minute
-- thirty minutes in a half turn of the circle (`math.Pi` radians)
-- so `30 * 60` seconds in a half turn.
-- So if the time is 7 seconds past the hour ...
-- ... we're expecting to see the minute hand at `7 * (math.Pi / (30 * 60))`
-  radians past the 12.
+- ستون ثانية في الدقيقة
+- ثلاثون دقيقة في نصف دورة الدائرة (`math.Pi` راديان)
+- إذن `30 * 60` ثانية في نصف الدورة.
+- فإن كان الوقت 7 ثوانٍ بعد الساعة...
+- ... فإننا نتوقع أن نرى عقرب الدقائق عند `7 * (math.Pi / (30 * 60))`
+  راديان بعد الـ12.
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_test.go:62: Wanted 0.012217304763960306 radians, but got 3.141592653589793
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-In the immortal words of Jennifer Aniston: [Here comes the science bit](https://www.youtube.com/watch?v=29Im23SPNok)
+بكلمات جينيفر أنيستون الخالدة: [وهنا يأتي الجزء العلمي](https://www.youtube.com/watch?v=29Im23SPNok)
 
 ```go
 func minutesInRadians(t time.Time) float64 {
@@ -1416,50 +1416,50 @@ func minutesInRadians(t time.Time) float64 {
 }
 ```
 
-Rather than working out how far to push the minute hand around the clockface for
-every second from scratch, here we can just leverage the `secondsInRadians`
-function. For every second the minute hand will move 1/60th of the angle the
-second hand moves.
+بدلاً من حساب مقدار دفع عقرب الدقائق حول وجه الساعة
+مع كل ثانية من الصفر، يمكننا هنا ببساطة الاستفادة من الدالة
+`secondsInRadians`. فمع كل ثانية سيتحرك عقرب الدقائق 1/60 من الزاوية التي
+يتحركها عقرب الثواني.
 
 ```go
 secondsInRadians(t) / 60
 ```
 
-Then we just add on the movement for the minutes - similar to the movement of
-the second hand.
+ثم نضيف فقط حركة الدقائق، على نحو يشبه حركة
+عقرب الثواني.
 
 ```go
 math.Pi / (30 / float64(t.Minute()))
 ```
 
-And...
+و...
 
 ```
 PASS
 ok  	clockface	0.007s
 ```
 
-Nice and easy. This is what things [look like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v8/clockface/clockface_acceptance_test.go)
+سهل ولطيف. هكذا [تبدو الأمور الآن](https://github.com/quii/learn-go-with-tests/tree/main/math/v8/clockface/clockface_acceptance_test.go)
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-Should I add more cases to the `minutesInRadians` test? At the moment there are
-only two. How many cases do I need before I move on to the testing the
-`minuteHandPoint` function?
+هل ينبغي أن أضيف حالات أخرى إلى اختبار `minutesInRadians`؟ ليس فيه حالياً
+إلا حالتان. كم حالة أحتاج إليها قبل أن أنتقل إلى اختبار
+الدالة `minuteHandPoint`؟
 
-One of my favourite TDD quotes, often attributed to Kent Beck,[^3] is
+من اقتباساتي المفضلة عن `TDD`، والمنسوب غالباً إلى كينت بيك،[^3]
 
-> Write tests until fear is transformed into boredom.
+> اكتب الاختبارات حتى يتحول الخوف إلى ملل.
 
-And, frankly, I'm bored of testing that function. I'm confident I know how it
-works. So it's on to the next one.
+وبصراحة، لقد مللت من اختبار تلك الدالة. فأنا واثق من أنني أعرف كيف
+تعمل. لذا لننتقل إلى التالية.
 
 
 <!--
 here ends v8
 -->
 
-### Write the test first
+### اكتب الاختبار أولاً
 
 ```go
 func TestMinuteHandPoint(t *testing.T) {
@@ -1481,13 +1481,13 @@ func TestMinuteHandPoint(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 ./clockface_test.go:79:11: undefined: minuteHandPoint
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1499,7 +1499,7 @@ func minuteHandPoint(t time.Time) Point {
 clockface_test.go:80: Wanted {0 -1} Point, but got {0 0}
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1512,9 +1512,9 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
-And now for some actual work
+والآن إلى بعض العمل الفعلي
 
 ```go
 func TestMinuteHandPoint(t *testing.T) {
@@ -1541,10 +1541,10 @@ func TestMinuteHandPoint(t *testing.T) {
 clockface_test.go:81: Wanted {-1 0} Point, but got {0 -1}
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-A quick copy and paste of the `secondHandPoint` function with some minor changes
-ought to do it...
+نسخ ولصق سريع للدالة `secondHandPoint` مع بعض التغييرات الطفيفة
+ينبغي أن يفي بالغرض...
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1561,11 +1561,11 @@ PASS
 ok  	clockface	0.009s
 ```
 
-### Refactor
+### أعد الهيكلة
 
-We've definitely got a bit of repetition in the `minuteHandPoint` and
-`secondHandPoint` - I know because we just copied and pasted one to make the
-other. Let's DRY it out with a function.
+لدينا بالتأكيد شيء من التكرار في `minuteHandPoint` و
+`secondHandPoint`، وأعرف ذلك لأننا نسخنا إحداهما ولصقناها لصنع
+الأخرى. لنُزِل التكرار بدالة.
 
 ```go
 func angleToPoint(angle float64) Point {
@@ -1576,7 +1576,7 @@ func angleToPoint(angle float64) Point {
 }
 ```
 
-and we can rewrite `minuteHandPoint` and `secondHandPoint` as one liners:
+ويمكننا إعادة كتابة `minuteHandPoint` و`secondHandPoint` في سطر واحد لكل منهما:
 
 ```go
 func minuteHandPoint(t time.Time) Point {
@@ -1595,13 +1595,13 @@ PASS
 ok  	clockface	0.007s
 ```
 
-Now we can uncomment the acceptance test and get to work drawing the minute
-hand.
+يمكننا الآن إلغاء تحويل اختبار القبول إلى تعليق والبدء برسم عقرب
+الدقائق.
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-The `minuteHand` function is a copy-and-paste of `secondHand` with some
-minor adjustments, such as declaring a `minuteHandLength`:
+الدالة `minuteHand` نسخة ملصقة من `secondHand` مع بعض
+التعديلات الطفيفة، مثل التصريح عن `minuteHandLength`:
 
 ```go
 const minuteHandLength = 80
@@ -1617,7 +1617,7 @@ func minuteHand(w io.Writer, t time.Time) {
 }
 ```
 
-And a call to it in our `SVGWriter` function:
+واستدعاء لها في الدالة `SVGWriter`:
 
 ```go
 func SVGWriter(w io.Writer, t time.Time) {
@@ -1629,22 +1629,22 @@ func SVGWriter(w io.Writer, t time.Time) {
 }
 ```
 
-Now we should see that `TestSVGWriterMinuteHand` passes:
+ينبغي أن نرى الآن أن `TestSVGWriterMinuteHand` ينجح:
 
 ```
 PASS
 ok  	clockface	0.006s
 ```
 
-But the proof of the pudding is in the eating - if we now compile and run our
-`clockface` program, we should see something like
+لكن البرهان في التجربة، فإن صرّفنا الآن البرنامج `clockface`
+وشغّلناه، فينبغي أن نرى شيئاً مثل
 
-![a clock with second and minute hands](math/v9/clockface/clockface/clock.svg)
+![ساعة بعقربي الثواني والدقائق](math/v9/clockface/clockface/clock.svg)
 
-### Refactor
+### أعد الهيكلة
 
-Let's remove the duplication from the `secondHand` and `minuteHand` functions,
-putting all of that scale, flip and translate logic all in one place.
+لنُزِل الازدواجية من الدالتين `secondHand` و`minuteHand`،
+ونضع كل منطق التحجيم والقلب والإزاحة في مكان واحد.
 
 ```go
 func secondHand(w io.Writer, t time.Time) {
@@ -1669,15 +1669,15 @@ PASS
 ok  	clockface	0.007s
 ```
 
-This is [where we're up to now](https://github.com/quii/learn-go-with-tests/tree/main/math/v9/clockface).
+هذا [ما وصلنا إليه الآن](https://github.com/quii/learn-go-with-tests/tree/main/math/v9/clockface).
 
-There... now it's just the hour hand to do!
+ها... لم يبقَ إلا عقرب الساعات!
 
 <!--
 v9 ends here
 -->
 
-### Write the test first
+### اكتب الاختبار أولاً
 
 ```go
 func TestSVGWriterHourHand(t *testing.T) {
@@ -1707,16 +1707,16 @@ func TestSVGWriterHourHand(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_acceptance_test.go:113: Expected to find the hour hand line {X1:150 Y1:150 X2:150 Y2:200}, in the SVG lines [{X1:150 Y1:150 X2:150 Y2:60} {X1:150 Y1:150 X2:150 Y2:70}]
 ```
 
-Again, let's comment this one out until we've got the some coverage with the
-lower level tests:
+مرة أخرى، لنحوّل هذا الاختبار إلى تعليق حتى نحصل على بعض التغطية
+بالاختبارات ذات المستوى الأدنى:
 
-### Write the test first
+### اكتب الاختبار أولاً
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1738,13 +1738,13 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 ./clockface_test.go:97:11: undefined: hoursInRadians
 ```
 
-### Write the minimal amount of code for the test to run and check the failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1757,7 +1757,7 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1780,13 +1780,13 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_test.go:100: Wanted 0 radians, but got 3.141592653589793
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1794,7 +1794,7 @@ func hoursInRadians(t time.Time) float64 {
 }
 ```
 
-### Repeat for new requirements
+### كرر مع المتطلبات الجديدة
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1818,13 +1818,13 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_test.go:101: Wanted 4.71238898038469 radians, but got 10.995574287564276
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1832,17 +1832,17 @@ func hoursInRadians(t time.Time) float64 {
 }
 ```
 
-Remember, this is not a 24-hour clock; we have to use the remainder operator to
-get the remainder of the current hour divided by 12.
+تذكّر أن هذه ليست ساعة بنظام 24 ساعة، فعلينا استعمال عامل باقي القسمة
+للحصول على باقي قسمة الساعة الحالية على 12.
 
 ```
 PASS
 ok  	learn-go-with-tests/math/clockface	0.008s
 ```
-### Write the test first
+### اكتب الاختبار أولاً
 
-Now let's try to move the hour hand around the clockface based on the minutes
-and the seconds that have passed.
+لنحاول الآن تحريك عقرب الساعات حول وجه الساعة بحسب الدقائق
+والثواني التي مضت.
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1867,22 +1867,22 @@ func TestHoursInRadians(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_test.go:102: Wanted 0.013089969389957472 radians, but got 0
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Again, a bit of thinking is now required. We need to move the hour hand along
-a little bit for both the minutes and the seconds. Luckily we have an angle
-already to hand for the minutes and the seconds - the one returned by
-`minutesInRadians`. We can reuse it!
+مرة أخرى، نحتاج الآن إلى قليل من التفكير. علينا تحريك عقرب الساعات
+قليلاً مع الدقائق ومع الثواني معاً. ولحسن الحظ لدينا زاوية
+جاهزة للدقائق والثواني، وهي التي تعيدها
+`minutesInRadians`. يمكننا إعادة استعمالها!
 
-So the only question is by what factor to reduce the size of that angle. One
-full turn is one hour for the minute hand, but for the hour hand it's twelve
-hours. So we just divide the angle returned by `minutesInRadians` by twelve:
+السؤال الوحيد إذن هو بأي معامل نقلص حجم تلك الزاوية. فالدورة
+الكاملة تساوي ساعة واحدة لعقرب الدقائق، لكنها لعقرب الساعات اثنتا عشرة
+ساعة. لذا نقسم الزاوية التي تعيدها `minutesInRadians` على اثني عشر فحسب:
 
 ```go
 func hoursInRadians(t time.Time) float64 {
@@ -1891,16 +1891,16 @@ func hoursInRadians(t time.Time) float64 {
 }
 ```
 
-and behold:
+وها هو:
 
 ```
 clockface_test.go:104: Wanted 0.013089969389957472 radians, but got 0.01308996938995747
 ```
 
-Floating point arithmetic strikes again.
+حساب الفاصلة العائمة يضرب مجدداً.
 
-Let's update our test to use `roughlyEqualFloat64` for the comparison of the
-angles.
+لنحدّث اختبارنا ليستعمل `roughlyEqualFloat64` في مقارنة
+الزوايا.
 
 ```go
 func TestHoursInRadians(t *testing.T) {
@@ -1930,22 +1930,22 @@ PASS
 ok  	clockface	0.007s
 ```
 
-### Refactor
+### أعد الهيكلة
 
-If we're going to use `roughlyEqualFloat64` in _one_ of our radians tests, we
-should probably use it for _all_ of them. That's a nice and simple refactor,
-which will leave things [looking like this](https://github.com/quii/learn-go-with-tests/tree/main/math/v10/clockface).
+إن كنا سنستعمل `roughlyEqualFloat64` في _أحد_ اختبارات الراديان، فينبغي
+على الأرجح أن نستعملها فيها _كلها_. وهذه إعادة هيكلة لطيفة وبسيطة،
+ستجعل الأمور [تبدو هكذا](https://github.com/quii/learn-go-with-tests/tree/main/math/v10/clockface).
 
 <!--
 end of v10
 -->
 
-## Hour Hand Point
+## نقطة عقرب الساعات
 
-Right, it's time to calculate where the hour hand point is going to go by
-working out the unit vector.
+حسناً، حان وقت حساب المكان الذي ستذهب إليه نقطة عقرب الساعات، عن طريق
+حساب متجه الوحدة.
 
-### Write the test first
+### اكتب الاختبار أولاً
 
 ```go
 func TestHourHandPoint(t *testing.T) {
@@ -1968,40 +1968,40 @@ func TestHourHandPoint(t *testing.T) {
 }
 ```
 
-Wait, am I going to write _two_ test cases _at once_? Isn't this _bad TDD_?
+مهلاً، هل سأكتب حالتي اختبار _دفعة واحدة_؟ أليس هذا _`TDD` سيئاً_؟
 
-### On TDD Zealotry
+### عن التعصب لـ`TDD`
 
-Test driven development is not a religion. Some people might
-act like it is - usually people who don't do TDD but are happy to moan
-on Twitter or Dev.to that it's only done by zealots and that they're 'being
-pragmatic' when they don't write tests. But it's not a religion. It's a tool.
+التطوير المقاد بالاختبارات (test-driven development) ليس ديناً. قد يتصرف بعض الناس
+وكأنه كذلك، وهم عادةً أناس لا يمارسون `TDD` لكنهم يسعدون بالتذمر
+على تويتر أو Dev.to من أنه لا يمارسه إلا المتعصبون، وأنهم "عمليون"
+حين لا يكتبون الاختبارات. لكنه ليس ديناً، بل أداة.
 
-I _know_ what the two tests are going to be - I've tested two other clock hands
-in exactly the same way - and I already know what my implementation is going to
-be - I wrote a function for the general case of changing an angle into a point
-in the minute hand iteration.
+أنا _أعرف_ ما سيكون عليه الاختباران، فقد اختبرت عقربين آخرين من عقارب الساعة
+بالطريقة نفسها تماماً، وأعرف مسبقاً ما سيكون عليه تنفيذي،
+فقد كتبت دالة للحالة العامة لتحويل زاوية إلى نقطة
+في مرحلة عقرب الدقائق.
 
-I'm not going to plough through TDD ceremony for the sake of it. TDD is a
-technique that helps me understand the code I'm writing - and the code that
-I'm going to write - better. TDD gives me feedback, knowledge and insight.
-But if I've already got that knowledge, then I'm not going to plough
-through the ceremony for no reason. Neither tests nor TDD are an end in themselves.
+لن أخوض في طقوس `TDD` لمجرد الطقوس. فـ`TDD`
+أسلوب يساعدني على فهم الشيفرة التي أكتبها، والشيفرة التي
+سأكتبها، فهماً أفضل. يمنحني `TDD` التغذية الراجعة (feedback) والمعرفة والبصيرة.
+لكن إن كانت لدي تلك المعرفة بالفعل، فلن أخوض
+في الطقوس بلا سبب. فلا الاختبارات ولا `TDD` غاية في حد ذاتها.
 
-My confidence has increased, so I feel I can make larger strides forward. I'm
-going to 'skip' a few steps, because I know where I am, I know where I'm going
-and I've been down this road before.
+لقد زادت ثقتي، لذا أشعر أنني أستطيع التقدم بخطوات أكبر.
+سأتجاوز بعض الخطوات، لأنني أعرف أين أنا، وأعرف إلى أين أذهب،
+وقد سلكت هذا الطريق من قبل.
 
-But also note: I'm not skipping writing the tests entirely - I'm still
-writing them first. They're just appearing in less granular chunks.
+لكن لاحظ أيضاً: لا أتجاوز كتابة الاختبارات بالكامل، فما زلت
+أكتبها أولاً. كل ما في الأمر أنها تظهر في أجزاء أقل تفصيلاً.
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 ./clockface_test.go:119:11: undefined: hourHandPoint
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func hourHandPoint(t time.Time) Point {
@@ -2009,8 +2009,8 @@ func hourHandPoint(t time.Time) Point {
 }
 ```
 
-As I said, I know where I am, and I know where I'm going. Why pretend otherwise?
-The tests will soon tell me if I'm wrong.
+كما قلت، أعرف أين أنا، وأعرف إلى أين أذهب. فلماذا أتظاهر بغير ذلك؟
+ستخبرني الاختبارات قريباً إن كنت مخطئاً.
 
 ```
 PASS
@@ -2020,10 +2020,10 @@ ok  	learn-go-with-tests/math/clockface	0.009s
 Here endeth v11
 -->
 
-## Draw the hour hand
+## ارسم عقرب الساعات
 
-And finally we get to draw in the hour hand. We can bring in that acceptance
-test by uncommenting it:
+وأخيراً نصل إلى رسم عقرب الساعات. يمكننا إعادة اختبار القبول ذاك
+بإلغاء تحويله إلى تعليق:
 
 ```go
 func TestSVGWriterHourHand(t *testing.T) {
@@ -2053,16 +2053,16 @@ func TestSVGWriterHourHand(t *testing.T) {
 }
 ```
 
-### Try to run the test
+### حاول تشغيل الاختبار
 
 ```
 clockface_acceptance_test.go:113: Expected to find the hour hand line {X1:150 Y1:150 X2:150 Y2:200},
     in the SVG lines [{X1:150 Y1:150 X2:150 Y2:60} {X1:150 Y1:150 X2:150 Y2:70}]
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-And we can now make our final adjustments to the SVG writing constants and functions:
+ويمكننا الآن إجراء تعديلاتنا الأخيرة على ثوابت كتابة SVG ودوالها:
 
 ```go
 const (
@@ -2092,21 +2092,21 @@ func hourHand(w io.Writer, t time.Time) {
 
 ```
 
-And so...
+وهكذا...
 
 ```
 ok  	clockface	0.007s
 ```
 
-Let's just check by compiling and running our `clockface` program.
+لنتحقق فقط بتصريف البرنامج `clockface` وتشغيله.
 
-![a clock](math/v12/clockface/clockface/clock.svg)
+![ساعة](math/v12/clockface/clockface/clock.svg)
 
-### Refactor
+### أعد الهيكلة
 
-Looking at `clockface.go`, there are a few 'magic numbers' floating about. They
-are all based around how many hours/minutes/seconds there are in a half-turn
-around a clockface. Let's refactor so that we make explicit their meaning.
+بالنظر إلى `clockface.go`، هناك بعض "الأعداد السحرية" المتناثرة. وكلها
+مبنية على عدد الساعات أو الدقائق أو الثواني في نصف دورة
+حول وجه الساعة. لنعد الهيكلة بحيث نجعل معناها صريحاً.
 
 ```go
 const (
@@ -2119,89 +2119,89 @@ const (
 )
 ```
 
-Why do this? Well, it makes explicit what each number _means_ in the equation.
-If - _when_ - we come back to this code, these names will help us to understand
-what's going on.
+لماذا نفعل هذا؟ لأنه يجعل ما _يعنيه_ كل عدد في المعادلة صريحاً.
+فإن عدنا، أو _حين_ نعود، إلى هذه الشيفرة، فستساعدنا هذه الأسماء على فهم
+ما يجري.
 
-Moreover, should we ever want to make some really, really WEIRD clocks - ones
-with 4 hours for the hour hand, and 20 seconds for the second hand say - these
-constants could easily become parameters. We're helping to leave that door open
-(even if we never go through it).
+وفوق ذلك، إن أردنا يوماً صنع ساعات غريبة جداً جداً، ذات
+4 ساعات لعقرب الساعات و20 ثانية لعقرب الثواني مثلاً، فيمكن
+أن تصبح هذه الثوابت معاملات بسهولة. نحن نساعد على إبقاء ذلك الباب مفتوحاً
+(حتى لو لم نعبر منه أبداً).
 
-## Wrapping up
+## الخلاصة
 
-Do we need to do anything else?
+هل نحتاج إلى فعل أي شيء آخر؟
 
-First, let's pat ourselves on the back - we've written a program that makes an
-SVG clockface. It works and it's great. It will only ever make one sort of
-clockface - but that's fine! Maybe you only _want_ one sort of clockface.
-There's nothing wrong with a program that solves a specific problem and nothing
-else.
+أولاً، لنربّت على أكتافنا، فقد كتبنا برنامجاً يرسم
+وجه ساعة بصيغة SVG. إنه يعمل وهو رائع. لن يرسم إلا نوعاً واحداً من
+وجوه الساعات، لكن لا بأس! فلعلك لا _تريد_ إلا نوعاً واحداً.
+ليس هناك أي خطأ في برنامج يحل مشكلة محددة ولا شيء
+غيرها.
 
-### A Program... and a Library
+### برنامج... ومكتبة
 
-But the code we've written _does_ solve a more general set of problems to do
-with drawing a clockface. Because we used tests to think about each small part
-of the problem in isolation, and because we codified that isolation with
-functions, we've built a very reasonable little API for clockface calculations.
+لكن الشيفرة التي كتبناها _تحل_ فعلاً مجموعة أعم من المشكلات المتعلقة
+برسم وجه الساعة. فلأننا استعملنا الاختبارات للتفكير في كل جزء صغير
+من المشكلة بمعزل عن غيره، ولأننا جسّدنا ذلك العزل في
+دوال، فقد بنينا واجهة برمجية صغيرة معقولة جداً لحسابات وجه الساعة.
 
-We can work on this project and turn it into something more general - a library
-for calculating clockface angles and/or vectors.
+يمكننا العمل على هذا المشروع وتحويله إلى شيء أعم: مكتبة
+لحساب زوايا وجه الساعة و/أو متجهاته.
 
-In fact, providing the library along with the program is _a really good idea_.
-It costs us nothing, while increasing the utility of our program and helping to
-document how it works.
+بل إن تقديم المكتبة مع البرنامج _فكرة جيدة حقاً_.
+فهي لا تكلفنا شيئاً، بينما تزيد فائدة برنامجنا وتساعد على
+توثيق طريقة عمله.
 
-> APIs should come with programs, and vice versa. An API that you must write C
-> code to use, which cannot be invoked easily from the command line, is harder to
-> learn and use. And contrariwise, it's a royal pain to have interfaces whose
-> only open, documented form is a program, so you cannot invoke them easily from
-> a C program.
->			-- Henry Spencer, in _The Art of Unix Programming_
+> ينبغي أن تأتي الواجهات البرمجية مع برامج، والعكس صحيح. فالواجهة البرمجية التي يجب أن تكتب شيفرة C
+> لاستعمالها، ولا يمكن استدعاؤها بسهولة من سطر الأوامر، أصعب في
+> التعلّم والاستعمال. وعلى العكس، من المزعج جداً أن تكون هناك واجهات
+> لا يكون شكلها الوحيد المفتوح والموثّق إلا برنامجاً، فلا تستطيع استدعاءها بسهولة من
+> برنامج C.
+> -- هنري سبنسر، في كتاب _The Art of Unix Programming_
 
-In [my final take on this program](https://github.com/quii/learn-go-with-tests/tree/main/math/vFinal/clockface), I've made the
-unexported functions within `clockface` into a public API for the library, with
-functions to calculate the angle and unit vector for each of the clock hands.
-I've also split the SVG generation part into its own package, `svg`, which is
-then used by the `clockface` program directly. Naturally I've documented each of
-the functions and packages.
+في [نسختي النهائية من هذا البرنامج](https://github.com/quii/learn-go-with-tests/tree/main/math/vFinal/clockface)، حوّلت
+الدوال غير المُصدَّرة داخل `clockface` إلى واجهة برمجية عامة للمكتبة، مع
+دوال لحساب الزاوية ومتجه الوحدة لكل عقرب من عقارب الساعة.
+وفصلت أيضاً جزء توليد SVG إلى حزمة مستقلة هي `svg`، يستعملها
+البرنامج `clockface` مباشرة. وبطبيعة الحال وثّقت كل
+الدوال والحزم.
 
-Talking about SVGs...
+وبالحديث عن صيغة SVG نفسها...
 
-### The Most Valuable Test
+### الاختبار الأكثر قيمة
 
-I'm sure you've noticed that the most sophisticated piece of code for handling
-SVGs isn't in our application code at all; it's in the test code. Should this
-make us feel uncomfortable? Shouldn't we do something like
+لا شك أنك لاحظت أن أكثر أجزاء الشيفرة تطوراً في التعامل مع
+SVG ليس في شيفرة تطبيقنا إطلاقاً، بل في شيفرة الاختبار. فهل ينبغي أن
+يزعجنا هذا؟ ألا ينبغي أن نفعل شيئاً مثل
 
-- use a template from `text/template`?
-- use an XML library (much as we're doing in our test)?
-- use an SVG library?
+- استعمال قالب من `text/template`؟
+- استعمال مكتبة XML (كما نفعل في اختبارنا)؟
+- استعمال مكتبة SVG؟
 
-We could refactor our code to do any of these things, and we can do so because
-it doesn't matter _how_ we produce our SVG, what is important is _what_ we
-produce -  _an SVG_. As such, the part of our system that needs to know
-the most about SVGs - that needs to be the strictest about what constitutes an
-SVG - is the test for the SVG output: it needs to have enough context and
-knowledge about what an SVG is for us to be confident that we're outputting an
-SVG. The _what_ of an SVG lives in our tests; the _how_ in the code.
+يمكننا إعادة هيكلة شيفرتنا لفعل أي من هذه الأشياء، ونستطيع ذلك لأنه
+لا يهم _كيف_ نُنتج صورة SVG، بل المهم _ما_ نُنتجه، أي _صورة SVG_.
+وبذلك فإن الجزء من نظامنا الذي يحتاج إلى معرفة أكبر قدر
+عن SVG، والذي يحتاج إلى أن يكون الأكثر صرامة في تحديد ما يُعدّ
+SVG صالحاً، هو اختبار مخرجات SVG: فهو يحتاج إلى ما يكفي من السياق
+والمعرفة بماهية SVG كي نثق بأننا نُخرج
+SVG. فـ_ماهية_ SVG تعيش في اختباراتنا، و_الكيفية_ في الشيفرة.
 
-We may have felt odd that we were pouring a lot of time and effort into those
-SVG tests - importing an XML library, parsing XML, refactoring the structs - but
-that test code is a valuable part of our codebase - possibly more valuable than
-the current production code. It will help guarantee that the output is always
-a valid SVG, no matter what we choose to use to produce it.
+لعلنا شعرنا بالغرابة لأننا نصبّ كثيراً من الوقت والجهد في اختبارات
+SVG تلك، باستيراد مكتبة XML وتحليل XML وإعادة هيكلة البنى، لكن
+شيفرة الاختبار تلك جزء قيّم من قاعدة شيفرتنا، وربما أكثر قيمة من
+شيفرة الإنتاج الحالية. فهي ستساعد على ضمان أن تكون المخرجات دائماً
+SVG صالحاً، أياً كان ما نختار استعماله لإنتاجها.
 
-Tests are not second class citizens - they are not 'throwaway' code. Good tests
-will last a lot longer than the version of the code they are
-testing. You should never feel like you're spending 'too much time' writing your
-tests. It is an investment.
+الاختبارات ليست مواطنين من الدرجة الثانية، وليست شيفرة "للاستعمال مرة واحدة". فالاختبارات الجيدة
+تدوم أطول بكثير من نسخة الشيفرة التي
+تختبرها. ولا ينبغي أبداً أن تشعر بأنك تقضي "وقتاً أكثر من اللازم" في كتابة
+اختباراتك. إنها استثمار.
 
-[^1]: This is a lot easier than writing a name out by hand as a string and then having to keep it in sync with the actual time. Believe me you don't want to do that...
+[^1]: هذا أسهل بكثير من كتابة الاسم يدوياً كسلسلة نصية ثم الاضطرار إلى إبقائه متوافقاً مع الوقت الفعلي. صدّقني، لا تريد أن تفعل ذلك...
 
-[^2]: In short it makes it easier to do calculus with circles as π just keeps coming up as an angle if you use normal degrees, so if you count your angles in πs it makes all the equations simpler.
+[^2]: باختصار، يسهّل ذلك إجراء حسابات التفاضل والتكامل مع الدوائر، إذ تظهر π باستمرار كزاوية إن استعملت الدرجات العادية، فإن عددت زواياك بمضاعفات π صارت كل المعادلات أبسط.
 
-[^3]: Misattributed because, like all great authors, Kent Beck is more quoted than read. Beck himself attributes it to [Phlip][phlip].
+[^3]: النسبة خاطئة، لأن كينت بيك، ككل المؤلفين العظماء، يُقتبس منه أكثر مما يُقرأ له. وبيك نفسه ينسب العبارة إلى [فيليب][phlip].
 
 [texttemplate]: https://golang.org/pkg/text/template/
 [circle]: https://en.wikipedia.org/wiki/Sine#Unit_circle_definition

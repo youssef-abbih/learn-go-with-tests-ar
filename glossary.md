@@ -257,3 +257,16 @@
 | distributed system | نظام موزع | مقترح |  |
 | literal | حرفي | مقترح | integer literal: عدد صحيح حرفي |
 | property | خاصية | مقترح | في الاختبارات القائمة على الخصائص |
+| feature test | اختبار ميزة | مقترح |  |
+| unit vector | متجه الوحدة | مقترح |  |
+| unit circle | دائرة الوحدة | مقترح |  |
+| radian | راديان | مقترح |  |
+| floating point arithmetic | حساب الفاصلة العائمة | مقترح |  |
+| attribute | سمة | مقترح | سمات XML/SVG |
+| node | عقدة | مقترح | عقدة XML |
+| parse | تحليل | مقترح |  |
+| unmarshal | فكّ | مقترح | فكّ البيانات إلى بنية |
+| format directive | موجّه التنسيق | مقترح |  |
+| library | مكتبة | مقترح |  |
+| remainder operator | عامل باقي القسمة | مقترح |  |
+| template | قالب | مقترح |  |
