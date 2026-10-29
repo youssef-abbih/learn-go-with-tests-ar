@@ -198,3 +198,18 @@
 | iterative development | التطوير التكراري | مقترح |  |
 | mock generator | مولّد بدائل وهمية | مقترح |  |
 | DRY | DRY | مقترح | مبدأ لا تكرر نفسك؛ يبقى بالإنجليزية |
+| blocking | حاجب | مقترح | العملية الحاجبة: blocking operation |
+| process | عملية | مقترح |  |
+| anonymous function | دالة مجهولة | مقترح |  |
+| function literal | دالة حرفية | مقترح |  |
+| lexical scope | النطاق المعجمي | مقترح |  |
+| race condition | تسابق | مقترح | حالة تسابق؛ data race: تسابق البيانات |
+| race detector | كاشف التسابق | مقترح |  |
+| stack trace | تتبّع المكدس | مقترح |  |
+| flag | راية | مقترح | راية سطر الأوامر؛ الراية نفسها تبقى بتنسيق الشيفرة |
+| send statement | تعليمة إرسال | مقترح |  |
+| receive expression | تعبير استقبال | مقترح |  |
+| expression | تعبير | مقترح |  |
+| debug | التنقيح | مقترح |  |
+| premature optimization | التحسين المبكر | مقترح |  |
+| agile | رشيق | مقترح |  |

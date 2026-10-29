@@ -1,9 +1,9 @@
-# Concurrency
+# التزامن
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/concurrency)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/concurrency)**
 
-Here's the setup: a colleague has written a function, `CheckWebsites`, that
-checks the status of a list of URLs.
+إليك الوضع: كتب أحد زملائك دالة (function) باسم `CheckWebsites`
+تتحقق من حالة عناوين URL في قائمة.
 
 ```go
 package concurrency
@@ -21,16 +21,16 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-It returns a map of each URL checked to a boolean value: `true` for a good
-response; `false` for a bad response.
+تعيد الدالة خريطة (map) تربط كل عنوان URL جرى التحقق منه بقيمة منطقية: `true` للاستجابة
+الجيدة، و`false` للاستجابة السيئة.
 
-You also have to pass in a `WebsiteChecker` which takes a single URL and returns
-a boolean. This is used by the function to check all the websites.
+وعليك أيضاً أن تمرر `WebsiteChecker` يأخذ عنوان URL واحداً ويعيد
+قيمة منطقية، وتستعمله الدالة للتحقق من كل المواقع.
 
-Using [dependency injection][DI] has allowed them to test the function without
-making real HTTP calls, making it reliable and fast.
+أتاح [حقن التبعية][DI] لزميلك أن يختبر الدالة دون
+إجراء استدعاءات HTTP حقيقية، مما جعلها موثوقة وسريعة.
 
-Here's the test they've written:
+إليك الاختبار (test) الذي كتبه:
 
 ```go
 package concurrency
@@ -65,14 +65,14 @@ func TestCheckWebsites(t *testing.T) {
 }
 ```
 
-The function is in production and being used to check hundreds of websites. But
-your colleague has started to get complaints that it's slow, so they've asked
-you to help speed it up.
+الدالة قيد الإنتاج وتُستعمل للتحقق من مئات المواقع. لكن
+زميلك بدأ يتلقى شكاوى من أنها بطيئة، فطلب منك
+المساعدة في تسريعها.
 
-## Write a test
+## اكتب اختباراً
 
-Let's use a benchmark to test the speed of `CheckWebsites` so that we can see the
-effect of our changes.
+لنستعمل قياس أداء (benchmark) لاختبار سرعة `CheckWebsites` كي نرى
+أثر تغييراتنا.
 
 ```go
 package concurrency
@@ -99,14 +99,14 @@ func BenchmarkCheckWebsites(b *testing.B) {
 }
 ```
 
-The benchmark tests `CheckWebsites` using a slice of one hundred urls and uses
-a new fake implementation of `WebsiteChecker`. `slowStubWebsiteChecker` is
-deliberately slow. It uses `time.Sleep` to wait exactly twenty milliseconds and
-then it returns true. We use `b.ResetTimer()` in this test to reset the time of our
-test before it actually runs
+يختبر قياس الأداء الدالة `CheckWebsites` باستعمال شريحة (slice) من مئة عنوان URL، ويستعمل
+تنفيذاً مزيفاً جديداً لـ`WebsiteChecker`. والدالة `slowStubWebsiteChecker`
+بطيئة عمداً، إذ تستعمل `time.Sleep` لتنتظر عشرين ميلي ثانية بالضبط
+ثم تعيد `true`. ونستعمل `b.ResetTimer()` في هذا الاختبار لتصفير توقيت
+اختبارنا قبل أن يبدأ فعلياً
 
 
-When we run the benchmark using `go test -bench=.` (or if you're in Windows Powershell `go test -bench="."`):
+حين نشغّل قياس الأداء بالأمر `go test -bench=.` (أو `go test -bench="."` إن كنت تستعمل Windows Powershell):
 
 ```sh
 pkg: github.com/gypsydave5/learn-go-with-tests/concurrency/v0
@@ -115,41 +115,41 @@ PASS
 ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v0        2.268s
 ```
 
-`CheckWebsites` has been benchmarked at 2249228637 nanoseconds - about two and
-a quarter seconds.
+قيس أداء `CheckWebsites` بـ2249228637 نانوثانية، أي نحو ثانيتين
+وربع الثانية.
 
-Let's try and make this faster.
+لنحاول جعلها أسرع.
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Now we can finally talk about concurrency which, for the purposes of the
-following, means "having more than one thing in progress." This is something
-that we do naturally everyday.
+يمكننا الآن أخيراً أن نتحدث عن التزامن (concurrency)، الذي يعني لأغراض ما
+يلي "وجود أكثر من شيء واحد قيد التنفيذ". وهذا أمر
+نفعله بشكل طبيعي كل يوم.
 
-For instance, this morning I made a cup of tea. I put the kettle on and then,
-while I was waiting for it to boil, I got the milk out of the fridge, got the
-tea out of the cupboard, found my favourite mug, put the teabag into the cup and
-then, when the kettle had boiled, I put the water in the cup.
+على سبيل المثال، أعددت هذا الصباح كوباً من الشاي. وضعت الغلاية على النار، ثم
+وبينما كنت أنتظر أن يغلي الماء، أخرجت الحليب من الثلاجة، وأخرجت
+الشاي من الخزانة، ووجدت كوبي المفضل، ووضعت كيس الشاي في الكوب،
+ثم حين غلى الماء، صببته في الكوب.
 
-What I _didn't_ do was put the kettle on and then stand there blankly staring at
-the kettle until it boiled, then do everything else once the kettle had boiled.
+ما _لم_ أفعله هو أن أضع الغلاية على النار ثم أقف أحدّق فيها
+بشرود حتى يغلي الماء، ثم أفعل كل شيء آخر بعد ذلك.
 
-If you can understand why it's faster to make tea the first way, then you can
-understand how we will make `CheckWebsites` faster. Instead of waiting for
-a website to respond before sending a request to the next website, we will tell
-our computer to make the next request while it is waiting.
+إن استطعت أن تفهم لماذا إعداد الشاي بالطريقة الأولى أسرع، فستفهم
+كيف سنجعل `CheckWebsites` أسرع. فبدلاً من انتظار
+استجابة موقع ما قبل إرسال طلب إلى الموقع التالي، سنطلب من
+حاسوبنا أن يرسل الطلب التالي أثناء انتظاره.
 
-Normally in Go when we call a function `doSomething()` we wait for it to return
-(even if it has no value to return, we still wait for it to finish). We say that
-this operation is *blocking* - it makes us wait for it to finish. An operation
-that does not block in Go will run in a separate *process* called a *goroutine*.
-Think of a process as reading down the page of Go code from top to bottom, going
-'inside' each function when it gets called to read what it does. When a separate
-process starts, it's like another reader begins reading inside the function,
-leaving the original reader to carry on going down the page.
+عادةً في غو (Go)، حين نستدعي دالة `doSomething()` فإننا ننتظر حتى تعود
+(حتى لو لم تكن لديها قيمة تعيدها، فإننا ننتظر حتى تنتهي). ونقول إن
+هذه العملية *حاجبة*، أي أنها تجعلنا ننتظر حتى تنتهي. أما العملية
+التي لا تحجب في غو فتعمل في *عملية* (process) منفصلة تسمى *`goroutine`*.
+تخيّل العملية على أنها قراءة صفحة شيفرة (code) غو من الأعلى إلى الأسفل، مع الدخول
+إلى "داخل" كل دالة حين تُستدعى لقراءة ما تفعله. وحين تبدأ
+عملية منفصلة، فكأن قارئاً آخر بدأ القراءة داخل الدالة،
+تاركاً القارئ الأصلي يواصل النزول في الصفحة.
 
-To tell Go to start a new goroutine we turn a function call into a `go`
-statement by putting the keyword `go` in front of it: `go doSomething()`.
+لنطلب من غو بدء `goroutine` جديدة، نحوّل استدعاء الدالة إلى تعليمة `go`
+بوضع الكلمة المحجوزة `go` أمامه: `go doSomething()`.
 
 ```go
 package concurrency
@@ -169,25 +169,25 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-Because the only way to start a goroutine is to put `go` in front of a function
-call, we often use *anonymous functions* when we want to start a goroutine. An
-anonymous function literal looks just the same as a normal function declaration,
-but without a name (unsurprisingly). You can see one above in the body of the
-`for` loop.
+ولأن الطريقة الوحيدة لبدء `goroutine` هي وضع `go` أمام استدعاء
+دالة، فإننا كثيراً ما نستعمل *الدوال المجهولة* حين نريد بدء `goroutine`. وتبدو
+الدالة المجهولة الحرفية تماماً مثل التصريح العادي عن دالة،
+لكن دون اسم (وهذا غير مفاجئ). ويمكنك أن ترى واحدة منها أعلاه في جسم
+حلقة (loop) `for`.
 
-Anonymous functions have a number of features which make them useful, two of
-which we're using above. Firstly, they can be executed at the same time that
-they're declared - this is what the `()` at the end of the anonymous function is
-doing. Secondly they maintain access to the lexical scope in which they are
-defined - all the variables that are available at the point when you declare the
-anonymous function are also available in the body of the function.
+للدوال المجهولة عدد من الميزات التي تجعلها مفيدة، ونستعمل اثنتين
+منها أعلاه. أولاً، يمكن تنفيذها في اللحظة نفسها التي
+يُصرَّح عنها فيها، وهذا ما تفعله `()` في نهاية الدالة المجهولة.
+وثانياً، تحتفظ بالوصول إلى النطاق المعجمي الذي
+عُرّفت فيه، فكل المتغيرات (variables) المتاحة في اللحظة التي تصرّح فيها عن
+الدالة المجهولة متاحة أيضاً في جسمها.
 
-The body of the anonymous function above is just the same as the loop body was
-before. The only difference is that each iteration of the loop will start a new
-goroutine, concurrent with the current process (the `WebsiteChecker` function).
-Each goroutine will add its result to the results map.
+جسم الدالة المجهولة أعلاه هو نفسه جسم الحلقة
+سابقاً. والفرق الوحيد أن كل تكرار (iteration) للحلقة سيبدأ
+`goroutine` جديدة، متزامنة مع العملية الحالية (الدالة `WebsiteChecker`).
+وستضيف كل `goroutine` نتيجتها إلى خريطة النتائج.
 
-But when we run `go test`:
+لكن حين نشغّل `go test`:
 
 ```sh
 --- FAIL: TestCheckWebsites (0.00s)
@@ -198,26 +198,26 @@ FAIL    github.com/gypsydave5/learn-go-with-tests/concurrency/v1        0.010s
 
 ```
 
-### A quick aside into the concurrency universe...
+### استطراد سريع إلى عالم التزامن...
 
-You might not get this result. You might get a panic message that
-we're going to talk about in a bit. Don't worry if you got that, just keep
-running the test until you _do_ get the result above. Or pretend that you did.
-Up to you. Welcome to concurrency: when it's not handled correctly it's hard to
-predict what's going to happen. Don't worry - that's why we're writing tests, to
-help us know when we're handling concurrency predictably.
+قد لا تحصل على هذه النتيجة، بل قد تحصل على رسالة ذعر (panic)
+سنتحدث عنها بعد قليل. لا تقلق إن حصلت عليها، فقط واصل
+تشغيل الاختبار حتى تحصل _فعلاً_ على النتيجة أعلاه، أو تظاهر بأنك حصلت عليها.
+الأمر يعود إليك. مرحباً بك في التزامن: حين لا يُعالَج بشكل صحيح يصعب
+التنبؤ بما سيحدث. لا تقلق، فلهذا نكتب الاختبارات، لتساعدنا
+على معرفة متى نعالج التزامن بطريقة يمكن التنبؤ بها.
 
-### ... and we're back.
+### ... وها قد عدنا.
 
-We are caught by the original test `CheckWebsites`, it's now returning an
-empty map. What went wrong?
+أوقعنا الاختبار الأصلي لـ`CheckWebsites`، فهي تعيد الآن
+خريطة فارغة. ما الخطأ الذي حدث؟
 
-None of the goroutines that our `for` loop started had enough time to add
-their result to the `results` map; the `WebsiteChecker` function is too fast for
-them, and it returns the still empty map.
+لم يكن لدى أي من الـ`goroutines` التي بدأتها حلقة `for` وقت كافٍ لإضافة
+نتيجتها إلى الخريطة `results`؛ فالدالة `WebsiteChecker` أسرع منها،
+وتعيد الخريطة وهي ما زالت فارغة.
 
-To fix this we can just wait while all the goroutines do their work, and then
-return. Two seconds ought to do it, right?
+لإصلاح ذلك يمكننا ببساطة أن ننتظر ريثما تنهي كل الـ`goroutines` عملها، ثم
+نعيد النتيجة. ثانيتان ينبغي أن تكفيا، أليس كذلك؟
 
 ```go
 package concurrency
@@ -241,14 +241,14 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-Now if you're lucky you'll get:
+والآن إن كنت محظوظاً فستحصل على:
 
 ```sh
 PASS
 ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v1        2.012s
 ```
 
-But if you're unlucky (this is more likely if you run them with the benchmark as you'll get more tries)
+لكن إن لم تكن محظوظاً (وهذا أرجح إن شغّلتها مع قياس الأداء، لأنك ستحصل على محاولات أكثر)
 
 ```sh
 fatal error: concurrent map writes
@@ -268,21 +268,21 @@ created by github.com/gypsydave5/learn-go-with-tests/concurrency/v3.WebsiteCheck
         ... many more scary lines of text ...
 ```
 
-This is long and scary, but all we need to do is take a breath and read the
-stacktrace: `fatal error: concurrent map writes`. Sometimes, when we run our
-tests, two of the goroutines write to the results map at exactly the same time.
-Maps in Go don't like it when more than one thing tries to write to them at
-once, and so `fatal error`.
+هذا طويل ومخيف، لكن كل ما علينا فعله هو أن نأخذ نفساً عميقاً ونقرأ
+تتبّع المكدس: `fatal error: concurrent map writes`. فأحياناً حين نشغّل
+اختباراتنا، تكتب اثنتان من الـ`goroutines` إلى خريطة النتائج في اللحظة نفسها تماماً.
+والخرائط في غو لا تحب أن يحاول أكثر من طرف الكتابة إليها في
+آن واحد، فيحدث `fatal error`.
 
-This is a _race condition_, a bug that occurs when the output of our software is
-dependent on the timing and sequence of events that we have no control over.
-Because we cannot control exactly when each goroutine writes to the results map,
-we are vulnerable to two goroutines writing to it at the same time.
+هذا _تسابق_ (race condition)، وهو خطأ برمجي يحدث حين تعتمد مخرجات برنامجنا
+على توقيت الأحداث وتسلسلها، وهو ما لا نتحكم به.
+ولأننا لا نستطيع التحكم بالضبط بلحظة كتابة كل `goroutine` إلى خريطة النتائج،
+فنحن معرّضون لأن تكتب اثنتان منها إليها في الوقت نفسه.
 
-Go can help us to spot race conditions with its built in [_race detector_][godoc_race_detector].
-To enable this feature, run the tests with the `race` flag: `go test -race`.
+تستطيع غو مساعدتنا على اكتشاف حالات التسابق بـ[_كاشف التسابق_][godoc_race_detector] المدمج فيها.
+ولتفعيل هذه الميزة، شغّل الاختبارات مع الراية `race`: `go test -race`.
 
-You should get some output that looks like this:
+ينبغي أن تحصل على مخرجات تبدو هكذا:
 
 ```sh
 ==================
@@ -317,37 +317,37 @@ Goroutine 7 (finished) created at:
 ==================
 ```
 
-The details are, again, hard to read - but `WARNING: DATA RACE` is pretty
-unambiguous. Reading into the body of the error we can see two different
-goroutines performing writes on a map:
+التفاصيل مرة أخرى صعبة القراءة، لكن `WARNING: DATA RACE` واضحة
+تماماً. وبقراءة متن الخطأ نرى اثنتين مختلفتين من
+الـ`goroutines` تكتبان إلى خريطة:
 
 `Write at 0x00c420084d20 by goroutine 8:`
 
-is writing to the same block of memory as
+تكتب إلى كتلة الذاكرة نفسها التي تكتب إليها
 
 `Previous write at 0x00c420084d20 by goroutine 7:`
 
-On top of that, we can see the line of code where the write is happening:
+وفوق ذلك، نرى سطر الشيفرة الذي تحدث فيه الكتابة:
 
 `/Users/gypsydave5/go/src/github.com/gypsydave5/learn-go-with-tests/concurrency/v3/websiteChecker.go:12`
 
-and the line of code where goroutines 7 an 8 are started:
+وسطر الشيفرة الذي تبدأ فيه الـ`goroutines` رقم 7 و8:
 
 `/Users/gypsydave5/go/src/github.com/gypsydave5/learn-go-with-tests/concurrency/v3/websiteChecker.go:11`
 
-Everything you need to know is printed to your terminal - all you have to do is
-be patient enough to read it.
+كل ما تحتاج إلى معرفته مطبوع في الطرفية، وكل ما عليك هو
+أن تتحلى بالصبر الكافي لقراءته.
 
-### Channels
+### القنوات
 
-We can solve this data race by coordinating our goroutines using _channels_.
-Channels are a Go data structure that can both receive and send values. These
-operations, along with their details, allow communication between different
-processes.
+يمكننا حل تسابق البيانات هذا بتنسيق الـ`goroutines` باستعمال _القنوات_ (channels).
+والقنوات هيكل بيانات في غو يمكنه استقبال القيم وإرسالها. وهذه
+العمليات، مع تفاصيلها، تتيح التواصل بين العمليات
+المختلفة.
 
-In this case we want to think about the communication between the parent process
-and each of the goroutines that it makes to do the work of running the
-`WebsiteChecker` function with the url.
+نريد في هذه الحالة أن نفكر في التواصل بين العملية الأم
+وكل `goroutine` تنشئها لتنفيذ عمل تشغيل الدالة
+`WebsiteChecker` على عنوان URL الخاص بها.
 
 ```go
 package concurrency
@@ -377,49 +377,49 @@ func CheckWebsites(wc WebsiteChecker, urls []string) map[string]bool {
 }
 ```
 
-Alongside the `results` map we now have a `resultChannel`, which we `make` in
-the same way. `chan result` is the type of the channel - a channel of `result`.
-The new type, `result` has been made to associate the return value of the
-`WebsiteChecker` with the url being checked - it's a struct of `string` and
-`bool`. As we don't need either value to be named, each of them is anonymous
-within the struct; this can be useful in when it's hard to know what to name
-a value.
+إلى جانب الخريطة `results` لدينا الآن `resultChannel`، ننشئها بـ`make` بالطريقة
+نفسها. و`chan result` هو نوع القناة، أي قناة من القيم `result`.
+وقد أنشئ النوع الجديد `result` لربط القيمة المعادة من
+`WebsiteChecker` بعنوان URL الذي يجري التحقق منه، فهو بنية (struct) من `string` و
+`bool`. وبما أننا لا نحتاج إلى تسمية أي من القيمتين، فكل منهما مجهولة
+داخل البنية؛ وقد يكون هذا مفيداً حين يصعب معرفة الاسم المناسب
+لقيمة ما.
 
-Now when we iterate over the urls, instead of writing to the `map` directly
-we're sending a `result` struct for each call to `wc` to the `resultChannel`
-with a _send statement_. This uses the `<-` operator, taking a channel on the
-left and a value on the right:
+والآن حين نمر على عناوين URL، فبدلاً من الكتابة إلى `map` مباشرة،
+نرسل بنية `result` لكل استدعاء لـ`wc` إلى `resultChannel`
+بـ_تعليمة إرسال_. وهي تستعمل العامل `<-`، مع القناة على
+اليسار والقيمة على اليمين:
 
 ```go
 // Send statement
 resultChannel <- result{u, wc(u)}
 ```
 
-The next `for` loop iterates once for each of the urls. Inside we're using
-a _receive expression_, which assigns a value received from a channel to
-a variable. This also uses the `<-` operator, but with the two operands now
-reversed: the channel is now on the right and the variable that
-we're assigning to is on the left:
+تمر حلقة `for` التالية مرة واحدة على كل عنوان URL. ونستعمل داخلها
+_تعبير استقبال_، يسند قيمة مستقبَلة من قناة إلى
+متغير. وهو يستعمل أيضاً العامل `<-`، لكن مع عكس الطرفين:
+القناة الآن على اليمين، والمتغير الذي
+نسند إليه على اليسار:
 
 ```go
 // Receive expression
 r := <-resultChannel
 ```
 
-We then use the `result` received to update the map.
+ثم نستعمل النتيجة `result` المستقبَلة لتحديث الخريطة.
 
-By sending the results into a channel, we can control the timing of each write
-into the results map, ensuring that it happens one at a time. Although each of
-the calls of `wc`, and each send to the result channel, is happening concurrently
-inside its own process, each of the results is being dealt with one at a time as
-we take values out of the result channel with the receive expression.
+بإرسال النتائج إلى قناة، نستطيع التحكم بتوقيت كل كتابة
+إلى خريطة النتائج، فنضمن أنها تحدث واحدة تلو الأخرى. ومع أن كل
+استدعاء لـ`wc`، وكل إرسال إلى قناة النتائج، يحدث بشكل متزامن
+داخل عمليته الخاصة، فإن كل نتيجة تُعالَج واحدة تلو الأخرى
+ونحن نأخذ القيم من قناة النتائج بتعبير الاستقبال.
 
-We have used concurrency for the part of the code that we wanted to make faster, while
-making sure that the part that cannot happen simultaneously still happens linearly.
-And we have communicated across the multiple processes involved by using
-channels.
+استعملنا التزامن للجزء من الشيفرة الذي أردنا تسريعه، مع
+الحرص على أن يظل الجزء الذي لا يمكن أن يحدث في آن واحد يحدث بشكل خطي.
+وتواصلنا بين العمليات المتعددة المعنية باستعمال
+القنوات.
 
-When we run the benchmark:
+حين نشغّل قياس الأداء:
 
 ```sh
 pkg: github.com/gypsydave5/learn-go-with-tests/concurrency/v2
@@ -427,44 +427,44 @@ BenchmarkCheckWebsites-8             100          23406615 ns/op
 PASS
 ok      github.com/gypsydave5/learn-go-with-tests/concurrency/v2        2.377s
 ```
-23406615 nanoseconds - 0.023 seconds, about one hundred times as fast as
-original function. A great success.
+23406615 نانوثانية، أي 0.023 ثانية، وهذا أسرع بنحو مئة مرة من
+الدالة الأصلية. نجاح باهر.
 
-## Wrapping up
+## الخلاصة
 
-This exercise has been a little lighter on the TDD than usual. In a way we've
-been taking part in one long refactoring of the `CheckWebsites` function; the
-inputs and outputs never changed, it just got faster. But the tests we had in
-place, as well as the benchmark we wrote, allowed us to refactor `CheckWebsites`
-in a way that maintained confidence that the software was still working, while
-demonstrating that it had actually become faster.
+كان نصيب `TDD` في هذا التمرين أقل قليلاً من المعتاد. فقد كنا بمعنى ما
+نشارك في عملية إعادة هيكلة (refactoring) طويلة واحدة للدالة `CheckWebsites`؛ فالمدخلات
+والمخرجات لم تتغير قط، بل صارت أسرع فقط. لكن الاختبارات التي كانت
+لدينا، إضافة إلى قياس الأداء الذي كتبناه، أتاحت لنا إعادة هيكلة `CheckWebsites`
+بطريقة حافظت على الثقة بأن البرنامج ما زال يعمل، مع
+إثبات أنه صار أسرع فعلاً.
 
-In making it faster we learned about
+وتعلّمنا أثناء تسريعها عن
 
-- *goroutines*, the basic unit of concurrency in Go, which let us manage more
-  than one website check request.
-- *anonymous functions*, which we used to start each of the concurrent processes
-  that check websites.
-- *channels*, to help organize and control the communication between the
-  different processes, allowing us to avoid a *race condition* bug.
-- *the race detector* which helped us debug problems with concurrent code
+- الـ*`goroutines`*، وهي الوحدة الأساسية للتزامن في غو، وتتيح لنا إدارة أكثر
+  من طلب للتحقق من المواقع.
+- *الدوال المجهولة*، التي استعملناها لبدء كل عملية من العمليات المتزامنة
+  التي تتحقق من المواقع.
+- *القنوات*، للمساعدة على تنظيم التواصل بين العمليات
+  المختلفة والتحكم به، مما أتاح لنا تجنب خطأ *التسابق*.
+- *كاشف التسابق* الذي ساعدنا على تنقيح المشكلات في الشيفرة المتزامنة
 
-### Make it fast
+### اجعلها سريعة
 
-One formulation of an agile way of building software, often misattributed to Kent
-Beck, is:
+إحدى صيغ الطريقة الرشيقة في بناء البرمجيات، والتي كثيراً ما تُنسب خطأً إلى كينت
+بيك، هي:
 
-> [Make it work, make it right, make it fast][wrf]
+> [اجعلها تعمل، اجعلها صحيحة، اجعلها سريعة][wrf]
 
-Where 'work' is making the tests pass, 'right' is refactoring the code, and
-'fast' is optimizing the code to make it, for example, run quickly. We can only
-'make it fast' once we've made it work and made it right. We were lucky that the
-code we were given was already demonstrated to be working, and didn't need to be
-refactored. We should never try to 'make it fast' before the other two steps
-have been performed because
+حيث "تعمل" تعني جعل الاختبارات تنجح، و"صحيحة" تعني إعادة هيكلة الشيفرة، و
+"سريعة" تعني تحسين الشيفرة لجعلها، مثلاً، تعمل بسرعة. ولا يمكننا
+"جعلها سريعة" إلا بعد أن نجعلها تعمل ونجعلها صحيحة. وقد كنا محظوظين بأن
+الشيفرة التي أُعطيت لنا كانت مثبتة العمل أصلاً، ولم تحتج إلى
+إعادة هيكلة. ولا ينبغي أبداً أن نحاول "جعلها سريعة" قبل تنفيذ
+الخطوتين الأخريين، لأن
 
-> [Premature optimization is the root of all evil][popt]
-> -- Donald Knuth
+> [التحسين المبكر أصل كل الشرور][popt]
+> -- دونالد كنوث
 
 [DI]: dependency-injection.md
 [wrf]: http://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast
