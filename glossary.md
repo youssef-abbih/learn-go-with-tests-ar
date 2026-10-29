@@ -317,3 +317,17 @@
 | identity element | العنصر المحايد | مقترح |  |
 | accumulator | دالة مراكِمة | مقترح | accumulating function |
 | cognitive load | العبء الذهني | مقترح |  |
+| graceful shutdown | الإيقاف اللطيف | مقترح |  |
+| pod | حاوية مجمّعة | مقترح | مصطلح Kubernetes |
+| deploy | نشر | مقترح | deployment: النشر |
+| signal | إشارة | مقترح | إشارة نظام التشغيل مثل `SIGTERM` |
+| black-box test | اختبار الصندوق الأسود | مقترح |  |
+| functional test | اختبار وظيفي | مقترح |  |
+| regression | تراجع | مقترح |  |
+| lead time | مهلة التسليم | مقترح |  |
+| test pyramid | هرم الاختبارات | مقترح |  |
+| decorator | مزخرِف | مقترح | نمط المزخرِف: decorator pattern |
+| container | حاوية | مقترح |  |
+| root cause | السبب الجذري | مقترح |  |
+| listener | مستمع | مقترح |  |
+| headless browser | متصفح بلا واجهة | مقترح |  |

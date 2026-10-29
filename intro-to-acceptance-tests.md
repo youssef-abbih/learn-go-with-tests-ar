@@ -1,136 +1,54 @@
-# Introduction to acceptance testing
+# مدخل إلى اختبارات القبول
 
-At `$WORK`, we've been running into the need to have "graceful shutdown" for our services. Graceful shutdown makes sure your system finishes its work properly before it is terminated. A real-world analogy would be someone trying to wrap up a phone call properly before moving on to the next meeting, rather than just hanging up mid-sentence.
+في `$WORK`، صرنا نواجه الحاجة إلى "إيقاف لطيف" لخدماتنا. فالإيقاف اللطيف يضمن أن ينهي نظامك عمله كما ينبغي قبل أن يُنهى. والتشبيه من العالم الحقيقي هو شخص يحاول إنهاء مكالمة هاتفية بشكل لائق قبل الانتقال إلى اجتماعه التالي، بدلاً من أن يغلق الخط في منتصف الجملة.
 
-This chapter will give an intro to graceful shutdown in the context of an HTTP server, and how to write "acceptance tests" to give yourself confidence in the behaviour of your code.
+سيقدّم هذا الفصل مدخلاً إلى الإيقاف اللطيف في سياق خادم HTTP، وإلى كيفية كتابة "اختبارات القبول" (acceptance tests) لتمنح نفسك الثقة في سلوك شيفرتك (code).
 
-After reading this you'll know how to share packages with excellent tests, reduce maintenance efforts, and increase confidence in the quality of your work.
+وبعد قراءته ستعرف كيف تشارك حزماً (packages) ذات اختبارات ممتازة، وتقلل جهود الصيانة، وتزيد الثقة في جودة عملك.
 
-## Just enough info about Kubernetes
+## ما يكفي من المعلومات عن Kubernetes
 
-We run our software on [Kubernetes](https://kubernetes.io/) (K8s). K8s will terminate "pods" (in practice, our software) for various reasons, and a common one is when we push new code that we want to deploy.
+نشغّل برمجياتنا على [Kubernetes](https://kubernetes.io/) (K8s). وسيُنهي K8s "الحاويات المجمّعة" (pods)، أي برمجياتنا عملياً، لأسباب مختلفة، ومن أشيعها حين ندفع شيفرة جديدة نريد نشرها.
 
-We are setting ourselves high standards regarding [DORA metrics](https://cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance), so we work in a way where we deploy small, incremental improvements and features to production multiple times per day.
+نضع لأنفسنا معايير عالية فيما يخص [مقاييس DORA](https://cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance)، لذا نعمل بطريقة ننشر فيها تحسينات وميزات صغيرة تدريجية إلى بيئة الإنتاج عدة مرات في اليوم.
 
-When k8s wishes to terminate a pod, it initiates a ["termination lifecycle"](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace), and a part of that is sending a SIGTERM signal to our software. This is k8s telling our code:
+حين يريد k8s إنهاء حاوية مجمّعة، فإنه يبدأ ["دورة حياة الإنهاء"](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace)، ومن أجزائها إرسال إشارة `SIGTERM` إلى برنامجنا. وهذا هو k8s يقول لشيفرتنا:
 
-> You need to shut yourself down, finish whatever work you're doing because after a certain "grace period", I will send `SIGKILL`, and it's lights out for you.
+> عليك أن توقف نفسك، وتنهي أي عمل تقوم به، لأنني بعد "مهلة سماح" معيّنة سأرسل `SIGKILL`، وعندها تنطفئ الأنوار بالنسبة إليك.
 
-On `SIGKILL` any work your program might've been doing will be immediately stopped.
+عند `SIGKILL` يتوقف فوراً أي عمل قد يكون برنامجك يقوم به.
 
-## If you do not have grace
+## إن لم يكن لديك لطف
 
-Depending on the nature of your software, if you ignore `SIGTERM`, you can run into problems.
+بحسب طبيعة برنامجك، إن تجاهلت `SIGTERM` فقد تواجه مشكلات.
 
-Our specific problem was with in-flight HTTP requests. When an automated test was exercising our API, if k8s decided to stop the pod, the server would die, the test would not get a response from the server, and the test will fail.
+كانت مشكلتنا تحديداً مع طلبات HTTP قيد التنفيذ. فحين كان اختبار (test) آلي يختبر واجهتنا البرمجية، إن قرر k8s إيقاف الحاوية المجمّعة، فسيموت الخادم، ولن يحصل الاختبار على استجابة من الخادم، فيفشل الاختبار.
 
-This would trigger an alert in our incidents channel which requires a dev to stop what they're doing and address the problem. These intermittent failures are an annoying distraction for our team.
+وهذا كان يُطلق تنبيهاً في قناة الحوادث لدينا، مما يتطلب من أحد المطورين أن يوقف ما يفعله ويعالج المشكلة. وحالات الفشل المتقطعة هذه مصدر إلهاء مزعج لفريقنا.
 
-These problems are not unique to our tests. If a user sends a request to your system and the process gets terminated mid-flight, they'll likely be greeted with a 5xx HTTP error, not the kind of user experience you want to deliver.
+وهذه المشكلات ليست مقتصرة على اختباراتنا. فإن أرسل مستخدم طلباً إلى نظامك وأُنهيت العملية في منتصف الطريق، فالأرجح أن يستقبله خطأ HTTP من الفئة 5xx، وهذه ليست تجربة المستخدم التي تريد تقديمها.
 
-## When you have grace
+## حين يكون لديك لطف
 
-What we want to do is listen for `SIGTERM`, and rather than instantly killing the server, we want to:
+ما نريد فعله هو الاستماع إلى `SIGTERM`، وبدلاً من قتل الخادم فوراً، نريد:
 
-- Stop listening to any more requests
-- Allow any in-flight requests to finish
-- *Then* terminate the process
+- التوقف عن الاستماع إلى أي طلبات أخرى
+- السماح لأي طلبات قيد التنفيذ بأن تنتهي
+- *ثم* إنهاء العملية
 
-## How to have grace
+## كيف يكون لديك لطف
 
-Thankfully, Go already has a mechanism for gracefully shutting down a server with [net/http/Server.Shutdown](https://pkg.go.dev/net/http#Server.Shutdown).
+لحسن الحظ، لدى غو (Go) بالفعل آلية لإيقاف الخادم بلطف هي [net/http/Server.Shutdown](https://pkg.go.dev/net/http#Server.Shutdown).
 
-> Shutdown gracefully shuts down the server without interrupting any active connections. Shutdown works by first closing all open listeners, then closing all idle connections, and then waiting indefinitely for connections to return to idle and then shut down. If the provided context expires before the shutdown is complete, Shutdown returns the context's error, otherwise it returns any error returned from closing the Server's underlying Listener(s).
+> تُوقف `Shutdown` الخادم بلطف دون مقاطعة أي اتصالات نشطة. وتعمل `Shutdown` بإغلاق كل المستمعين المفتوحين أولاً، ثم إغلاق كل الاتصالات الخاملة، ثم الانتظار إلى أجل غير مسمى حتى تعود الاتصالات إلى الخمول، ثم الإيقاف. وإن انتهت صلاحية السياق المقدّم قبل اكتمال الإيقاف، تعيد `Shutdown` خطأ السياق، وإلا فإنها تعيد أي خطأ ناتج عن إغلاق المستمع أو المستمعين الأساسيين للخادم.
 
-To handle `SIGTERM` we can use [os/signal.Notify](https://pkg.go.dev/os/signal#Notify), which will send any incoming signals to a channel we provide.
+لمعالجة `SIGTERM` يمكننا استعمال [os/signal.Notify](https://pkg.go.dev/os/signal#Notify)، التي ترسل أي إشارات واردة إلى قناة نقدّمها.
 
-By using these two features from the standard library, you can listen for `SIGTERM` and shutdown gracefully.
+وباستعمال هاتين الميزتين من المكتبة القياسية، يمكنك الاستماع إلى `SIGTERM` والإيقاف بلطف.
 
-## Graceful shutdown package
+## حزمة الإيقاف اللطيف
 
-To that end, I wrote [https://pkg.go.dev/github.com/quii/go-graceful-shutdown](https://pkg.go.dev/github.com/quii/go-graceful-shutdown). It provides a decorator function for a `*http.Server` to call its `Shutdown` method when a `SIGTERM` signal is detected
-
-```go
-func main() {
-	var (
-		ctx        = context.Background()
-		httpServer = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
-		server     = gracefulshutdown.NewServer(httpServer)
-	)
-
-	if err := server.ListenAndServe(ctx); err != nil {
-		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
-		log.Fatalf("uh oh, didn't shutdown gracefully, some responses may have been lost %v", err)
-	}
-
-	// hopefully, you'll always see this instead
-	log.Println("shutdown gracefully! all responses were sent")
-}
-```
-
-The specifics around the code are not too important for this read, but it is worth having a quick look over the code before carrying on.
-
-## Tests and feedback loops
-
-When we wrote the `gracefulshutdown` package, we had unit tests to prove it behaves correctly which gave us the confidence to aggressively refactor. However, we still didn't feel "confident" that it **really** worked.
-
-We added a `cmd` package and made a real program to use the package we were writing. We'd manually fire it up, fire off an HTTP request to it, and then send a `SIGTERM` to see what would happen.
-
-**The engineer in you should be feeling uncomfortable with manual testing**.
-It's boring, it doesn't scale, it's inaccurate, and it's wasteful. If you're writing a package you intend to share, but also want to keep it simple and cheap to change, manual testing is not going to cut it.
-
-## Acceptance tests
-
-If you’ve read the rest of this book, you will have mostly written "unit tests". Unit tests are a fantastic tool for enabling fearless refactoring, driving good modular design, preventing regressions, and facilitating fast feedback.
-
-By their nature, they only test small parts of your system. Usually, unit
-tests alone are *not enough* for an effective testing strategy. Remember, we want our systems to **always be shippable**. We can't rely on manual testing, so we need another kind of testing: **acceptance tests**.
-
-### What are they?
-
-Acceptance tests are a kind of "black-box test". They are sometimes referred
-to as "functional tests". They should exercise the system as a user of the system would.
-
-The term "black-box" refers to the idea that the test code has no access to the internals of the system, it can only use its public interface and make assertions on the behaviours it observes. This means they can only test the system as a whole.
-
-This is an advantageous trait because it means the tests exercise the system the same as a user would, it can't use any special workarounds that could make a test pass, but not actually prove what you need to prove. This is similar to the principle of preferring your unit test files to live inside a separate test package, for example, `package mypkg_test` rather than `package mypkg`.
-
-### Benefits of acceptance tests
-
-- When they pass, you know your entire system behaves how you want it to.
-- They are more accurate, quicker, and require less effort than manual testing.
-- When written well, they act as accurate, verified documentation of your
-  system. It doesn't fall into the trap of documentation that diverges from the real behaviour of the system.
-- No mocking! It's all real.
-
-### Potential drawbacks vs unit tests
-
-- They are expensive to write.
-- They take longer to run.
-- They are dependent on the design of the system.
-- When they fail, they typically don't give you a root cause, and can be
-  difficult to debug.
-- They don't give you feedback on the internal quality of your system. You
-  could write total garbage and still make an acceptance test pass.
-- Not all scenarios are practical to exercise due to the black-box nature.
-
-For this reason, it is foolish to only rely on acceptance tests. They do not have many of the qualities unit tests have, and a system with a large number of acceptance tests will tend to suffer in terms of maintenance costs and poor lead time.
-
-#### Lead time?
-
-Lead time refers to how long it takes from a commit being merged into your
-main branch to it being deployed in production. This number can vary from weeks and even months for some teams to a matter of minutes. Again, at `$WORK`, we value DORA's findings and want to keep our lead time to under 10 minutes.
-
-A balanced testing approach is required for a reliable system with excellent
-lead time, and this is usually described in terms of the [Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html).
-
-## How to write basic acceptance tests
-
-How does this relate to the original problem? We've just written a package here, and it is entirely unit-testable.
-
-As I mentioned, the unit tests weren't quite giving us the confidence we needed. We want to be *really* sure the package works when integrated with a real, running program. We should be able to automate the manual checks we were making.
-
-Let's take a look at the test program:
+لهذا الغرض، كتبت [https://pkg.go.dev/github.com/quii/go-graceful-shutdown](https://pkg.go.dev/github.com/quii/go-graceful-shutdown). وهي توفر دالة (function) مزخرِفة لـ`*http.Server` تستدعي طريقته (method) `Shutdown` حين تُكتشف إشارة `SIGTERM`
 
 ```go
 func main() {
@@ -150,21 +68,103 @@ func main() {
 }
 ```
 
-You may have guessed that `SlowHandler` has a `time.Sleep` to delay responding, so I had time to `SIGTERM` and see what happens. The rest is fairly boilerplate:
+تفاصيل الشيفرة ليست مهمة جداً لهذه القراءة، لكن يستحق الأمر إلقاء نظرة سريعة عليها قبل المتابعة.
 
-- Make a `net/http/Server`;
-- Wrap it in the library (see: [Decorator pattern](https://en.wikipedia.org/wiki/Decorator_pattern));
-- Use the wrapped version to `ListenAndServe`.
+## الاختبارات وحلقات التغذية الراجعة
 
-### High-level steps for the acceptance test
+حين كتبنا الحزمة `gracefulshutdown`، كانت لدينا اختبارات وحدة (unit tests) تثبت أنها تتصرف بشكل صحيح، مما منحنا الثقة لإعادة الهيكلة بجرأة. لكننا ما زلنا لم نشعر بـ"الثقة" في أنها تعمل **حقاً**.
 
-- Build the program
-- Run it (and wait for it listen on `8080`)
-- Send an HTTP request to the server
-- Before the server has a chance to send an HTTP response, send `SIGTERM`
-- See if we still get a response
+أضفنا الحزمة `cmd` وصنعنا برنامجاً حقيقياً يستعمل الحزمة التي كنا نكتبها. وكنا نشغّله يدوياً، ونرسل إليه طلب HTTP، ثم نرسل `SIGTERM` لنرى ما سيحدث.
 
-### Building and running the program
+**ينبغي أن يشعر المهندس الذي بداخلك بعدم الارتياح تجاه الاختبار اليدوي**.
+فهو ممل، ولا يتوسع، وغير دقيق، ومهدر للجهد. وإن كنت تكتب حزمة تنوي مشاركتها، وتريد أيضاً أن تبقيها بسيطة ورخيصة التغيير، فالاختبار اليدوي لن يفي بالغرض.
+
+## اختبارات القبول
+
+إن كنت قد قرأت بقية هذا الكتاب، فستكون قد كتبت في الغالب "اختبارات وحدة". واختبارات الوحدة أداة رائعة لتمكين إعادة الهيكلة دون خوف، ودفع التصميم المعياري الجيد، ومنع التراجعات، وتسهيل التغذية الراجعة (feedback) السريعة.
+
+لكنها بطبيعتها لا تختبر إلا أجزاء صغيرة من نظامك. وعادةً لا تكون اختبارات
+الوحدة وحدها *كافية* لاستراتيجية اختبار فعالة. تذكّر أننا نريد لأنظمتنا أن تكون **قابلة للإطلاق دائماً**. ولا يمكننا الاعتماد على الاختبار اليدوي، لذا نحتاج إلى نوع آخر من الاختبار: **اختبارات القبول**.
+
+### ما هي؟
+
+اختبارات القبول نوع من "اختبارات الصندوق الأسود". وتسمى أحياناً
+"اختبارات وظيفية". وينبغي أن تختبر النظام كما يستعمله مستخدم النظام.
+
+يشير مصطلح "الصندوق الأسود" إلى فكرة أن شيفرة الاختبار لا تصل إلى دواخل النظام، بل لا تستطيع إلا استعمال واجهته العامة وإجراء توكيدات (assertions) على السلوك الذي تلاحظه. وهذا يعني أنها لا تستطيع اختبار النظام إلا ككل.
+
+وهذه صفة مفيدة، لأنها تعني أن الاختبارات تختبر النظام كما يفعل المستخدم، فلا تستطيع استعمال أي حلول التفافية خاصة قد تجعل الاختبار ينجح دون أن تثبت فعلاً ما تحتاج إلى إثباته. وهذا يشبه مبدأ تفضيل أن تعيش ملفات اختبارات الوحدة في حزمة اختبار منفصلة، مثل `package mypkg_test` بدلاً من `package mypkg`.
+
+### فوائد اختبارات القبول
+
+- حين تنجح، تعرف أن نظامك كله يتصرف كما تريد.
+- هي أدق وأسرع وتتطلب جهداً أقل من الاختبار اليدوي.
+- حين تُكتب جيداً، تكون توثيقاً دقيقاً ومتحققاً منه
+  لنظامك، فلا تقع في فخ التوثيق الذي يبتعد عن السلوك الحقيقي للنظام.
+- لا محاكاة! كل شيء حقيقي.
+
+### عيوب محتملة مقارنة باختبارات الوحدة
+
+- كتابتها مكلفة.
+- تستغرق وقتاً أطول لتعمل.
+- تعتمد على تصميم النظام.
+- حين تفشل، لا تعطيك عادةً السبب الجذري، وقد يكون
+  تنقيحها صعباً.
+- لا تعطيك تغذية راجعة عن الجودة الداخلية لنظامك. فقد
+  تكتب شيفرة رديئة تماماً وتجعل اختبار القبول ينجح مع ذلك.
+- ليس عملياً اختبار كل السيناريوهات بسبب طبيعة الصندوق الأسود.
+
+لهذا السبب، من الحماقة الاعتماد على اختبارات القبول وحدها. فليست لديها كثير من صفات اختبارات الوحدة، والنظام الذي فيه عدد كبير من اختبارات القبول يميل إلى المعاناة من تكاليف الصيانة ومن مهلة تسليم سيئة.
+
+#### مهلة التسليم؟
+
+تشير مهلة التسليم إلى المدة التي يستغرقها الإيداع (commit) من دمجه في
+الفرع الرئيسي إلى نشره في بيئة الإنتاج. ويمكن أن يتراوح هذا الرقم من أسابيع بل أشهر لدى بعض الفرق إلى دقائق معدودة. ومرة أخرى، في `$WORK` نقدّر نتائج DORA ونريد إبقاء مهلة التسليم لدينا أقل من 10 دقائق.
+
+نحتاج إلى أسلوب اختبار متوازن لنظام موثوق بمهلة
+تسليم ممتازة، وعادةً ما يوصف هذا بمفهوم [هرم الاختبارات](https://martinfowler.com/articles/practical-test-pyramid.html).
+
+## كيف تكتب اختبارات قبول أساسية
+
+ما علاقة هذا بالمشكلة الأصلية؟ لقد كتبنا للتو حزمة هنا، ويمكن اختبارها بالكامل باختبارات الوحدة.
+
+وكما ذكرت، لم تكن اختبارات الوحدة تمنحنا تماماً الثقة التي نحتاج إليها. فنحن نريد أن نتأكد *حقاً* من أن الحزمة تعمل حين تُدمج مع برنامج حقيقي قيد التشغيل. وينبغي أن نستطيع أتمتة الفحوص اليدوية التي كنا نجريها.
+
+لنلقِ نظرة على برنامج الاختبار:
+
+```go
+func main() {
+	var (
+		ctx        = context.Background()
+		httpServer = &http.Server{Addr: ":8080", Handler: http.HandlerFunc(acceptancetests.SlowHandler)}
+		server     = gracefulshutdown.NewServer(httpServer)
+	)
+
+	if err := server.ListenAndServe(ctx); err != nil {
+		// this will typically happen if our responses aren't written before the ctx deadline, not much can be done
+		log.Fatalf("uh oh, didn't shutdown gracefully, some responses may have been lost %v", err)
+	}
+
+	// hopefully, you'll always see this instead
+	log.Println("shutdown gracefully! all responses were sent")
+}
+```
+
+لعلك خمّنت أن في `SlowHandler` استدعاء لـ`time.Sleep` لتأخير الاستجابة، كي يكون لدي وقت لإرسال `SIGTERM` ورؤية ما يحدث. والبقية شيفرة متكررة معتادة إلى حد بعيد:
+
+- أنشئ `net/http/Server`؛
+- غلّفه بالمكتبة (انظر: [نمط المزخرِف](https://en.wikipedia.org/wiki/Decorator_pattern))؛
+- استعمل النسخة المغلَّفة لتنفيذ `ListenAndServe`.
+
+### الخطوات عالية المستوى لاختبار القبول
+
+- ابنِ البرنامج
+- شغّله (وانتظر حتى يستمع على `8080`)
+- أرسل طلب HTTP إلى الخادم
+- قبل أن تسنح للخادم فرصة إرسال استجابة HTTP، أرسل `SIGTERM`
+- تحقق مما إذا كنا ما زلنا نحصل على استجابة
+
+### بناء البرنامج وتشغيله
 
 ```go
 package acceptancetests
@@ -268,22 +268,22 @@ func randomString(n int) string {
 }
 ```
 
-`LaunchTestProgram` is responsible for:
-- building the program
-- launching the program
-- waiting for it to listen on port `8080`
-- providing a `cleanup` function to kill the program and delete it to ensure that when our tests finish, we're left in a clean state
-- providing an `interrupt` function to send the program a `SIGTERM` to let us test the behaviour
+الدالة `LaunchTestProgram` مسؤولة عن:
+- بناء البرنامج
+- تشغيل البرنامج
+- انتظاره حتى يستمع على المنفذ `8080`
+- توفير دالة `cleanup` لقتل البرنامج وحذفه، لضمان أن نبقى في حالة نظيفة حين تنتهي اختباراتنا
+- توفير دالة `interrupt` لإرسال `SIGTERM` إلى البرنامج كي نختبر السلوك
 
-Admittedly, this is not the nicest code in the world, but just focus on the exported function `LaunchTestProgram`, the un-exported functions it calls are uninteresting boilerplate.
+صحيح أن هذه ليست أجمل شيفرة في العالم، لكن ركّز فقط على الدالة المُصدَّرة `LaunchTestProgram`، فالدوال غير المُصدَّرة التي تستدعيها شيفرة متكررة غير مثيرة للاهتمام.
 
-As discussed, acceptance testing tends to be trickier to set up. This code does make the *testing* code substantially simpler to read, and often with acceptance tests once you've written the ceremonious code, it's done, and you can forget about it.
+كما ناقشنا، يميل إعداد اختبارات القبول إلى أن يكون أصعب. لكن هذه الشيفرة تجعل شيفرة *الاختبار* أسهل قراءة بكثير، وكثيراً ما يحدث مع اختبارات القبول أنك بمجرد أن تكتب الشيفرة الطقوسية تنتهي منها، وتستطيع نسيانها.
 
-### The acceptance test(s)
+### اختبار (أو اختبارات) القبول
 
-We wanted to have two acceptance tests for two programs, one with graceful shutdown and one without, so we, and the readers can see the difference in behaviour. With `LaunchTestProgram` to build and run the programs, it's quite simple to write acceptance tests for both, and we benefit from re-use with some helper functions.
+أردنا أن يكون لدينا اختبارا قبول لبرنامجين، أحدهما بإيقاف لطيف والآخر دونه، كي نرى نحن والقراء الفرق في السلوك. ومع `LaunchTestProgram` لبناء البرامج وتشغيلها، تصبح كتابة اختبارات القبول لكليهما بسيطة جداً، ونستفيد من إعادة الاستعمال ببعض الدوال المساعدة.
 
-Here is the test for the server *with* a graceful shutdown, [you can find the test without on GitHub](https://github.com/quii/go-graceful-shutdown/blob/main/acceptancetests/withoutgracefulshutdown/main_test.go)
+إليك اختبار الخادم *ذي* الإيقاف اللطيف، [ويمكنك إيجاد الاختبار الآخر على GitHub](https://github.com/quii/go-graceful-shutdown/blob/main/acceptancetests/withoutgracefulshutdown/main_test.go)
 
 ```go
 package main
@@ -323,9 +323,9 @@ func TestGracefulShutdown(t *testing.T) {
 }
 ```
 
-With the setup encapsulated away, the tests are comprehensive, describe the behaviour, and are relatively easy to follow.
+مع تغليف الإعداد بعيداً، تكون الاختبارات شاملة، وتصف السلوك، وسهلة المتابعة نسبياً.
 
-`assert.CanGet/CantGet` are helper functions I made to DRY up this common assertion for this suite.
+الدالتان `assert.CanGet/CantGet` دالتان مساعدتان صنعتهما لإزالة تكرار هذا التوكيد الشائع في هذه المجموعة.
 
 ```go
 func CanGet(t testing.TB, url string) {
@@ -350,15 +350,15 @@ func CanGet(t testing.TB, url string) {
 }
 ```
 
-This will fire off a `GET` to `URL` on a goroutine, and if it responds without error before 3 seconds, then it will not fail. `CantGet` is omitted for brevity, [but you can view it on GitHub here](https://github.com/quii/go-graceful-shutdown/blob/main/assert/assert.go#L61).
+سترسل هذه طلب `GET` إلى `URL` داخل `goroutine`، فإن استجاب دون خطأ قبل مرور 3 ثوانٍ فلن تفشل. وقد حذفت `CantGet` اختصاراً، [لكن يمكنك عرضها على GitHub هنا](https://github.com/quii/go-graceful-shutdown/blob/main/assert/assert.go#L61).
 
-It's important to note again, Go has all the tools you need to write acceptance tests out of the box. You don't *need* a special framework to build acceptance tests.
+من المهم أن نلاحظ مرة أخرى أن لدى غو كل الأدوات التي تحتاج إليها لكتابة اختبارات القبول جاهزة. فلا *تحتاج* إلى إطار عمل خاص لبناء اختبارات القبول.
 
-### Small investment with a big pay-off
+### استثمار صغير بعائد كبير
 
-With these tests, readers can look at the example programs and be confident that the example *actually* works, so they can be confident in the package's claims.
+بهذه الاختبارات، يستطيع القراء النظر إلى البرامج النموذجية والثقة بأن المثال يعمل *فعلاً*، فيثقون بما تدّعيه الحزمة.
 
-Importantly, as the author, we get **fast feedback** and **massive confidence** that the package works in a real-world setting.
+والأهم أننا بصفتنا المؤلفين نحصل على **تغذية راجعة سريعة** و**ثقة هائلة** بأن الحزمة تعمل في بيئة حقيقية.
 
 ```shell
 go test -count=1 ./...
@@ -369,32 +369,32 @@ ok  	github.com/quii/go-graceful-shutdown/acceptancetests/withoutgracefulshutdow
 ?   	github.com/quii/go-graceful-shutdown/assert	[no test files]
 ```
 
-## Wrapping up
+## الخلاصة
 
-In this blog post, we introduced acceptance tests into your testing tool belt. They are invaluable when you start to build real systems and are an important complement to your unit tests.
+قدّمنا في هذه التدوينة اختبارات القبول إلى حزام أدوات الاختبار لديك. وهي لا تُقدَّر بثمن حين تبدأ ببناء أنظمة حقيقية، وهي مكمّل مهم لاختبارات الوحدة.
 
-The nature of *how* to write acceptance tests depends on the system you're building, but the principles stay the same. Treat your system like a "black box". If you're making a website, your tests should act like a user, so you'll want to use a headless web browser like [Selenium](https://www.selenium.dev/), to click on links, fill in forms, etc. For a RESTful API, you'll send HTTP requests using a client.
+تعتمد طبيعة *كيفية* كتابة اختبارات القبول على النظام الذي تبنيه، لكن المبادئ تبقى نفسها. عامل نظامك كـ"صندوق أسود". فإن كنت تصنع موقع ويب، فينبغي أن تتصرف اختباراتك كمستخدم، لذا ستريد استعمال متصفح ويب بلا واجهة مثل [Selenium](https://www.selenium.dev/)، للنقر على الروابط وملء النماذج وما إلى ذلك. ولواجهة برمجية من نوع REST سترسل طلبات HTTP باستعمال عميل.
 
-### Taking it further for more complicated systems
+### المضي أبعد مع الأنظمة الأكثر تعقيداً
 
-Non-trivial systems don't tend to be single-process applications like the one we've discussed. Typically, you'll depend on other systems such as a database. For these scenarios, you'll need to automate a local environment to test with. Tools like [docker-compose](https://docs.docker.com/compose/) are useful for spinning up containers of the environment you need to run your system locally.
+الأنظمة غير البسيطة لا تميل إلى أن تكون تطبيقات أحادية العملية كالتي ناقشناها. فعادةً ستعتمد على أنظمة أخرى مثل قاعدة بيانات. وفي هذه السيناريوهات، ستحتاج إلى أتمتة بيئة محلية تختبر عليها. وأدوات مثل [docker-compose](https://docs.docker.com/compose/) مفيدة لتشغيل حاويات البيئة التي تحتاج إليها لتشغيل نظامك محلياً.
 
-### The next chapter
+### الفصل التالي
 
-In this post the acceptance test was written retrospectively. However, in [Growing Object-Oriented Software](http://www.growing-object-oriented-software.com) the authors show that we can use acceptance tests in a test-driven approach to act as a "north-star" to guide our efforts.
+كُتب اختبار القبول في هذه التدوينة بأثر رجعي. لكن في كتاب [Growing Object-Oriented Software](http://www.growing-object-oriented-software.com) يبيّن المؤلفان أننا نستطيع استعمال اختبارات القبول في أسلوب مقاد بالاختبارات لتعمل كـ"نجم الشمال" الذي يوجه جهودنا.
 
-As systems get more complex, the costs of writing and maintaining acceptance tests can quickly spiral out of control. There are countless stories of development teams being hamstrung by expensive acceptance test suites.
+ومع ازدياد تعقيد الأنظمة، قد تخرج تكاليف كتابة اختبارات القبول وصيانتها عن السيطرة بسرعة. وهناك قصص لا تحصى عن فرق تطوير كبّلتها مجموعات اختبارات قبول مكلفة.
 
-The next chapter will introduce using acceptance test to guide our design
-along with principles and techniques for managing the costs of acceptance tests.
+سيقدّم الفصل التالي استعمال اختبارات القبول لتوجيه تصميمنا،
+إلى جانب مبادئ وأساليب لإدارة تكاليف اختبارات القبول.
 
-### Improving the quality of open-source
+### تحسين جودة البرمجيات مفتوحة المصدر
 
-If you're writing packages you intend to share, I'd encourage you to create
-simple example programs demonstrating what your package does and invest time in having simple-to-follow acceptance tests to give yourself, and potential users of your work, confidence.
+إن كنت تكتب حزماً تنوي مشاركتها، فأشجعك على إنشاء
+برامج نموذجية بسيطة تبيّن ما تفعله حزمتك، وعلى استثمار الوقت في كتابة اختبارات قبول سهلة المتابعة لتمنح نفسك، والمستخدمين المحتملين لعملك، الثقة.
 
-Like [Testable Examples](https://go.dev/blog/examples), seeing this little extra effort in developer experience goes a long way toward building trust in your work, and will reduce your own maintenance costs.
+وكما في [الأمثلة القابلة للاختبار](https://go.dev/blog/examples)، فإن رؤية هذا الجهد الإضافي الصغير في تجربة المطورين تقطع شوطاً طويلاً نحو بناء الثقة في عملك، وستقلل تكاليف الصيانة عليك.
 
-## Recruitment plug for `$WORK`
+## إعلان توظيف في `$WORK`
 
-If you fancy working in an environment with other engineers solving interesting problems, live near or around London or Porto, and enjoy the contents of this chapter and book -  please [reach out to me on Twitter](https://twitter.com/quii), and maybe we can work together soon!
+إن كنت ترغب في العمل في بيئة مع مهندسين آخرين يحلون مشكلات مثيرة للاهتمام، وتعيش في لندن أو بورتو أو بالقرب منهما، وأعجبك محتوى هذا الفصل والكتاب، [فتواصل معي على تويتر](https://twitter.com/quii)، ولعلنا نعمل معاً قريباً!
