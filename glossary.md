@@ -390,3 +390,9 @@
 | scheduler | مجدوِل | مقترح |  |
 | prompt | طلب إدخال | مقترح |  |
 | delegate | تفويض | مقترح |  |
+| WebSocket | WebSocket | مقترح | يبقى بالإنجليزية؛ الاتصال عبر WebSockets |
+| full-duplex | ثنائي الاتجاه بالكامل | مقترح |  |
+| handshake | المصافحة | مقترح |  |
+| upgrade (connection) | ترقية الاتصال | مقترح |  |
+| symlink | رابط رمزي | مقترح |  |
+| polling | الاستعلام المتكرر | مقترح |  |
