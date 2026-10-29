@@ -1,12 +1,12 @@
-# Structs, methods & interfaces
+# البنى والطرق والواجهات
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/structs)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/structs)**
 
-Suppose that we need some geometry code to calculate the perimeter of a rectangle given a height and width. We can write a `Perimeter(width float64, height float64)` function, where `float64` is for floating-point numbers like `123.45`.
+لنفترض أننا نحتاج إلى شيفرة (code) هندسية تحسب محيط مستطيل بمعلومية ارتفاعه وعرضه. يمكننا كتابة الدالة (function) `Perimeter(width float64, height float64)`، حيث `float64` نوع للأعداد العشرية مثل `123.45`.
 
-The TDD cycle should be pretty familiar to you by now.
+ينبغي أن تكون دورة `TDD` مألوفة لك الآن.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -19,13 +19,13 @@ func TestPerimeter(t *testing.T) {
 }
 ```
 
-Notice the new format string? The `f` is for our `float64` and the `.2` means print 2 decimal places.
+هل لاحظت سلسلة التنسيق الجديدة؟ الحرف `f` من أجل `float64`، و`.2` تعني طباعة منزلتين عشريتين.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./shapes_test.go:6:9: undefined: Perimeter`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -33,9 +33,9 @@ func Perimeter(width float64, height float64) float64 {
 }
 ```
 
-Results in `shapes_test.go:10: got 0.00 want 40.00`.
+والنتيجة هي `shapes_test.go:10: got 0.00 want 40.00`.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -43,11 +43,11 @@ func Perimeter(width float64, height float64) float64 {
 }
 ```
 
-So far, so easy. Now let's create a function called `Area(width, height float64)` which returns the area of a rectangle.
+الأمر سهل حتى الآن. لننشئ الآن دالة باسم `Area(width, height float64)` تعيد مساحة المستطيل.
 
-Try to do it yourself, following the TDD cycle.
+حاول أن تكتبها بنفسك متبعاً دورة `TDD`.
 
-You should end up with tests like this
+ينبغي أن تنتهي إلى اختبارات (tests) كهذه
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -69,7 +69,7 @@ func TestArea(t *testing.T) {
 }
 ```
 
-And code like this
+وشيفرة كهذه
 
 ```go
 func Perimeter(width float64, height float64) float64 {
@@ -81,15 +81,15 @@ func Area(width float64, height float64) float64 {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-Our code does the job, but it doesn't contain anything explicit about rectangles. An unwary developer might try to supply the width and height of a triangle to these functions without realising they will return the wrong answer.
+تؤدي شيفرتنا المهمة، لكنها لا تتضمن أي شيء صريح عن المستطيلات. فقد يحاول مطور غافل أن يمرر عرض مثلث وارتفاعه إلى هذه الدوال دون أن يدرك أنها ستعيد إجابة خاطئة.
 
-We could just give the functions more specific names like `RectangleArea`. A neater solution is to define our own _type_ called `Rectangle` which encapsulates this concept for us.
+يمكننا ببساطة أن نعطي الدوال أسماء أكثر تحديداً مثل `RectangleArea`. لكن الحل الأنظف هو أن نعرّف _نوعاً_ (type) خاصاً بنا باسم `Rectangle` يغلّف هذا المفهوم.
 
-We can create a simple type using a **struct**. [A struct](https://golang.org/ref/spec#Struct_types) is just a named collection of fields where you can store data.
+يمكننا إنشاء نوع بسيط باستعمال **بنية** (struct). و[البنية](https://golang.org/ref/spec#Struct_types) ليست إلا مجموعة مسماة من الحقول يمكنك تخزين البيانات فيها.
 
-Declare a struct like this
+صرّح عن بنية هكذا
 
 ```go
 type Rectangle struct {
@@ -98,7 +98,7 @@ type Rectangle struct {
 }
 ```
 
-Now let's refactor the tests to use `Rectangle` instead of plain `float64`s.
+لنعد الآن هيكلة الاختبارات لتستعمل `Rectangle` بدلاً من قيم `float64` المجردة.
 
 ```go
 func TestPerimeter(t *testing.T) {
@@ -122,7 +122,7 @@ func TestArea(t *testing.T) {
 }
 ```
 
-Remember to run your tests before attempting to fix. The tests should show a helpful error like
+تذكّر أن تشغّل اختباراتك قبل محاولة الإصلاح. ينبغي أن تُظهر الاختبارات خطأً مفيداً مثل
 
 ```text
 ./shapes_test.go:7:18: not enough arguments in call to Perimeter
@@ -130,9 +130,9 @@ Remember to run your tests before attempting to fix. The tests should show a hel
     want (float64, float64)
 ```
 
-You can access the fields of a struct with the syntax of `myStruct.field`.
+يمكنك الوصول إلى حقول البنية بالصياغة `myStruct.field`.
 
-Change the two functions to fix the test.
+غيّر الدالتين لإصلاح الاختبار.
 
 ```go
 func Perimeter(rectangle Rectangle) float64 {
@@ -144,11 +144,11 @@ func Area(rectangle Rectangle) float64 {
 }
 ```
 
-I hope you'll agree that passing a `Rectangle` to a function conveys our intent more clearly, but there are more benefits of using structs that we will cover later.
+أرجو أن توافقني على أن تمرير `Rectangle` إلى دالة يعبّر عن قصدنا بوضوح أكبر، لكن لاستعمال البنى فوائد أخرى سنتناولها لاحقاً.
 
-Our next requirement is to write an `Area` function for circles.
+متطلبنا التالي هو كتابة دالة `Area` للدوائر.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestArea(t *testing.T) {
@@ -176,17 +176,17 @@ func TestArea(t *testing.T) {
 }
 ```
 
-As you can see, the `f` has been replaced by `g`, with good reason.
-Use of `g` will print a more precise decimal number in the error message \([fmt options](https://golang.org/pkg/fmt/)\).
-For example, using a radius of 1.5 in a circle area calculation, `f` would show `7.068583` whereas `g` would show `7.0685834705770345`.
+كما ترى، استُبدل الحرف `f` بالحرف `g`، ولذلك سبب وجيه.
+فاستعمال `g` يطبع عدداً عشرياً أدق في رسالة الخطأ ([خيارات الحزمة fmt](https://golang.org/pkg/fmt/)).
+فمثلاً، عند حساب مساحة دائرة نصف قطرها 1.5، يعرض `f` القيمة `7.068583` بينما يعرض `g` القيمة `7.0685834705770345`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./shapes_test.go:28:13: undefined: Circle`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We need to define our `Circle` type.
+علينا تعريف النوع `Circle`.
 
 ```go
 type Circle struct {
@@ -194,36 +194,36 @@ type Circle struct {
 }
 ```
 
-Now try to run the tests again
+حاول الآن تشغيل الاختبارات مجدداً
 
 `./shapes_test.go:29:14: cannot use circle (type Circle) as type Rectangle in argument to Area`
 
-Some programming languages allow you to do something like this:
+تسمح لك بعض لغات البرمجة بفعل شيء كهذا:
 
 ```go
 func Area(circle Circle) float64       {}
 func Area(rectangle Rectangle) float64 {}
 ```
 
-But you cannot in Go
+لكن لا يمكنك ذلك في غو (Go)
 
 `./shapes.go:20:32: Area redeclared in this block`
 
-We have two choices:
+أمامنا خياران:
 
-* You can have functions with the same name declared in different _packages_. So we could create our `Area(Circle)` in a new package, but that feels overkill here.
-* We can define [_methods_](https://golang.org/ref/spec#Method_declarations) on our newly defined types instead.
+* يمكن أن تكون لديك دوال بالاسم نفسه مصرّح عنها في _حزم_ (packages) مختلفة. لذا يمكننا إنشاء `Area(Circle)` في حزمة جديدة، لكن هذا يبدو مبالغة هنا.
+* يمكننا بدلاً من ذلك تعريف [_طرق_](https://golang.org/ref/spec#Method_declarations) على أنواعنا المعرّفة حديثاً.
 
-### What are methods?
+### ما الطرق؟
 
-So far we have only been writing _functions_ but we have been using some methods. When we call `t.Errorf` we are calling the method `Errorf` on the instance of our `t` \(`testing.T`\).
+كنا حتى الآن نكتب _دوال_ فقط، لكننا كنا نستعمل بعض الطرق (methods). فحين نستدعي `t.Errorf` فإننا نستدعي الطريقة `Errorf` على نسخة `t` (من النوع `testing.T`).
 
-A method is a function with a receiver.
-A method declaration binds an identifier, the method name, to a method, and associates the method with the receiver's base type.
+الطريقة دالة لها مستقبِل.
+ويربط التصريح عن الطريقة معرّفاً، هو اسم الطريقة، بطريقة، ويقرن الطريقة بالنوع الأساسي للمستقبِل.
 
-Methods are very similar to functions but they are called by invoking them on an instance of a particular type. Where you can just call functions wherever you like, such as `Area(rectangle)` you can only call methods on "things".
+تشبه الطرق الدوال كثيراً، لكنها تُستدعى على نسخة من نوع معيّن. فبينما يمكنك استدعاء الدوال أينما شئت، مثل `Area(rectangle)`، لا يمكنك استدعاء الطرق إلا على "أشياء".
 
-An example will help so let's change our tests first to call methods instead and then fix the code.
+سيساعدنا مثال على الفهم، فلنغيّر اختباراتنا أولاً لتستدعي طرقاً بدلاً من ذلك، ثم نصلح الشيفرة.
 
 ```go
 func TestArea(t *testing.T) {
@@ -251,7 +251,7 @@ func TestArea(t *testing.T) {
 }
 ```
 
-If we try to run the tests, we get
+إن حاولنا تشغيل الاختبارات، نحصل على
 
 ```text
 ./shapes_test.go:19:19: rectangle.Area undefined (type Rectangle has no field or method Area)
@@ -260,11 +260,11 @@ If we try to run the tests, we get
 
 > type Circle has no field or method Area
 
-I would like to reiterate how great the compiler is here. It is so important to take the time to slowly read the error messages you get, it will help you in the long run.
+أود أن أكرر كم هو رائع المصرِّف (compiler) هنا. من المهم جداً أن تأخذ وقتك في قراءة رسائل الخطأ التي تظهر لك بتمهل، فهذا سيفيدك على المدى الطويل.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Let's add some methods to our types
+لنُضِف بعض الطرق إلى أنواعنا
 
 ```go
 type Rectangle struct {
@@ -285,21 +285,21 @@ func (c Circle) Area() float64 {
 }
 ```
 
-The syntax for declaring methods is almost the same as functions and that's because they're so similar. The only difference is the syntax of the method receiver `func (receiverName ReceiverType) MethodName(args)`.
+صياغة التصريح عن الطرق تكاد تكون مثل صياغة الدوال، وذلك لأنهما متشابهتان جداً. والفرق الوحيد هو صياغة مستقبِل الطريقة `func (receiverName ReceiverType) MethodName(args)`.
 
-When your method is called on a variable of that type, you get your reference to its data via the `receiverName` variable. In many other programming languages this is done implicitly and you access the receiver via `this`.
+حين تُستدعى طريقتك على متغير (variable) من ذلك النوع، تحصل على مرجع إلى بياناته عبر المتغير `receiverName`. وفي كثير من لغات البرمجة الأخرى يحدث هذا ضمنياً، وتصل إلى المستقبِل عبر `this`.
 
-It is a convention in Go to have the receiver variable be the first letter of the type.
+من الأعراف في غو أن يكون اسم متغير المستقبِل هو الحرف الأول من اسم النوع.
 
 ```
 r Rectangle
 ```
 
-If you try to re-run the tests they should now compile and give you some failing output.
+إن حاولت إعادة تشغيل الاختبارات، فينبغي أن تُصرَّف الآن وتعطيك مخرجات فاشلة.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Now let's make our rectangle tests pass by fixing our new method
+لنجعل الآن اختبارات المستطيل تنجح بإصلاح طريقتنا الجديدة
 
 ```go
 func (r Rectangle) Area() float64 {
@@ -307,9 +307,9 @@ func (r Rectangle) Area() float64 {
 }
 ```
 
-If you re-run the tests the rectangle tests should be passing but circle should still be failing.
+إن أعدت تشغيل الاختبارات، فينبغي أن تنجح اختبارات المستطيل، بينما يظل اختبار الدائرة فاشلاً.
 
-To make circle's `Area` function pass we will borrow the `Pi` constant from the `math` package \(remember to import it\).
+لجعل الدالة `Area` الخاصة بالدائرة تنجح، سنستعير الثابت (constant) `Pi` من الحزمة `math` (تذكّر أن تستوردها).
 
 ```go
 func (c Circle) Area() float64 {
@@ -317,19 +317,19 @@ func (c Circle) Area() float64 {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-There is some duplication in our tests.
+في اختباراتنا شيء من الازدواجية.
 
-All we want to do is take a collection of _shapes_, call the `Area()` method on them and then check the result.
+كل ما نريده هو أن نأخذ مجموعة من _الأشكال_، ونستدعي عليها الطريقة `Area()`، ثم نتحقق من النتيجة.
 
-We want to be able to write some kind of `checkArea` function that we can pass both `Rectangle`s and `Circle`s to, but fail to compile if we try to pass in something that isn't a shape.
+نريد أن نستطيع كتابة دالة من نوع ما باسم `checkArea` نمرر إليها قيماً من `Rectangle` و`Circle` معاً، لكنها تفشل في التصريف إن حاولنا تمرير شيء ليس شكلاً.
 
-With Go, we can codify this intent with **interfaces**.
+في غو، يمكننا التعبير عن هذا القصد بـ**الواجهات** (interfaces).
 
-[Interfaces](https://golang.org/ref/spec#Interface_types) are a very powerful concept in statically typed languages like Go because they allow you to make functions that can be used with different types and create highly-decoupled code whilst still maintaining type-safety.
+[الواجهات](https://golang.org/ref/spec#Interface_types) مفهوم قوي جداً في اللغات ثابتة الأنواع مثل غو، لأنها تتيح لك إنشاء دوال يمكن استعمالها مع أنواع مختلفة، وكتابة شيفرة منفصلة الأجزاء إلى حد كبير مع الحفاظ على أمان الأنواع.
 
-Let's introduce this by refactoring our tests.
+لنقدّم هذا بإعادة هيكلة اختباراتنا.
 
 ```go
 func TestArea(t *testing.T) {
@@ -355,9 +355,9 @@ func TestArea(t *testing.T) {
 }
 ```
 
-We are creating a helper function like we have in other exercises but this time we are asking for a `Shape` to be passed in. If we try to call this with something that isn't a shape, then it will not compile.
+ننشئ دالة مساعدة كما فعلنا في تمارين أخرى، لكننا نطلب هذه المرة تمرير قيمة من النوع `Shape`. فإن حاولنا استدعاءها بشيء ليس شكلاً، فلن يتم التصريف.
 
-How does something become a shape? We just tell Go what a `Shape` is using an interface declaration
+كيف يصبح شيء ما شكلاً؟ نخبر غو ببساطة ما هو `Shape` بالتصريح عن واجهة
 
 ```go
 type Shape interface {
@@ -365,34 +365,34 @@ type Shape interface {
 }
 ```
 
-We're creating a new `type` just like we did with `Rectangle` and `Circle` but this time it is an `interface` rather than a `struct`.
+ننشئ نوعاً جديداً بالكلمة `type` تماماً كما فعلنا مع `Rectangle` و`Circle`، لكنه هذه المرة `interface` لا `struct`.
 
-Once you add this to the code, the tests will pass.
+بمجرد أن تضيف هذا إلى الشيفرة، ستنجح الاختبارات.
 
-### Wait, what?
+### مهلاً، ماذا؟
 
-This is quite different to interfaces in most other programming languages. Normally you have to write code to say `My type Foo implements interface Bar`.
+هذا مختلف تماماً عن الواجهات في معظم لغات البرمجة الأخرى. فعادةً عليك أن تكتب شيفرة تقول `My type Foo implements interface Bar`.
 
-But in our case
+لكن في حالتنا
 
-* `Rectangle` has a method called `Area` that returns a `float64` so it satisfies the `Shape` interface
-* `Circle` has a method called `Area` that returns a `float64` so it satisfies the `Shape` interface
-* `string` does not have such a method, so it doesn't satisfy the interface
-* etc.
+* للنوع `Rectangle` طريقة اسمها `Area` تعيد `float64`، لذا فهو يحقق الواجهة `Shape`
+* للنوع `Circle` طريقة اسمها `Area` تعيد `float64`، لذا فهو يحقق الواجهة `Shape`
+* ليس للنوع `string` طريقة كهذه، لذا فهو لا يحقق الواجهة
+* وهكذا.
 
-In Go **interface resolution is implicit**. If the type you pass in matches what the interface is asking for, it will compile.
+في غو **تحقيق الواجهات ضمني**. فإن طابق النوع الذي تمرره ما تطلبه الواجهة، فسيتم التصريف.
 
-### Decoupling
+### فك الاقتران
 
-Notice how our helper does not need to concern itself with whether the shape is a `Rectangle` or a `Circle` or a `Triangle`. By declaring an interface, the helper is _decoupled_ from the concrete types and only has the method it needs to do its job.
+لاحظ أن دالتنا المساعدة لا تحتاج إلى أن تشغل نفسها بما إذا كان الشكل `Rectangle` أو `Circle` أو `Triangle`. فبالتصريح عن واجهة، تصبح الدالة المساعدة _غير مقترنة_ بالأنواع الملموسة، ولا يكون لديها إلا الطريقة التي تحتاج إليها لأداء عملها.
 
-This kind of approach of using interfaces to declare **only what you need** is very important in software design and will be covered in more detail in later sections.
+وهذا الأسلوب في استعمال الواجهات للتصريح عن **ما تحتاج إليه فقط** مهم جداً في تصميم البرمجيات، وسنتناوله بتفصيل أكبر في أقسام لاحقة.
 
-## Further refactoring
+## مزيد من إعادة الهيكلة
 
-Now that you have some understanding of structs we can introduce "table driven tests".
+والآن بعد أن صار لديك بعض الفهم للبنى، يمكننا تقديم "الاختبارات الجدولية".
 
-[Table driven tests](https://go.dev/wiki/TableDrivenTests) are useful when you want to build a list of test cases that can be tested in the same manner.
+[الاختبارات الجدولية (table driven tests)](https://go.dev/wiki/TableDrivenTests) مفيدة حين تريد بناء قائمة من حالات الاختبار يمكن اختبارها بالطريقة نفسها.
 
 ```go
 func TestArea(t *testing.T) {
@@ -415,20 +415,20 @@ func TestArea(t *testing.T) {
 }
 ```
 
-The only new syntax here is creating an "anonymous struct", `areaTests`. We are declaring a slice of structs by using `[]struct` with two fields, the `shape` and the `want`. Then we fill the slice with cases.
+الصياغة الجديدة الوحيدة هنا هي إنشاء "بنية مجهولة" هي `areaTests`. فنحن نصرّح عن شريحة (slice) من البنى باستعمال `[]struct` بحقلين هما `shape` و`want`، ثم نملأ الشريحة بالحالات.
 
-We then iterate over them just like we do any other slice, using the struct fields to run our tests.
+ثم نمر عليها كما نفعل مع أي شريحة أخرى، مستعملين حقول البنية لتشغيل اختباراتنا.
 
-You can see how it would be very easy for a developer to introduce a new shape, implement `Area` and then add it to the test cases. In addition, if a bug is found with `Area` it is very easy to add a new test case to exercise it before fixing it.
+يمكنك أن ترى كم سيكون سهلاً على المطور أن يضيف شكلاً جديداً، وينفّذ `Area`، ثم يضيفه إلى حالات الاختبار. إضافة إلى ذلك، إن اكتُشف خطأ برمجي في `Area` فمن السهل جداً إضافة حالة اختبار جديدة تختبره قبل إصلاحه.
 
-Table driven tests can be a great item in your toolbox, but be sure that you have a need for the extra noise in the tests.
-They are a great fit when you wish to test various implementations of an interface, or if the data being passed in to a function has lots of different requirements that need testing.
+يمكن أن تكون الاختبارات الجدولية أداة رائعة في صندوق أدواتك، لكن تأكد من أنك تحتاج فعلاً إلى الضجيج الإضافي الذي تضيفه إلى الاختبارات.
+فهي مناسبة جداً حين تريد اختبار تنفيذات مختلفة لواجهة، أو حين تكون للبيانات الممررة إلى دالة متطلبات كثيرة مختلفة تحتاج إلى اختبار.
 
-Let's demonstrate all this by adding another shape and testing it; a triangle.
+لنوضح كل هذا بإضافة شكل آخر واختباره: المثلث.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Adding a new test for our new shape is very easy. Just add `{Triangle{12, 6}, 36.0},` to our list.
+إضافة اختبار جديد لشكلنا الجديد سهلة جداً. أضف فقط `{Triangle{12, 6}, 36.0},` إلى قائمتنا.
 
 ```go
 func TestArea(t *testing.T) {
@@ -452,15 +452,15 @@ func TestArea(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
-Remember, keep trying to run the test and let the compiler guide you toward a solution.
+تذكّر أن تواصل محاولة تشغيل الاختبار، وأن تدع المصرِّف يرشدك نحو الحل.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 `./shapes_test.go:25:4: undefined: Triangle`
 
-We have not defined `Triangle` yet
+لم نعرّف `Triangle` بعد
 
 ```go
 type Triangle struct {
@@ -469,14 +469,14 @@ type Triangle struct {
 }
 ```
 
-Try again
+حاول مجدداً
 
 ```text
 ./shapes_test.go:25:8: cannot use Triangle literal (type Triangle) as type Shape in field value:
     Triangle does not implement Shape (missing Area method)
 ```
 
-It's telling us we cannot use a `Triangle` as a shape because it does not have an `Area()` method, so add an empty implementation to get the test working
+يخبرنا أننا لا نستطيع استعمال `Triangle` كشكل لأنه لا يملك الطريقة `Area()`، لذا أضف تنفيذاً فارغاً لتشغيل الاختبار
 
 ```go
 func (t Triangle) Area() float64 {
@@ -484,11 +484,11 @@ func (t Triangle) Area() float64 {
 }
 ```
 
-Finally the code compiles and we get our error
+أخيراً تُصرَّف الشيفرة ونحصل على الخطأ
 
 `shapes_test.go:31: got 0.00 want 36.00`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func (t Triangle) Area() float64 {
@@ -496,13 +496,13 @@ func (t Triangle) Area() float64 {
 }
 ```
 
-And our tests pass!
+وتنجح اختباراتنا!
 
-## Refactor
+## أعد الهيكلة
 
-Again, the implementation is fine but our tests could do with some improvement.
+مرة أخرى، التنفيذ جيد، لكن اختباراتنا تحتاج إلى بعض التحسين.
 
-When you scan this
+حين تلقي نظرة سريعة على هذا
 
 ```
 {Rectangle{12, 6}, 72.0},
@@ -510,11 +510,11 @@ When you scan this
 {Triangle{12, 6}, 36.0},
 ```
 
-It's not immediately clear what all the numbers represent and you should be aiming for your tests to be easily understood.
+لا يتضح على الفور ما تمثله كل هذه الأعداد، وينبغي أن تسعى إلى أن تكون اختباراتك سهلة الفهم.
 
-So far you've only been shown syntax for creating instances of structs `MyStruct{val1, val2}` but you can optionally name the fields.
+لم تَرَ حتى الآن إلا صياغة إنشاء نسخ من البنى `MyStruct{val1, val2}`، لكن يمكنك اختيارياً تسمية الحقول.
 
-Let's see what it looks like
+لنرَ كيف يبدو ذلك
 
 ```
         {shape: Rectangle{Width: 12, Height: 6}, want: 72.0},
@@ -522,30 +522,30 @@ Let's see what it looks like
         {shape: Triangle{Base: 12, Height: 6}, want: 36.0},
 ```
 
-In [Test-Driven Development by Example](https://g.co/kgs/yCzDLF) Kent Beck refactors some tests to a point and asserts:
+في كتاب [Test-Driven Development by Example](https://g.co/kgs/yCzDLF) يعيد كينت بيك هيكلة بعض الاختبارات إلى حد معيّن ثم يقرر:
 
-> The test speaks to us more clearly, as if it were an assertion of truth, **not a sequence of operations**
+> يخاطبنا الاختبار بوضوح أكبر، كأنه توكيد لحقيقة، **لا سلسلة من العمليات**
 
-\(emphasis in the quote is mine\)
+(التشديد في الاقتباس من عندي)
 
-Now our tests - rather, the list of test cases - make assertions of truth about shapes and their areas.
+والآن تقدّم اختباراتنا، أو بالأحرى قائمة حالات الاختبار، توكيدات (assertions) لحقائق عن الأشكال ومساحاتها.
 
-## Make sure your test output is helpful
+## تأكد من أن مخرجات اختبارك مفيدة
 
-Remember earlier when we were implementing `Triangle` and we had the failing test? It printed `shapes_test.go:31: got 0.00 want 36.00`.
+هل تذكر حين كنا ننفّذ `Triangle` سابقاً وكان لدينا الاختبار الفاشل؟ لقد طبع `shapes_test.go:31: got 0.00 want 36.00`.
 
-We knew this was in relation to `Triangle` because we were just working with it.
-But what if a bug slipped in to the system in one of 20 cases in the table?
-How would a developer know which case failed?
-This is not a great experience for the developer, they will have to manually look through the cases to find out which case actually failed.
+عرفنا أن هذا يتعلق بـ`Triangle` لأننا كنا نعمل عليه للتو.
+لكن ماذا لو تسلل خطأ برمجي إلى النظام في إحدى 20 حالة في الجدول؟
+كيف سيعرف المطور أي حالة فشلت؟
+هذه ليست تجربة جيدة للمطور، إذ سيضطر إلى المرور على الحالات يدوياً ليعرف أيها فشلت فعلاً.
 
-We can change our error message into `%#v got %g want %g`. The `%#v` format string will print out our struct with the values in its field, so the developer can see at a glance the properties that are being tested.
+يمكننا تغيير رسالة الخطأ إلى `%#v got %g want %g`. فسلسلة التنسيق `%#v` ستطبع البنية مع قيم حقولها، فيرى المطور بلمحة الخصائص التي تُختبر.
 
-To increase the readability of our test cases further, we can rename the `want` field into something more descriptive like `hasArea`.
+ولزيادة قابلية قراءة حالات الاختبار أكثر، يمكننا تغيير اسم الحقل `want` إلى اسم أكثر وصفاً مثل `hasArea`.
 
-One final tip with table driven tests is to use `t.Run` and to name the test cases.
+ونصيحة أخيرة مع الاختبارات الجدولية هي استعمال `t.Run` وتسمية حالات الاختبار.
 
-By wrapping each case in a `t.Run` you will have clearer test output on failures as it will print the name of the case
+فبتغليف كل حالة في `t.Run` ستحصل على مخرجات اختبار أوضح عند الفشل، لأنها ستطبع اسم الحالة
 
 ```text
 --- FAIL: TestArea (0.00s)
@@ -553,9 +553,9 @@ By wrapping each case in a `t.Run` you will have clearer test output on failures
         shapes_test.go:33: main.Rectangle{Width:12, Height:6} got 72.00 want 72.10
 ```
 
-And you can run specific tests within your table with `go test -run TestArea/Rectangle`.
+ويمكنك تشغيل اختبارات محددة داخل جدولك بالأمر `go test -run TestArea/Rectangle`.
 
-Here is our final test code which captures this
+إليك شيفرة اختبارنا النهائية التي تجسّد هذا
 
 ```go
 func TestArea(t *testing.T) {
@@ -584,17 +584,17 @@ func TestArea(t *testing.T) {
 }
 ```
 
-## Wrapping up
+## الخلاصة
 
-This was more TDD practice, iterating over our solutions to basic mathematic problems and learning new language features motivated by our tests.
+كان هذا مزيداً من التمرّن على `TDD`، بالتكرار على حلولنا لمشكلات رياضية بسيطة، وتعلّم ميزات جديدة في اللغة تدفعنا إليها اختباراتنا.
 
-* Declaring structs to create your own data types which lets you bundle related data together and make the intent of your code clearer
-* Declaring interfaces so you can define functions that can be used by different types \([parametric polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism)\)
-* Adding methods so you can add functionality to your data types and so you can implement interfaces
-* Table driven tests to make your assertions clearer and your test suites easier to extend & maintain
+* التصريح عن البنى لإنشاء أنواع بيانات خاصة بك، مما يتيح لك جمع البيانات المترابطة معاً ويجعل قصد شيفرتك أوضح
+* التصريح عن الواجهات كي تستطيع تعريف دوال يمكن استعمالها مع أنواع مختلفة ([تعدد الأشكال المعامَلي](https://en.wikipedia.org/wiki/Parametric_polymorphism))
+* إضافة الطرق كي تستطيع إضافة وظائف إلى أنواع بياناتك، وكي تستطيع تحقيق الواجهات
+* الاختبارات الجدولية لجعل توكيداتك أوضح ومجموعات اختباراتك أسهل في التوسيع والصيانة
 
-This was an important chapter because we are now starting to define our own types. In statically typed languages like Go, being able to design your own types is essential for building software that is easy to understand, to piece together and to test.
+كان هذا فصلاً مهماً لأننا بدأنا الآن بتعريف أنواعنا الخاصة. ففي اللغات ثابتة الأنواع مثل غو، القدرة على تصميم أنواعك الخاصة ضرورية لبناء برمجيات سهلة الفهم والتركيب والاختبار.
 
-Interfaces are a great tool for hiding complexity away from other parts of the system. In our case our test helper _code_ did not need to know the exact shape it was asserting on, only how to "ask" for its area.
+الواجهات أداة رائعة لإخفاء التعقيد عن الأجزاء الأخرى من النظام. ففي حالتنا، لم تكن _شيفرة_ دالتنا المساعدة في الاختبار تحتاج إلى معرفة الشكل الدقيق الذي تتحقق منه، بل كيف "تسأل" عن مساحته فقط.
 
-As you become more familiar with Go you will start to see the real strength of interfaces and the standard library. You'll learn about interfaces defined in the standard library that are used _everywhere_ and by implementing them against your own types, you can very quickly re-use a lot of great functionality.
+وكلما ازددت ألفة بغو، ستبدأ برؤية القوة الحقيقية للواجهات وللمكتبة القياسية. وستتعرّف على واجهات معرّفة في المكتبة القياسية تُستعمل _في كل مكان_، وبتحقيقها في أنواعك الخاصة يمكنك بسرعة كبيرة إعادة استعمال كثير من الوظائف الرائعة.

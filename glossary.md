@@ -145,3 +145,15 @@
 | comparable | قابل للمقارنة | مقترح |  |
 | Go playground | ساحة تجارب غو | مقترح |  |
 | collection | مجموعة | مقترح |  |
+| receiver | مستقبِل | مقترح |  |
+| instance | نسخة | مقترح | نسخة من نوع |
+| field | حقل | مقترح | الجمع: حقول |
+| anonymous struct | بنية مجهولة | مقترح |  |
+| decoupling | فك الاقتران | مقترح | decoupled: غير مقترن |
+| concrete type | نوع ملموس | مقترح |  |
+| implementation | تنفيذ | مقترح | الجمع: تنفيذات؛ الفعل: نفّذ |
+| satisfy (an interface) | يحقق (الواجهة) | مقترح | implement an interface: يحقق الواجهة |
+| test case | حالة اختبار | مقترح |  |
+| parametric polymorphism | تعدد الأشكال المعامَلي | مقترح |  |
+| floating-point number | عدد عشري | مقترح |  |
+| identifier | معرّف | مقترح |  |
