@@ -1,16 +1,16 @@
-# Sync
+# الحزمة `sync`
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/sync)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/sync)**
 
-We want to make a counter which is safe to use concurrently.
+نريد صنع عدّاد آمن للاستعمال المتزامن.
 
-We'll start with an unsafe counter and verify its behaviour works in a single-threaded environment.
+سنبدأ بعدّاد غير آمن، ونتحقق من أن سلوكه يعمل في بيئة أحادية الخيط.
 
-Then we'll exercise its unsafeness, with multiple goroutines trying to use the counter via a test, and fix it.
+ثم نختبر عدم أمانه، بجعل عدة `goroutines` تحاول استعمال العدّاد عبر اختبار (test)، ثم نصلحه.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We want our API to give us a method to increment the counter and then retrieve its value.
+نريد أن تعطينا واجهتنا البرمجية طريقة (method) لزيادة العدّاد ثم استرجاع قيمته.
 
 ```go
 func TestCounter(t *testing.T) {
@@ -27,29 +27,29 @@ func TestCounter(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./sync_test.go:9:14: undefined: Counter
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Let's define `Counter`.
+لنعرّف `Counter`.
 
 ```go
 type Counter struct {
 }
 ```
 
-Try again and it fails with the following
+حاول مجدداً، وسيفشل بما يلي
 
 ```
 ./sync_test.go:14:10: counter.Inc undefined (type Counter has no field or method Inc)
 ./sync_test.go:18:13: counter.Value undefined (type Counter has no field or method Value)
 ```
 
-So to finally make the test run we can define those methods
+ولكي يعمل الاختبار أخيراً، يمكننا تعريف هذه الطرق
 
 ```go
 func (c *Counter) Inc() {
@@ -61,7 +61,7 @@ func (c *Counter) Value() int {
 }
 ```
 
-It should now run and fail
+ينبغي أن يعمل الآن ويفشل
 
 ```
 === RUN   TestCounter
@@ -71,9 +71,9 @@ It should now run and fail
     	sync_test.go:27: got 0, want 3
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-This should be trivial for Go experts like us. We need to keep some state for the counter in our datatype and then increment it on every `Inc` call
+ينبغي أن يكون هذا بسيطاً جداً لخبراء في غو (Go) مثلنا. علينا الاحتفاظ بحالة للعدّاد في نوع بياناتنا، ثم زيادتها مع كل استدعاء لـ`Inc`
 
 ```go
 type Counter struct {
@@ -89,9 +89,9 @@ func (c *Counter) Value() int {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-There's not a lot to refactor but given we're going to write more tests around `Counter` we'll write a small assertion function `assertCount` so the test reads a bit clearer.
+ليس هناك الكثير مما يمكن إعادة هيكلته، لكن بما أننا سنكتب مزيداً من الاختبارات حول `Counter`، فسنكتب دالة توكيد صغيرة `assertCount` كي يُقرأ الاختبار بوضوح أكبر.
 
 ```go
 t.Run("incrementing the counter 3 times leaves it at 3", func(t *testing.T) {
@@ -112,11 +112,11 @@ func assertCounter(t testing.TB, got Counter, want int) {
 }
 ```
 
-## Next steps
+## الخطوات التالية
 
-That was easy enough but now we have a requirement that it must be safe to use in a concurrent environment. We will need to write a failing test to exercise this.
+كان ذلك سهلاً بما يكفي، لكن لدينا الآن متطلب بأن يكون العدّاد آمناً للاستعمال في بيئة متزامنة. وسنحتاج إلى كتابة اختبار فاشل لاختبار ذلك.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 t.Run("it runs safely concurrently", func(t *testing.T) {
@@ -138,15 +138,15 @@ t.Run("it runs safely concurrently", func(t *testing.T) {
 })
 ```
 
-This will loop through our `wantedCount` and fire a goroutine to call `counter.Inc()`.
+سيمر هذا على `wantedCount` ويُطلق `goroutine` تستدعي `counter.Inc()`.
 
-We are using [`sync.WaitGroup`](https://golang.org/pkg/sync/#WaitGroup) which is a convenient way of synchronising concurrent processes.
+نستعمل [`sync.WaitGroup`](https://golang.org/pkg/sync/#WaitGroup)، وهي وسيلة مريحة لمزامنة العمليات المتزامنة.
 
-> A WaitGroup waits for a collection of goroutines to finish. The main goroutine calls Add to set the number of goroutines to wait for. Then each of the goroutines runs and calls Done when finished. At the same time, Wait can be used to block until all goroutines have finished.
+> تنتظر `WaitGroup` مجموعة من الـ`goroutines` حتى تنتهي. تستدعي الـ`goroutine` الرئيسية `Add` لتحديد عدد الـ`goroutines` التي ستنتظرها. ثم تعمل كل واحدة منها وتستدعي `Done` حين تنتهي. وفي الوقت نفسه، يمكن استعمال `Wait` للحجب حتى تنتهي كل الـ`goroutines`.
 
-By waiting for `wg.Wait()` to finish before making our assertions we can be sure all of our goroutines have attempted to `Inc` the `Counter`.
+بانتظار انتهاء `wg.Wait()` قبل إجراء توكيداتنا (assertions)، نتأكد من أن كل الـ`goroutines` قد حاولت تنفيذ `Inc` على `Counter`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestCounter/it_runs_safely_in_a_concurrent_envionment
@@ -156,13 +156,13 @@ By waiting for `wg.Wait()` to finish before making our assertions we can be sure
 FAIL
 ```
 
-The test will _probably_ fail with a different number, but nonetheless it demonstrates it does not work when multiple goroutines are trying to mutate the value of the counter at the same time.
+_على الأرجح_ سيفشل الاختبار بعدد مختلف، لكنه يبيّن على أي حال أن العدّاد لا يعمل حين تحاول عدة `goroutines` تغيير قيمته في الوقت نفسه.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-A simple solution is to add a lock to our `Counter`, ensuring only one goroutine can increment the counter at a time. Go's [`Mutex`](https://golang.org/pkg/sync/#Mutex) provides such a lock:
+من الحلول البسيطة إضافة قفل إلى `Counter`، يضمن ألا تزيد العدّاد إلا `goroutine` واحدة في كل مرة. ويوفر [`Mutex`](https://golang.org/pkg/sync/#Mutex) في غو قفلاً كهذا:
 
->A Mutex is a mutual exclusion lock. The zero value for a Mutex is an unlocked mutex.
+>القيمة `Mutex` قفل للاستبعاد المتبادل. والقيمة الصفرية لـ`Mutex` قفل غير مقفول.
 
 ```go
 type Counter struct {
@@ -177,13 +177,13 @@ func (c *Counter) Inc() {
 }
 ```
 
-What this means is any goroutine calling `Inc` will acquire the lock on `Counter` if they are first. All the other goroutines will have to wait for it to be `Unlock`ed before getting access.
+معنى هذا أن أي `goroutine` تستدعي `Inc` ستحصل على القفل على `Counter` إن كانت الأولى. وعلى كل الـ`goroutines` الأخرى أن تنتظر حتى يُفتح القفل بـ`Unlock` قبل أن تحصل على الوصول.
 
-If you now re-run the test it should now pass because each goroutine has to wait its turn before making a change.
+إن أعدت تشغيل الاختبار الآن، فينبغي أن ينجح، لأن على كل `goroutine` أن تنتظر دورها قبل إجراء أي تغيير.
 
-## I've seen other examples where the `sync.Mutex` is embedded into the struct.
+## رأيت أمثلة أخرى تُضمَّن فيها `sync.Mutex` داخل البنية.
 
-You may see examples like this
+قد ترى أمثلة كهذه
 
 ```go
 type Counter struct {
@@ -192,7 +192,7 @@ type Counter struct {
 }
 ```
 
-It can be argued that it can make the code a bit more elegant.
+قد يقول قائل إن هذا يجعل الشيفرة (code) أكثر أناقة بعض الشيء.
 
 ```go
 func (c *Counter) Inc() {
@@ -202,40 +202,40 @@ func (c *Counter) Inc() {
 }
 ```
 
-This _looks_ nice but while programming is a hugely subjective discipline, this is **bad and wrong**.
+هذا _يبدو_ جميلاً، لكن مع أن البرمجة مجال ذاتي إلى حد بعيد، فهذا **سيئ وخاطئ**.
 
-Sometimes people forget that embedding types means the methods of that type become _part of the public interface_; and you often will not want that. Remember that we should be very careful with our public APIs, the moment we make something public is the moment other code can couple themselves to it. We always want to avoid unnecessary coupling.
+ينسى الناس أحياناً أن تضمين الأنواع يعني أن طرق النوع المضمَّن تصبح _جزءاً من الواجهة العامة_، وكثيراً ما لن تريد ذلك. تذكّر أن علينا الحذر الشديد مع واجهاتنا البرمجية العامة، فاللحظة التي نجعل فيها شيئاً عاماً هي اللحظة التي تستطيع فيها شيفرة أخرى أن تقترن به. ونحن نريد دائماً تجنب الاقتران غير الضروري.
 
-Exposing `Lock` and `Unlock` is at best confusing but at worst potentially very harmful to your software if callers of your type start calling these methods.
+كشف `Lock` و`Unlock` محيّر في أحسن الأحوال، وقد يكون في أسوئها ضاراً جداً ببرنامجك إن بدأ مستدعو نوعك باستدعاء هذه الطرق.
 
-![Showing how a user of this API can wrongly change the state of the lock](https://i.imgur.com/SWYNpwm.png)
+![يوضح كيف يمكن لمستخدم هذه الواجهة البرمجية أن يغيّر حالة القفل بشكل خاطئ](https://i.imgur.com/SWYNpwm.png)
 
-_This seems like a really bad idea_
+_تبدو هذه فكرة سيئة حقاً_
 
-## Copying mutexes
+## نسخ الأقفال
 
-Our test passes but our code is still a bit dangerous
+ينجح اختبارنا، لكن شيفرتنا ما زالت خطرة بعض الشيء
 
-If you run `go vet` on your code you should get an error like the following
+إن شغّلت `go vet` على شيفرتك، فينبغي أن تحصل على خطأ كالتالي
 
 ```
 sync/v2/sync_test.go:16: call of assertCounter copies lock value: v1.Counter contains sync.Mutex
 sync/v2/sync_test.go:39: assertCounter passes lock by value: v1.Counter contains sync.Mutex
 ```
 
-A look at the documentation of [`sync.Mutex`](https://golang.org/pkg/sync/#Mutex) tells us why
+نظرة إلى توثيق [`sync.Mutex`](https://golang.org/pkg/sync/#Mutex) تخبرنا بالسبب
 
-> A Mutex must not be copied after first use.
+> يجب ألا تُنسخ قيمة `Mutex` بعد أول استعمال لها.
 
-When we pass our `Counter` (by value) to `assertCounter` it will try and create a copy of the mutex.
+حين نمرر `Counter` (بالقيمة) إلى `assertCounter`، فسيحاول إنشاء نسخة من القفل.
 
-To solve this we should pass in a pointer to our `Counter` instead, so change the signature of `assertCounter`
+لحل ذلك ينبغي أن نمرر مؤشراً (pointer) إلى `Counter` بدلاً منه، لذا غيّر توقيع `assertCounter`
 
 ```go
 func assertCounter(t testing.TB, got *Counter, want int)
 ```
 
-Our tests will no longer compile because we are trying to pass in a `Counter` rather than a `*Counter`. To solve this I prefer to create a constructor which shows readers of your API that it would be better to not initialise the type yourself.
+لن تُصرَّف اختباراتنا بعد الآن لأننا نحاول تمرير `Counter` بدلاً من `*Counter`. ولحل ذلك، أفضّل إنشاء دالة بانية تُظهر لقراء واجهتك البرمجية أن من الأفضل ألا يهيّئوا النوع بأنفسهم.
 
 ```go
 func NewCounter() *Counter {
@@ -243,33 +243,33 @@ func NewCounter() *Counter {
 }
 ```
 
-Use this function in your tests when initialising `Counter`.
+استعمل هذه الدالة في اختباراتك عند تهيئة `Counter`.
 
-## Wrapping up
+## الخلاصة
 
-We've covered a few things from the [sync package](https://golang.org/pkg/sync/)
+تناولنا بعض الأشياء من [الحزمة sync](https://golang.org/pkg/sync/)
 
-- `Mutex` allows us to add locks to our data
-- `WaitGroup` is a means of waiting for goroutines to finish jobs
+- يتيح لنا `Mutex` إضافة أقفال إلى بياناتنا
+- و`WaitGroup` وسيلة لانتظار الـ`goroutines` حتى تنهي أعمالها
 
-### When to use locks over channels and goroutines?
+### متى تستعمل الأقفال بدلاً من القنوات والـ`goroutines`؟
 
-[We've previously covered goroutines in the first concurrency chapter](concurrency.md) which let us write safe concurrent code so why would you use locks?
-[The go wiki has a page dedicated to this topic; Mutex Or Channel](https://go.dev/wiki/MutexOrChannel)
+[تناولنا الـ`goroutines` سابقاً في فصل التزامن الأول](concurrency.md)، وهي تتيح لنا كتابة شيفرة متزامنة آمنة، فلماذا تستعمل الأقفال؟
+[في ويكي غو صفحة مخصصة لهذا الموضوع: Mutex Or Channel](https://go.dev/wiki/MutexOrChannel)
 
-> A common Go newbie mistake is to over-use channels and goroutines just because it's possible, and/or because it's fun. Don't be afraid to use a sync.Mutex if that fits your problem best. Go is pragmatic in letting you use the tools that solve your problem best and not forcing you into one style of code.
+> من الأخطاء الشائعة لدى المبتدئين في غو الإفراط في استعمال القنوات والـ`goroutines` لمجرد أن ذلك ممكن، و/أو لأنه ممتع. لا تخشَ استعمال `sync.Mutex` إن كان الأنسب لمشكلتك. فغو لغة عملية تتيح لك استعمال الأدوات التي تحل مشكلتك على أفضل وجه، ولا تفرض عليك أسلوباً واحداً في كتابة الشيفرة.
 
-Paraphrasing:
+بعبارة أخرى:
 
-- **Use channels when passing ownership of data**
-- **Use mutexes for managing state**
+- **استعمل القنوات (channels) حين تنقل ملكية البيانات**
+- **استعمل الأقفال لإدارة الحالة**
 
-### go vet
+### الأداة `go vet`
 
-Remember to use go vet in your build scripts as it can alert you to some subtle bugs in your code before they hit your poor users.
+تذكّر أن تستعمل `go vet` في سكربتات البناء لديك، لأنها قد تنبهك إلى بعض الأخطاء البرمجية الخفية في شيفرتك قبل أن تصيب مستخدميك المساكين.
 
-### Don't use embedding because it's convenient
+### لا تستعمل التضمين لمجرد أنه مريح
 
-- Think about the effect embedding has on your public API.
-- Do you _really_ want to expose these methods and have people coupling their own code to them?
-- With respect to mutexes, this could be potentially disastrous in very unpredictable and weird ways, imagine some nefarious code unlocking a mutex when it shouldn't be; this would cause some very strange bugs that will be hard to track down.
+- فكّر في أثر التضمين على واجهتك البرمجية العامة.
+- هل تريد _حقاً_ كشف هذه الطرق وجعل الناس يربطون شيفرتهم بها؟
+- وفيما يخص الأقفال، قد يكون هذا كارثياً بطرق غريبة يصعب التنبؤ بها. تخيّل شيفرة خبيثة تفتح قفلاً في غير وقته؛ فهذا سيسبب أخطاء برمجية غريبة جداً يصعب تتبّعها.
