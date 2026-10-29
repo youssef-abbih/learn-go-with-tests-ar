@@ -1,16 +1,16 @@
-# Command line and project structure
+# سطر الأوامر وبنية المشروع
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/command-line)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/command-line)**
 
-Our product owner now wants to _pivot_ by introducing a second application - a command line application.
+تريد مالكة المنتج الآن _تغيير الاتجاه_ بتقديم تطبيق ثانٍ، هو تطبيق سطر أوامر.
 
-For now, it will just need to be able to record a player's win when the user types `Ruth wins`. The intention is to eventually be a tool for helping users play poker.
+في الوقت الحالي، كل ما يحتاج إليه هو أن يستطيع تسجيل فوز لاعب حين يكتب المستخدم `Ruth wins`. والنية أن يصبح في النهاية أداة لمساعدة المستخدمين على لعب البوكر.
 
-The product owner wants the database to be shared amongst the two applications so that the league updates according to wins recorded in the new application.
+وتريد مالكة المنتج أن تكون قاعدة البيانات مشتركة بين التطبيقين، كي يتحدث الدوري بحسب مرات الفوز المسجلة في التطبيق الجديد.
 
-## A reminder of the code
+## تذكير بالشيفرة
 
-We have an application with a `main.go` file that launches an HTTP server. The HTTP server won't be interesting to us for this exercise but the abstraction it uses will. It depends on a `PlayerStore`.
+لدينا تطبيق فيه ملف `main.go` يشغّل خادم HTTP. لن يهمنا خادم HTTP في هذا التمرين، لكن التجريد الذي يستعمله سيهمنا. فهو يعتمد على `PlayerStore`.
 
 ```go
 type PlayerStore interface {
@@ -20,29 +20,29 @@ type PlayerStore interface {
 }
 ```
 
-In the previous chapter, we made a `FileSystemPlayerStore` which implements that interface. We should be able to re-use some of this for our new application.
+في الفصل السابق صنعنا `FileSystemPlayerStore` الذي يحقق تلك الواجهة (interface). وينبغي أن نستطيع إعادة استعمال شيء من ذلك في تطبيقنا الجديد.
 
-## Some project refactoring first
+## بعض إعادة الهيكلة للمشروع أولاً
 
-Our project now needs to create two binaries, our existing web server and the command line app.
+صار مشروعنا يحتاج الآن إلى إنشاء ملفين تنفيذيين: خادم الويب الحالي وتطبيق سطر الأوامر.
 
-Before we get stuck into our new work we should structure our project to accommodate this.
+وقبل أن نغوص في عملنا الجديد، ينبغي أن ننظم مشروعنا ليستوعب ذلك.
 
-So far all the code has lived in one folder, in a path looking like this
+حتى الآن عاشت كل الشيفرة (code) في مجلد واحد، في مسار يبدو هكذا
 
 `$GOPATH/src/github.com/your-name/my-app`
 
-In order for you to make an application in Go, you need a `main` function inside a `package main`. So far all of our "domain" code has lived inside `package main` and our `func main` can reference everything.
+لكي تصنع تطبيقاً في غو (Go)، تحتاج إلى دالة `main` داخل `package main`. وحتى الآن عاشت كل شيفرة "المجال" لدينا داخل `package main`، وكانت `func main` تستطيع الإشارة إلى كل شيء.
 
-This was fine so far and it is good practice not to go over-the-top with package structure. If you take the time to look through the standard library you will see very little in the way of lots of folders and structure.
+كان هذا مقبولاً حتى الآن، ومن الممارسات الجيدة ألا تبالغ في بنية الحزم. فإن أخذت وقتك في تصفح المكتبة القياسية، فلن ترى إلا القليل من المجلدات الكثيرة والبنى المعقدة.
 
-Thankfully it's pretty straightforward to add structure _when you need it_.
+لحسن الحظ، إضافة البنية _حين تحتاج إليها_ أمر مباشر جداً.
 
-Inside the existing project create a `cmd` directory with a `webserver` directory inside that (e.g `mkdir -p cmd/webserver`).
+داخل المشروع الحالي، أنشئ مجلداً `cmd` وداخله مجلد `webserver` (مثلاً `mkdir -p cmd/webserver`).
 
-Move the `main.go` inside there.
+انقل `main.go` إلى داخله.
 
-If you have `tree` installed you should run it and your structure should look like this
+إن كانت الأداة `tree` مثبّتة لديك، فشغّلها، وينبغي أن تبدو بنيتك هكذا
 
 ```
 .
@@ -59,13 +59,13 @@ If you have `tree` installed you should run it and your structure should look li
 |-- tape_test.go
 ```
 
-We now effectively have a separation between our application and the library code but we now need to change some package names. Remember when you build a Go application its package _must_ be `main`.
+صار لدينا الآن فعلياً فصل بين تطبيقنا وشيفرة المكتبة، لكن علينا الآن تغيير أسماء بعض الحزم. تذكّر أنه حين تبني تطبيق غو، _يجب_ أن تكون حزمته `main`.
 
-Change all the other code to have a package called `poker`.
+غيّر كل الشيفرة الأخرى لتكون في حزمة (package) اسمها `poker`.
 
-Finally, we need to import this package into `main.go` so we can use it to create our web server. Then we can use our library code by using `poker.FunctionName`.
+وأخيراً، علينا استيراد هذه الحزمة في `main.go` كي نستعملها لإنشاء خادم الويب. ثم يمكننا استعمال شيفرة المكتبة بكتابة `poker.FunctionName`.
 
-The paths will be different on your computer, but it should be similar to this:
+ستكون المسارات مختلفة على حاسوبك، لكنها ينبغي أن تشبه هذا:
 
 ```go
 // cmd/webserver/main.go
@@ -99,21 +99,21 @@ func main() {
 }
 ```
 
-The full path may seem a bit jarring, but this is how you can import _any_ publicly available library into your code.
+قد يبدو المسار الكامل غريباً بعض الشيء، لكن هذه هي الطريقة التي تستطيع بها استيراد _أي_ مكتبة متاحة للعموم في شيفرتك.
 
-By separating our domain code into a separate package and committing it to a public repo like GitHub any Go developer can write their own code which imports that package the features we've written available. The first time you try and run it will complain it is not existing but all you need to do is run `go get`.
+بفصل شيفرة مجالنا في حزمة منفصلة وإيداعها في مستودع عام مثل GitHub، يستطيع أي مطور غو كتابة شيفرته الخاصة التي تستورد تلك الحزمة، فتصبح الميزات التي كتبناها متاحة له. وفي أول مرة تحاول تشغيلها ستعترض بأنها غير موجودة، لكن كل ما عليك هو تشغيل `go get`.
 
-In addition, users can view [the documentation at pkg.go.dev](https://pkg.go.dev/github.com/quii/learn-go-with-tests/command-line/v1).
+إضافة إلى ذلك، يستطيع المستخدمون عرض [التوثيق على pkg.go.dev](https://pkg.go.dev/github.com/quii/learn-go-with-tests/command-line/v1).
 
-### Final checks
+### الفحوص الأخيرة
 
-- Inside the root run `go test` and check they're still passing
-- Go inside our `cmd/webserver` and do `go run main.go`
-  - Visit `http://localhost:5000/league` and you should see it's still working
+- شغّل `go test` داخل الجذر وتحقق من أنها ما زالت تنجح
+- ادخل إلى `cmd/webserver` ونفّذ `go run main.go`
+  - زُر `http://localhost:5000/league` وينبغي أن ترى أنه ما زال يعمل
 
-### Walking skeleton
+### الهيكل العظمي العامل
 
-Before we get stuck into writing tests, let's add a new application that our project will build. Create another directory inside `cmd` called `cli` (command line interface) and add a `main.go` with the following
+قبل أن نغوص في كتابة الاختبارات، لنُضِف تطبيقاً جديداً سيبنيه مشروعنا. أنشئ مجلداً آخر داخل `cmd` باسم `cli` (واجهة سطر الأوامر)، وأضف `main.go` بما يلي
 
 ```go
 // cmd/cli/main.go
@@ -126,15 +126,15 @@ func main() {
 }
 ```
 
-The first requirement we'll tackle is recording a win when the user types `{PlayerName} wins`.
+أول متطلب سنعالجه هو تسجيل فوز حين يكتب المستخدم `{PlayerName} wins`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We know we need to make something called `CLI` which will allow us to `Play` poker. It'll need to read user input and then record wins to a `PlayerStore`.
+نعرف أننا نحتاج إلى صنع شيء اسمه `CLI` يتيح لنا لعب البوكر بـ`Play`. وسيحتاج إلى قراءة مدخلات المستخدم ثم تسجيل مرات الفوز في `PlayerStore`.
 
-Before we jump too far ahead though, let's just write a test to check it integrates with the `PlayerStore` how we'd like.
+لكن قبل أن نقفز بعيداً إلى الأمام، لنكتب فقط اختباراً (test) يتحقق من أنه يتكامل مع `PlayerStore` كما نريد.
 
-Inside `CLI_test.go` (in the root of the project, not inside `cmd`)
+داخل `CLI_test.go` (في جذر المشروع، لا داخل `cmd`)
 
 ```go
 // CLI_test.go
@@ -153,23 +153,23 @@ func TestCLI(t *testing.T) {
 }
 ```
 
-- We can use our `StubPlayerStore` from other tests
-- We pass in our dependency into our not yet existing `CLI` type
-- Trigger the game by an unwritten `PlayPoker` method
-- Check that a win is recorded
+- يمكننا استعمال `StubPlayerStore` من الاختبارات الأخرى
+- نمرر تبعيتنا إلى النوع `CLI` غير الموجود بعد
+- نبدأ اللعبة بطريقة `PlayPoker` لم تُكتب بعد
+- نتحقق من أن فوزاً قد سُجّل
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 # github.com/quii/learn-go-with-tests/command-line/v2
 ./cli_test.go:25:10: undefined: CLI
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-At this point, you should be comfortable enough to create our new `CLI` struct with the respective field for our dependency and add a method.
+في هذه المرحلة، ينبغي أن تكون مرتاحاً بما يكفي لإنشاء البنية (struct) الجديدة `CLI` مع الحقل المقابل لتبعيتنا، وإضافة طريقة (method).
 
-You should end up with code like this
+ينبغي أن تنتهي إلى شيفرة كهذه
 
 ```go
 // CLI.go
@@ -182,7 +182,7 @@ type CLI struct {
 func (cli *CLI) PlayPoker() {}
 ```
 
-Remember we're just trying to get the test running so we can check the test fails how we'd hope
+تذكّر أننا نحاول فقط جعل الاختبار يعمل كي نتحقق من أنه يفشل كما نأمل
 
 ```
 --- FAIL: TestCLI (0.00s)
@@ -190,7 +190,7 @@ Remember we're just trying to get the test running so we can check the test fail
 FAIL
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 //CLI.go
@@ -199,13 +199,13 @@ func (cli *CLI) PlayPoker() {
 }
 ```
 
-That should make it pass.
+ينبغي أن يجعله هذا ينجح.
 
-Next, we need to simulate reading from `Stdin` (the input from the user) so that we can record wins for specific players.
+بعد ذلك، علينا محاكاة القراءة من `Stdin` (مدخلات المستخدم) كي نستطيع تسجيل مرات فوز لاعبين محددين.
 
-Let's extend our test to exercise this.
+لنوسّع اختبارنا لاختبار ذلك.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 //CLI_test.go
@@ -229,17 +229,17 @@ func TestCLI(t *testing.T) {
 }
 ```
 
-`os.Stdin` is what we'll use in `main` to capture the user's input. It is a `*File` under the hood which means it implements `io.Reader` which as we know by now is a handy way of capturing text.
+سنستعمل `os.Stdin` في `main` لالتقاط مدخلات المستخدم. وهو في الخفاء `*File`، مما يعني أنه يحقق `io.Reader`، الذي نعرف الآن أنه وسيلة مفيدة لالتقاط النص.
 
-We create an `io.Reader` in our test using the handy `strings.NewReader`, filling it with what we expect the user to type.
+ننشئ `io.Reader` في اختبارنا باستعمال الدالة المفيدة `strings.NewReader`، ونملؤه بما نتوقع أن يكتبه المستخدم.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./CLI_test.go:12:32: too many values in struct initializer`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We need to add our new dependency into `CLI`.
+علينا إضافة تبعيتنا الجديدة إلى `CLI`.
 
 ```go
 //CLI.go
@@ -255,9 +255,9 @@ type CLI struct {
 FAIL
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Remember to do the strictly easiest thing first
+تذكّر أن تفعل الأسهل تماماً أولاً
 
 ```go
 func (cli *CLI) PlayPoker() {
@@ -265,11 +265,11 @@ func (cli *CLI) PlayPoker() {
 }
 ```
 
-The test passes. We'll add another test to force us to write some real code next, but first, let's refactor.
+ينجح الاختبار. سنضيف اختباراً آخر يجبرنا على كتابة شيفرة حقيقية بعد ذلك، لكن لنُعِد الهيكلة أولاً.
 
-## Refactor
+## أعد الهيكلة
 
-In `server_test` we earlier did checks to see if wins are recorded as we have here. Let's DRY that assertion up into a helper
+أجرينا سابقاً في `server_test` فحوصاً لمعرفة ما إذا كانت مرات الفوز تُسجَّل، كما نفعل هنا. لنُزِل تكرار ذلك التوكيد بنقله إلى دالة مساعدة
 
 ```go
 //server_test.go
@@ -286,9 +286,9 @@ func assertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 }
 ```
 
-Now replace the assertions in both `server_test.go` and `CLI_test.go`.
+والآن استبدل التوكيدات في `server_test.go` و`CLI_test.go` كليهما.
 
-The test should now read like so
+ينبغي أن يُقرأ الاختبار الآن هكذا
 
 ```go
 //CLI_test.go
@@ -303,9 +303,9 @@ func TestCLI(t *testing.T) {
 }
 ```
 
-Now let's write _another_ test with different user input to force us into actually reading it.
+والآن لنكتب اختباراً _آخر_ بمدخلات مستخدم مختلفة يجبرنا على قراءتها فعلاً.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 //CLI_test.go
@@ -334,7 +334,7 @@ func TestCLI(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestCLI
@@ -347,13 +347,13 @@ func TestCLI(t *testing.T) {
 FAIL
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We'll use a [`bufio.Scanner`](https://golang.org/pkg/bufio/) to read the input from the `io.Reader`.
+سنستعمل [`bufio.Scanner`](https://golang.org/pkg/bufio/) لقراءة المدخلات من `io.Reader`.
 
-> Package bufio implements buffered I/O. It wraps an io.Reader or io.Writer object, creating another object (Reader or Writer) that also implements the interface but provides buffering and some help for textual I/O.
+> تنفّذ الحزمة `bufio` إدخالاً وإخراجاً مخزّناً مؤقتاً. فهي تغلّف كائن `io.Reader` أو `io.Writer`، وتنشئ كائناً آخر (`Reader` أو `Writer`) يحقق الواجهة أيضاً، لكنه يوفر التخزين المؤقت وبعض المساعدة في الإدخال والإخراج النصي.
 
-Update the code to the following
+حدّث الشيفرة إلى ما يلي
 
 ```go
 //CLI.go
@@ -373,14 +373,14 @@ func extractWinner(userInput string) string {
 }
 ```
 
-The tests will now pass.
+ستنجح الاختبارات الآن.
 
-- `Scanner.Scan()` will read up to a newline.
-- We then use `Scanner.Text()` to return the `string` the scanner read to.
+- ستقرأ `Scanner.Scan()` حتى السطر الجديد.
+- ثم نستعمل `Scanner.Text()` لإعادة السلسلة النصية `string` التي قرأها الماسح.
 
-Now that we have some passing tests, we should wire this up into `main`. Remember we should always strive to have fully-integrated working software as quickly as we can.
+والآن بعد أن صارت لدينا بعض الاختبارات الناجحة، ينبغي أن نربط هذا في `main`. وتذكّر أن علينا دائماً السعي إلى برنامج يعمل ومتكامل بالكامل بأسرع ما يمكن.
 
-In `main.go` add the following and run it. (you may have to adjust the path of the second dependency to match what's on your computer)
+أضف ما يلي في `main.go` وشغّله. (قد تحتاج إلى تعديل مسار التبعية الثانية لتطابق ما على حاسوبك)
 
 ```go
 package main
@@ -415,34 +415,34 @@ func main() {
 }
 ```
 
-You should get an error
+ينبغي أن يظهر لك خطأ (error)
 
 ```
 command-line/v3/cmd/cli/main.go:32:25: implicit assignment of unexported field 'playerStore' in poker.CLI literal
 command-line/v3/cmd/cli/main.go:32:34: implicit assignment of unexported field 'in' in poker.CLI literal
 ```
 
-What's happening here is because we are trying to assign to the fields `playerStore` and `in` in `CLI`. These are unexported (private) fields. We _could_ do this in our test code because our test is in the same package as `CLI` (`poker`). But our `main` is in package `main` so it does not have access.
+ما يحدث هنا أننا نحاول الإسناد إلى الحقلين `playerStore` و`in` في `CLI`. وهذان حقلان غير مُصدَّرين (خاصان). كان _بإمكاننا_ فعل ذلك في شيفرة اختبارنا لأن اختبارنا في الحزمة نفسها التي فيها `CLI` (أي `poker`). لكن `main` في الحزمة `main`، لذا لا يملك الوصول إليهما.
 
-This highlights the importance of _integrating your work_. We rightfully made the dependencies of our `CLI` private (because we don't want them exposed to users of `CLI`s) but haven't made a way for users to construct it.
+وهذا يبرز أهمية _دمج عملك_. فقد جعلنا تبعيات `CLI` خاصة عن حق (لأننا لا نريد كشفها لمستخدمي `CLI`)، لكننا لم نوفر وسيلة للمستخدمين لبنائه.
 
-Is there a way to have caught this problem earlier?
+هل هناك طريقة كنا سنكتشف بها هذه المشكلة أبكر؟
 
-### `package mypackage_test`
+### التصريح `package mypackage_test`
 
-In all other examples so far, when we make a test file we declare it as being in the same package that we are testing.
+في كل الأمثلة الأخرى حتى الآن، حين ننشئ ملف اختبار نصرّح عنه على أنه في الحزمة نفسها التي نختبرها.
 
-This is fine and it means on the odd occasion where we want to test something internal to the package we have access to the unexported types.
+لا بأس بهذا، وهو يعني أننا في المناسبات النادرة التي نريد فيها اختبار شيء داخلي في الحزمة نملك الوصول إلى الأنواع غير المُصدَّرة.
 
-But given we have advocated for _not_ testing internal things _generally_, can Go help enforce that? What if we could test our code where we only have access to the exported types (like our `main` does)?
+لكن بما أننا دعونا إلى _عدم_ اختبار الأشياء الداخلية _عموماً_، فهل تستطيع غو مساعدتنا على فرض ذلك؟ ماذا لو استطعنا اختبار شيفرتنا مع الوصول إلى الأنواع المُصدَّرة فقط (كما يفعل `main`)؟
 
-When you're writing a project with multiple packages I would strongly recommend that your test package name has `_test` at the end. When you do this you will only be able to have access to the public types in your package. This would help with this specific case but also helps enforce the discipline of only testing public APIs. If you still wish to test internals you can make a separate test with the package you want to test.
+حين تكتب مشروعاً فيه عدة حزم، أنصحك بشدة أن ينتهي اسم حزمة اختبارك بـ`_test`. فحين تفعل هذا، لن تستطيع الوصول إلا إلى الأنواع المُصدَّرة في حزمتك. وهذا سيساعد في هذه الحالة تحديداً، كما يساعد على فرض انضباط اختبار الواجهات البرمجية العامة فقط. وإن أردت مع ذلك اختبار الدواخل، فيمكنك كتابة اختبار منفصل بالحزمة التي تريد اختبارها.
 
-An adage with TDD is that if you cannot test your code then it is probably hard for users of your code to integrate with it. Using `package foo_test` will help with this by forcing you to test your code as if you are importing it like users of your package will.
+من المقولات في `TDD` أنك إن لم تستطع اختبار شيفرتك، فالأرجح أن مستخدميها سيجدون صعوبة في التكامل معها. واستعمال `package foo_test` سيساعد على ذلك بإجبارك على اختبار شيفرتك كما لو كنت تستوردها كما سيفعل مستخدمو حزمتك.
 
-Before fixing `main` let's change the package of our test inside `CLI_test.go` to `poker_test`.
+قبل إصلاح `main`، لنغيّر حزمة اختبارنا داخل `CLI_test.go` إلى `poker_test`.
 
-If you have a well-configured IDE you will suddenly see a lot of red! If you run the compiler you'll get the following errors
+إن كانت لديك بيئة تطوير متكاملة مضبوطة جيداً، فسترى فجأة كثيراً من اللون الأحمر! وإن شغّلت المصرِّف (compiler) فستحصل على الأخطاء التالية
 
 ```
 ./CLI_test.go:12:19: undefined: StubPlayerStore
@@ -451,17 +451,17 @@ If you have a well-configured IDE you will suddenly see a lot of red! If you run
 ./CLI_test.go:27:3: undefined: assertPlayerWin
 ```
 
-We have now stumbled into more questions on package design. In order to test our software we made unexported stubs and helper functions which are no longer available for us to use in our `CLI_test` because the helpers are defined in the `_test.go` files in the `poker` package.
+لقد صادفنا الآن مزيداً من الأسئلة حول تصميم الحزم. فلكي نختبر برنامجنا، صنعنا بدائل ثابتة ودوالاً مساعدة غير مُصدَّرة، لم تعد متاحة لنا في `CLI_test` لأن الدوال المساعدة معرّفة في ملفات `_test.go` داخل الحزمة `poker`.
 
-#### Do we want to have our stubs and helpers 'public'?
+#### هل نريد أن تكون بدائلنا الثابتة ودوالنا المساعدة "عامة"؟
 
-This is a subjective discussion. One could argue that you do not want to pollute your package's API with code to facilitate tests.
+هذا نقاش ذاتي. فقد يقول قائل إنك لا تريد تلويث الواجهة البرمجية لحزمتك بشيفرة لتسهيل الاختبارات.
 
-In the presentation ["Advanced Testing with Go"](https://speakerdeck.com/mitchellh/advanced-testing-with-go?slide=53) by Mitchell Hashimoto, it is described how at HashiCorp they advocate doing this so that users of the package can write tests without having to re-invent the wheel writing stubs. In our case, this would mean anyone using our `poker` package won't have to create their own stub `PlayerStore` if they wish to work with our code.
+في العرض التقديمي ["Advanced Testing with Go"](https://speakerdeck.com/mitchellh/advanced-testing-with-go?slide=53) لميتشل هاشيموتو، يُوصف كيف تدعو HashiCorp إلى فعل ذلك، كي يستطيع مستخدمو الحزمة كتابة الاختبارات دون إعادة اختراع العجلة بكتابة البدائل الثابتة. وفي حالتنا، يعني هذا أن أي شخص يستعمل الحزمة `poker` لن يضطر إلى إنشاء بديل ثابت خاص به لـ`PlayerStore` إن أراد العمل مع شيفرتنا.
 
-Anecdotally I have used this technique in other shared packages and it has proved extremely useful in terms of users saving time when integrating with our packages.
+ومن واقع تجربتي، استعملت هذا الأسلوب في حزم مشتركة أخرى، وأثبت فائدته الكبيرة في توفير وقت المستخدمين حين يتكاملون مع حزمنا.
 
-So let's create a file called `testing.go` and add our stub and our helpers.
+لذا لننشئ ملفاً باسم `testing.go` ونضيف إليه بديلنا الثابت ودوالنا المساعدة.
 
 ```go
 // testing.go
@@ -503,9 +503,9 @@ func AssertPlayerWin(t testing.TB, store *StubPlayerStore, winner string) {
 // todo for you - the rest of the helpers
 ```
 
-You'll need to make the helpers public (remember exporting is done with a capital letter at the start) if you want them to be exposed to importers of our package.
+ستحتاج إلى جعل الدوال المساعدة عامة (تذكّر أن التصدير يكون بحرف كبير في البداية) إن أردت كشفها لمن يستوردون حزمتنا.
 
-In our `CLI` test you'll need to call the code as if you were using it within a different package.
+وفي اختبار `CLI` ستحتاج إلى استدعاء الشيفرة كما لو كنت تستعملها من حزمة مختلفة.
 
 ```go
 //CLI_test.go
@@ -534,7 +534,7 @@ func TestCLI(t *testing.T) {
 }
 ```
 
-You'll now see we have the same problems as we had in `main`
+سترى الآن أن لدينا المشكلات نفسها التي كانت في `main`
 
 ```
 ./CLI_test.go:15:26: implicit assignment of unexported field 'playerStore' in poker.CLI literal
@@ -543,7 +543,7 @@ You'll now see we have the same problems as we had in `main`
 ./CLI_test.go:25:39: implicit assignment of unexported field 'in' in poker.CLI literal
 ```
 
-The easiest way to get around this is to make a constructor as we have for other types. We'll also change `CLI` so it stores a `bufio.Scanner` instead of the reader as it's now automatically wrapped at construction time.
+أسهل طريقة لتجاوز ذلك هي صنع دالة بانية كما فعلنا مع الأنواع الأخرى. وسنغيّر أيضاً `CLI` بحيث يخزّن `bufio.Scanner` بدلاً من القارئ، لأنه صار يُغلَّف تلقائياً وقت البناء.
 
 ```go
 //CLI.go
@@ -560,7 +560,7 @@ func NewCLI(store PlayerStore, in io.Reader) *CLI {
 }
 ```
 
-By doing this, we can then simplify and refactor our reading code
+وبهذا يمكننا بعد ذلك تبسيط شيفرة القراءة وإعادة هيكلتها
 
 ```go
 //CLI.go
@@ -579,20 +579,20 @@ func (cli *CLI) readLine() string {
 }
 ```
 
-Change the test to use the constructor instead and we should be back to the tests passing.
+غيّر الاختبار ليستعمل الدالة البانية بدلاً من ذلك، وينبغي أن نعود إلى اختبارات ناجحة.
 
-Finally, we can go back to our new `main.go` and use the constructor we just made
+وأخيراً، يمكننا العودة إلى `main.go` الجديد واستعمال الدالة البانية التي صنعناها للتو
 
 ```go
 //cmd/cli/main.go
 game := poker.NewCLI(store, os.Stdin)
 ```
 
-Try and run it, type "Bob wins".
+حاول تشغيله، واكتب "Bob wins".
 
-### Refactor
+### أعد الهيكلة
 
-We have some repetition in our respective applications where we are opening a file and creating a `file_system_store` from its contents. This feels like a slight weakness in our package's design so we should make a function in it to encapsulate opening a file from a path and returning you the `PlayerStore`.
+لدينا شيء من التكرار في تطبيقينا، حيث نفتح ملفاً وننشئ `file_system_store` من محتوياته. ويبدو هذا ضعفاً طفيفاً في تصميم حزمتنا، لذا ينبغي أن ننشئ فيها دالة (function) تغلّف فتح ملف من مسار وإعادة `PlayerStore`.
 
 ```go
 //file_system_store.go
@@ -617,9 +617,9 @@ func FileSystemPlayerStoreFromFile(path string) (*FileSystemPlayerStore, func(),
 }
 ```
 
-Now refactor both of our applications to use this function to create the store.
+والآن أعد هيكلة التطبيقين كليهما لاستعمال هذه الدالة لإنشاء المخزن.
 
-#### CLI application code
+#### شيفرة تطبيق سطر الأوامر
 
 ```go
 // cmd/cli/main.go
@@ -648,7 +648,7 @@ func main() {
 }
 ```
 
-#### Web server application code
+#### شيفرة تطبيق خادم الويب
 
 ```go
 // cmd/webserver/main.go
@@ -678,23 +678,23 @@ func main() {
 }
 ```
 
-Notice the symmetry: despite being different user interfaces the setup is almost identical. This feels like good validation of our design so far.
-And notice also that `FileSystemPlayerStoreFromFile` returns a closing function, so we can close the underlying file once we are done using the Store.
+لاحظ التناظر: رغم أنهما واجهتا مستخدم مختلفتان، فإن الإعداد يكاد يكون متطابقاً. ويبدو هذا تحققاً جيداً من تصميمنا حتى الآن.
+ولاحظ أيضاً أن `FileSystemPlayerStoreFromFile` تعيد دالة إغلاق، كي نستطيع إغلاق الملف الأساسي بمجرد أن ننتهي من استعمال المخزن.
 
-## Wrapping up
+## الخلاصة
 
-### Package structure
+### بنية الحزم
 
-This chapter meant we wanted to create two applications, re-using the domain code we've written so far. In order to do this, we needed to update our package structure so that we had separate folders for our respective `main`s.
+أردنا في هذا الفصل إنشاء تطبيقين، مع إعادة استعمال شيفرة المجال التي كتبناها حتى الآن. ولفعل ذلك، احتجنا إلى تحديث بنية حزمنا بحيث تكون لدينا مجلدات منفصلة لكل `main`.
 
-By doing this we ran into integration problems due to unexported values so this further demonstrates the value of working in small "slices" and integrating often.
+وبفعل ذلك واجهنا مشكلات تكامل بسبب القيم غير المُصدَّرة، وهذا يبيّن أكثر قيمة العمل على "شرائح" صغيرة والدمج كثيراً.
 
-We learned how `mypackage_test` helps us create a testing environment which is the same experience for other packages integrating with your code, to help you catch integration problems and see how easy (or not!) your code is to work with.
+وتعلّمنا كيف يساعدنا `mypackage_test` على إنشاء بيئة اختبار تقدّم التجربة نفسها التي تمر بها الحزم الأخرى حين تتكامل مع شيفرتك، لتساعدك على اكتشاف مشكلات التكامل ورؤية مدى سهولة (أو صعوبة!) العمل مع شيفرتك.
 
-### Reading user input
+### قراءة مدخلات المستخدم
 
-We saw how reading from `os.Stdin` is very easy for us to work with as it implements `io.Reader`. We used `bufio.Scanner` to easily read line by line user input.
+رأينا كيف أن القراءة من `os.Stdin` سهلة جداً بالنسبة إلينا لأنه يحقق `io.Reader`. واستعملنا `bufio.Scanner` لقراءة مدخلات المستخدم سطراً سطراً بسهولة.
 
-### Simple abstractions leads to simpler code re-use
+### التجريدات البسيطة تقود إلى إعادة استعمال أبسط للشيفرة
 
-It was almost no effort to integrate `PlayerStore` into our new application (once we had made the package adjustments) and subsequently testing was very easy too because we decided to expose our stub version too.
+لم يتطلب دمج `PlayerStore` في تطبيقنا الجديد أي جهد تقريباً (بعد أن أجرينا تعديلات الحزم)، وبالتالي كان الاختبار سهلاً جداً أيضاً، لأننا قررنا كشف نسختنا الثابتة البديلة أيضاً.
