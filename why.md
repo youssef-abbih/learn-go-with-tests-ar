@@ -1,97 +1,97 @@
-# Why unit tests and how to make them work for you
+# لماذا اختبارات الوحدة وكيف تجعلها تعمل لصالحك
 
-[Here's a link to a video of me chatting about this topic](https://www.youtube.com/watch?v=Kwtit8ZEK7U)
+[إليك رابطاً لفيديو أتحدث فيه عن هذا الموضوع](https://www.youtube.com/watch?v=Kwtit8ZEK7U)
 
-If you're not into videos, here's wordy version of it.
+إن لم تكن من محبي الفيديوهات، فإليك النسخة المكتوبة منه.
 
-## Software 
+## البرمجيات
 
-The promise of software is that it can change. This is why it is called _soft_ ware, it is malleable compared to hardware. A great engineering team should be an amazing asset to a company, writing systems that can evolve with a business to keep delivering value. 
+وعد البرمجيات أنها قابلة للتغيير. ولهذا تسمى _soft_ware، فهي طيّعة مقارنة بالعتاد. والفريق الهندسي الرائع ينبغي أن يكون مكسباً مذهلاً للشركة، يكتب أنظمة يمكن أن تتطور مع الأعمال لتواصل تقديم القيمة.
 
-So why are we so bad at it? How many projects do you hear about that outright fail? Or become "legacy" and have to be entirely re-written (and the re-writes often fail too!) 
+فلماذا نحن سيئون جداً في ذلك؟ كم مشروعاً تسمع عنه يفشل تماماً؟ أو يصبح "موروثاً" ويحتاج إلى إعادة كتابة كاملة (وكثيراً ما تفشل إعادات الكتابة أيضاً!)؟
 
-How does a software system "fail" anyway? Can't it just be changed until it's correct? That's what we're promised!
+وكيف "يفشل" نظام برمجي أصلاً؟ ألا يمكن تغييره ببساطة حتى يصبح صحيحاً؟ هذا ما وُعدنا به!
 
-A lot of people are choosing Go to build systems because it has made a number of choices which one hopes will make it more legacy-proof. 
+يختار كثيرون غو (Go) لبناء الأنظمة لأنها اتخذت عدداً من الخيارات التي يُرجى أن تجعلها أكثر مقاومة للتحول إلى شيفرة موروثة.
 
-- Compared to my previous life of Scala where [I described how it has enough rope to hang yourself](http://www.quii.dev/Scala_-_Just_enough_rope_to_hang_yourself), Go has only 25 keywords and _a lot_ of systems can be built from the standard library and a few other small libraries. The hope is that with Go you can write code and come back to it in 6 months time and it'll still make sense.
-- The tooling in respect to testing, benchmarking, linting & shipping is first class compared to most alternatives.
-- The standard library is brilliant.
-- Very fast compilation speed for tight feedback loops
-- The Go backward compatibility promise. It looks like Go will get generics and other features in the future but the designers have promised that even Go code you wrote 5 years ago will still build. I literally spent weeks upgrading a project from Scala 2.8 to 2.10. 
+- مقارنة بحياتي السابقة مع Scala حيث [وصفت كيف أنها تمنحك من الحبل ما يكفي لتشنق نفسك](http://www.quii.dev/Scala_-_Just_enough_rope_to_hang_yourself)، ليس في غو إلا 25 كلمة محجوزة، ويمكن بناء _كثير_ من الأنظمة من المكتبة القياسية وبعض المكتبات الصغيرة الأخرى. والأمل أنك مع غو تستطيع كتابة شيفرة (code) والعودة إليها بعد 6 أشهر فتظل مفهومة.
+- الأدوات المتعلقة بالاختبار وقياس الأداء والتدقيق الساكن والإطلاق من الدرجة الأولى مقارنة بمعظم البدائل.
+- المكتبة القياسية رائعة.
+- سرعة تصريف عالية جداً لحلقات تغذية راجعة (feedback loops) متقاربة
+- وعد غو بالتوافق مع الإصدارات السابقة. يبدو أن غو ستحصل على الأنواع العامة وميزات أخرى في المستقبل، لكن مصمميها وعدوا بأن شيفرة غو التي كتبتها قبل 5 سنوات ستظل تُبنى. وقد قضيت حرفياً أسابيع في ترقية مشروع من Scala 2.8 إلى 2.10.
 
-Even with all these great properties we can still make terrible systems, so we should look to the past and understand lessons in software engineering that apply no matter how shiny (or not) your language is.
+حتى مع كل هذه الخصائص الرائعة، ما زال بإمكاننا صنع أنظمة فظيعة، لذا ينبغي أن ننظر إلى الماضي ونفهم دروس هندسة البرمجيات التي تنطبق أياً كان مدى لمعان لغتك (أو عدمه).
 
-In 1974 a clever software engineer called [Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) wrote [Lehman's laws of software evolution](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution).
+في عام 1974 كتب مهندس برمجيات بارع اسمه [ماني ليمان](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) [قوانين ليمان لتطور البرمجيات](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution).
 
-> The laws describe a balance between forces driving new developments on one hand, and forces that slow down progress on the other hand.
+> تصف القوانين توازناً بين القوى التي تدفع التطورات الجديدة من جهة، والقوى التي تبطئ التقدم من جهة أخرى.
 
-These forces seem like important things to understand if we have any hope of not being in an endless cycle of shipping systems that turn into legacy and then get re-written over and over again.
+تبدو هذه القوى أموراً مهمة ينبغي فهمها إن كان لدينا أي أمل في ألا نكون في دورة لا تنتهي من إطلاق أنظمة تتحول إلى شيفرة موروثة ثم يُعاد كتابتها مرة بعد مرة.
 
-## The Law of Continuous Change
+## قانون التغير المستمر
 
-> Any software system used in the real-world must change or become less and less useful in the environment
+> أي نظام برمجي يُستعمل في العالم الحقيقي يجب أن يتغير، وإلا صار أقل فأقل فائدة في بيئته
 
-It feels obvious that a system _has_ to change or it becomes less useful but how often is this ignored? 
+يبدو بديهياً أن النظام _يجب_ أن يتغير وإلا صار أقل فائدة، لكن كم مرة يُتجاهل هذا؟
 
-Many teams are incentivised to deliver a project on a particular date and then move on to the next project. If the software is "lucky" there is at least some kind of hand-off to another set of individuals to maintain it, but they didn't write it of course. 
+كثير من الفرق تُحفَّز على تسليم مشروع في تاريخ معيّن ثم الانتقال إلى المشروع التالي. فإن كان البرنامج "محظوظاً" فهناك على الأقل نوع من التسليم إلى مجموعة أخرى من الأفراد لصيانته، لكنهم بالطبع لم يكتبوه.
 
-People often concern themselves with trying to pick a framework which will help them "deliver quickly" but not focusing on the longevity of the system in terms of how it needs to evolve.
+كثيراً ما ينشغل الناس بمحاولة اختيار إطار عمل يساعدهم على "التسليم بسرعة"، دون التركيز على طول عمر النظام من حيث الطريقة التي يحتاج أن يتطور بها.
 
-Even if you're an incredible software engineer, you will still fall victim to not knowing the future needs of your system. As the business changes some of the brilliant code you wrote is now no longer relevant.
+حتى لو كنت مهندس برمجيات مذهلاً، فستقع ضحية عدم معرفة الاحتياجات المستقبلية لنظامك. فمع تغير الأعمال، تصبح بعض الشيفرة الرائعة التي كتبتها غير ذات صلة.
 
-Lehman was on a roll in the 70s because he gave us another law to chew on.
+كان ليمان في أوج عطائه في السبعينيات، فقد أعطانا قانوناً آخر لنتأمله.
 
-## The Law of Increasing Complexity
+## قانون التعقيد المتزايد
 
-> As a system evolves, its complexity increases unless work is done to reduce it
+> مع تطور النظام يزداد تعقيده، ما لم يُبذل عمل لتقليله
 
-What he's saying here is we can't have software teams as blind feature factories, piling more and more features on to software in the hope it will survive in the long run. 
+ما يقوله هنا أننا لا نستطيع أن نجعل فرق البرمجيات مصانع ميزات عمياء، تكدّس مزيداً من الميزات على البرمجيات على أمل أن تصمد على المدى الطويل.
 
-We **have** to keep managing the complexity of the system as the knowledge of our domain changes. 
+**علينا** أن نواصل إدارة تعقيد النظام مع تغير معرفتنا بمجالنا.
 
-## Refactoring
+## إعادة الهيكلة
 
-There are _many_ facets of software engineering that keeps software malleable, such as:
+هناك جوانب _كثيرة_ في هندسة البرمجيات تُبقي البرمجيات طيّعة، مثل:
 
-- Developer empowerment
-- Generally "good" code. Sensible separation of concerns, etc etc
-- Communication skills
-- Architecture
-- Observability
-- Deployability
-- Automated tests
-- Feedback loops
+- تمكين المطورين
+- الشيفرة "الجيدة" عموماً. فصل معقول للاهتمامات، وما إلى ذلك
+- مهارات التواصل
+- المعمارية
+- قابلية الرصد
+- قابلية النشر
+- الاختبارات الآلية
+- حلقات التغذية الراجعة
 
-I am going to focus on refactoring. It's a phrase that gets thrown around a lot "we need to refactor this" - said to a developer on their first day of programming without a second thought. 
+سأركز على إعادة الهيكلة (refactoring). فهي عبارة تتردد كثيراً: "نحتاج إلى إعادة هيكلة هذا"، تُقال لمطور في يومه الأول في البرمجة دون تفكير ثانٍ.
 
-Where does the phrase come from? How is refactoring just different from writing code?
+من أين جاءت العبارة؟ وكيف تختلف إعادة الهيكلة عن مجرد كتابة الشيفرة؟
 
-I know that I and many others have _thought_ we were doing refactoring but we were mistaken
+أعرف أنني وكثيرين غيري _ظننا_ أننا نعيد الهيكلة لكننا كنا مخطئين
 
-[Martin Fowler describes how people are getting it wrong](https://martinfowler.com/bliki/RefactoringMalapropism.html)
+[يصف مارتن فاولر كيف يخطئ الناس في فهمها](https://martinfowler.com/bliki/RefactoringMalapropism.html)
 
-> However the term "refactoring" is often used when it's not appropriate. If somebody talks about a system being broken for a couple of days while they are refactoring, you can be pretty sure they are not refactoring.
+> لكن مصطلح "إعادة الهيكلة" كثيراً ما يُستعمل في غير موضعه. فإن تحدث أحدهم عن نظام معطل لبضعة أيام ريثما يعيد هيكلته، فيمكنك أن تكون متأكداً إلى حد كبير من أنه لا يعيد الهيكلة.
 
-So what is it?
+فما هي إذن؟
 
-### Factorisation
+### التحليل إلى عوامل
 
-When learning maths at school you probably learned about factorisation. Here's a very simple example
+حين تعلّمت الرياضيات في المدرسة، تعلّمت على الأرجح التحليل إلى عوامل. إليك مثالاً بسيطاً جداً
 
-Calculate `1/2 + 1/4`
+احسب `1/2 + 1/4`
 
-To do this you _factorise_ the denominators, turning the expression into 
+لفعل ذلك _تحلّل_ المقامات، فتحوّل التعبير إلى
 
-`2/4 + 1/4` which you can then turn into `3/4`. 
+`2/4 + 1/4`، الذي يمكنك بعد ذلك تحويله إلى `3/4`.
 
-We can take some important lessons from this. When we _factorise the expression_ we have **not changed the meaning of the expression**. Both of them equal `3/4` but we have made it easier for us to work with; by changing `1/2` to `2/4` it fits into our "domain" easier. 
+يمكننا أن نستخلص من هذا بعض الدروس المهمة. فحين _نحلّل التعبير_ فإننا **لا نغيّر معنى التعبير**. فكلاهما يساوي `3/4`، لكننا جعلنا العمل معه أسهل علينا؛ فبتغيير `1/2` إلى `2/4` صار يلائم "مجالنا" بسهولة أكبر.
 
-When you refactor your code, you are trying to find ways of making your code easier to understand and "fit" into your current understanding of what the system needs to do. Crucially **you should not be changing behaviour**. 
+حين تعيد هيكلة شيفرتك، فإنك تحاول إيجاد طرق لجعل شيفرتك أسهل فهماً، وأكثر "ملاءمة" لفهمك الحالي لما يحتاج النظام إلى فعله. والأهم أنه **لا ينبغي أن تغيّر السلوك**.
 
-#### An example in Go
+#### مثال في غو
 
-Here is a function which greets `name` in a particular `language`
+إليك دالة (function) تحيّي `name` بلغة `language` معيّنة
 
     func Hello(name, language string) string {
     
@@ -108,7 +108,7 @@ Here is a function which greets `name` in a particular `language`
       return "Hello, " + name
     }
 
-Having dozens of `if` statements doesn't feel good and we have a duplication of concatenating a language specific greeting with `, ` and the `name.` So I'll refactor the code.
+وجود عشرات تعليمات `if` لا يبدو جيداً، ولدينا ازدواجية في دمج تحية خاصة باللغة مع `, ` و`name`. لذا سأعيد هيكلة الشيفرة.
 
     func Hello(name, language string) string {
       	return fmt.Sprintf(
@@ -134,29 +134,29 @@ Having dozens of `if` statements doesn't feel good and we have a duplication of 
       return "Hello"
     }
 
-The nature of this refactor isn't actually important, what's important is I haven't changed behaviour. 
+طبيعة إعادة الهيكلة هذه ليست مهمة في الحقيقة، فالمهم أنني لم أغيّر السلوك.
 
-When refactoring you can do whatever you like, add interfaces, new types, functions, methods etc. The only rule is you don't change behaviour
+عند إعادة الهيكلة يمكنك فعل ما تشاء: إضافة واجهات، وأنواع جديدة، ودوال، وطرق، وغير ذلك. والقاعدة الوحيدة ألا تغيّر السلوك
 
-### When refactoring code you must not be changing behaviour
+### عند إعادة هيكلة الشيفرة يجب ألا تغيّر السلوك
 
-This is very important. If you are changing behaviour at the same time you are doing _two_ things at once. As software engineers we learn to break systems up into different files/packages/functions/etc because we know trying to understand a big blob of stuff is hard. 
+هذا مهم جداً. فإن كنت تغيّر السلوك في الوقت نفسه، فأنت تفعل شيئين _اثنين_ معاً. ونحن كمهندسي برمجيات نتعلم تقسيم الأنظمة إلى ملفات وحزم ودوال مختلفة وغير ذلك، لأننا نعرف أن محاولة فهم كتلة كبيرة من الأشياء أمر صعب.
 
-We don't want to have to be thinking about lots of things at once because that's when we make mistakes. I've witnessed so many refactoring endeavours fail because the developers are biting off more than they can chew.  
+لا نريد أن نضطر إلى التفكير في أشياء كثيرة معاً، لأن هذا هو الوقت الذي نرتكب فيه الأخطاء. وقد شهدت فشل كثير جداً من محاولات إعادة الهيكلة لأن المطورين يقضمون أكثر مما يستطيعون مضغه.
 
-When I was doing factorisations in maths classes with pen and paper I would have to manually check that I hadn't changed the meaning of the expressions in my head. How do we know we aren't changing behaviour when refactoring when working with code, especially on a system that is non-trivial?
+حين كنت أجري التحليل إلى عوامل في حصص الرياضيات بالقلم والورقة، كان علي أن أتحقق يدوياً في ذهني من أنني لم أغيّر معنى التعبيرات. فكيف نعرف أننا لا نغيّر السلوك عند إعادة الهيكلة حين نعمل مع الشيفرة، خصوصاً في نظام غير بسيط؟
 
-Those who choose not to write tests will typically be reliant on manual testing. For anything other than a small project this will be a tremendous time-sink and does not scale in the long run. 
- 
-**In order to safely refactor you need unit tests** because they provide
+من يختارون عدم كتابة الاختبارات سيعتمدون عادةً على الاختبار اليدوي. ولأي شيء غير المشاريع الصغيرة سيكون هذا مستنزفاً هائلاً للوقت، ولا يتوسع على المدى الطويل.
 
-- Confidence you can reshape code without worrying about changing behaviour
-- Documentation for humans as to how the system should behave
-- Much faster and more reliable feedback than manual testing
+**لكي تعيد الهيكلة بأمان تحتاج إلى اختبارات الوحدة (unit tests)**، لأنها توفر
 
-#### An example in Go
+- الثقة بأنك تستطيع إعادة تشكيل الشيفرة دون القلق من تغيير السلوك
+- توثيقاً للبشر عن كيفية تصرف النظام
+- تغذية راجعة أسرع بكثير وأكثر موثوقية من الاختبار اليدوي
 
-A unit test for our `Hello` function could look like this
+#### مثال في غو
+
+قد يبدو اختبار وحدة للدالة `Hello` هكذا
 
     func TestHello(t *testing.T) {
       got := Hello(“Chris”, es)
@@ -167,125 +167,125 @@ A unit test for our `Hello` function could look like this
       }
     }
 
-At the command line I can run `go test` and get immediate feedback as to whether my refactoring efforts have altered behaviour. In practice it's best to learn the magic button to run your tests within your editor/IDE. 
+في سطر الأوامر أستطيع تشغيل `go test` والحصول على تغذية راجعة فورية عما إذا كانت جهودي في إعادة الهيكلة قد غيّرت السلوك. وعملياً، من الأفضل أن تتعلم الزر السحري لتشغيل اختباراتك داخل محررك أو بيئة التطوير المتكاملة.
 
-You want to get in to a state where you are doing 
+تريد أن تصل إلى حالة تفعل فيها ما يلي
 
-- Small refactor
-- Run tests
-- Repeat
+- إعادة هيكلة صغيرة
+- تشغيل الاختبارات
+- التكرار
 
-All within a very tight feedback loop so you don't go down rabbit holes and make mistakes.
+وكل ذلك ضمن حلقة تغذية راجعة متقاربة جداً، كي لا تقع في المتاهات وترتكب الأخطاء.
 
-Having a project where all your key behaviours are unit tested and give you feedback well under a second is a very empowering safety net to do bold refactoring when you need to. This helps us manage the incoming force of complexity that Lehman describes.
+امتلاك مشروع تُختبر فيه كل سلوكياتك الأساسية باختبارات الوحدة، وتعطيك تغذية راجعة في أقل من ثانية بكثير، شبكة أمان تمكّنك بقوة من إجراء إعادة هيكلة جريئة حين تحتاج إليها. وهذا يساعدنا على إدارة قوة التعقيد القادمة التي يصفها ليمان.
 
-## If unit tests are so great, why is there sometimes resistance to writing them?
+## إن كانت اختبارات الوحدة رائعة إلى هذا الحد، فلماذا تُقاوَم كتابتها أحياناً؟
 
-On the one hand you have people (like me) saying that unit tests are important for the long term health of your system because they ensure you can keep refactoring with confidence. 
+من جهة، هناك أشخاص (مثلي) يقولون إن اختبارات الوحدة مهمة لصحة نظامك على المدى الطويل، لأنها تضمن أنك تستطيع مواصلة إعادة الهيكلة بثقة.
 
-On the other you have people describing experiences of unit tests actually _hindering_ refactoring.
+ومن جهة أخرى، هناك أشخاص يصفون تجارب كانت فيها اختبارات الوحدة _تعيق_ إعادة الهيكلة فعلاً.
 
-Ask yourself, how often do you have to change your tests when refactoring? Over the years I have been on many projects with very good test coverage and yet the engineers are reluctant to refactor because of the perceived effort of changing tests.
+اسأل نفسك: كم مرة تضطر إلى تغيير اختباراتك عند إعادة الهيكلة؟ عملت على مدى السنوات في مشاريع كثيرة ذات تغطية اختبارات جيدة جداً، ومع ذلك كان المهندسون مترددين في إعادة الهيكلة بسبب الجهد المتصوَّر لتغيير الاختبارات.
 
-This is the opposite of what we are promised!
+وهذا عكس ما وُعدنا به!
 
-### Why is this happening?
+### لماذا يحدث هذا؟
 
-Imagine you were asked to develop a square and we thought the best way to accomplish that would be stick two triangles together. 
+تخيّل أنه طُلب منك تطوير مربع، ورأينا أن أفضل طريقة لتحقيق ذلك لصق مثلثين معاً.
 
-![Two right-angled triangles to form a square](https://i.imgur.com/ela7SVf.jpg)
+![مثلثان قائما الزاوية يشكّلان مربعاً](https://i.imgur.com/ela7SVf.jpg)
 
-We write our unit tests around our square to make sure the sides are equal and then we write some tests around our triangles. We want to make sure our triangles render correctly so we assert that the angles sum up to 180 degrees, perhaps check we make 2 of them, etc etc. Test coverage is really important and writing these tests is pretty easy so why not? 
+نكتب اختبارات الوحدة حول المربع للتأكد من أن أضلاعه متساوية، ثم نكتب بعض الاختبارات حول المثلثات. نريد التأكد من أن مثلثاتنا تُرسم بشكل صحيح، لذا نؤكد أن مجموع زواياها 180 درجة، وربما نتحقق من أننا نصنع اثنين منها، وما إلى ذلك. فتغطية الاختبارات مهمة حقاً، وكتابة هذه الاختبارات سهلة جداً، فلم لا؟
 
-A few weeks later The Law of Continuous Change strikes our system and a new developer makes some changes. She now believes it would be better if squares were formed with 2 rectangles instead of 2 triangles. 
+بعد بضعة أسابيع يضرب قانون التغير المستمر نظامنا، فتجري مطورة جديدة بعض التغييرات. وهي ترى الآن أن من الأفضل أن تُشكَّل المربعات من مستطيلين بدلاً من مثلثين.
 
-![Two rectangles to form a square](https://i.imgur.com/1G6rYqD.jpg)
+![مستطيلان يشكّلان مربعاً](https://i.imgur.com/1G6rYqD.jpg)
 
-She tries to do this refactor and gets mixed signals from a number of failing tests. Has she actually broken important behaviours here? She now has to dig through these triangle tests and try and understand what's going on. 
+تحاول إجراء إعادة الهيكلة هذه، فتتلقى إشارات متضاربة من عدد من الاختبارات الفاشلة. هل أفسدت فعلاً سلوكيات مهمة هنا؟ عليها الآن أن تنقّب في اختبارات المثلثات هذه وتحاول فهم ما يجري.
 
-_It's not actually important that the square was formed out of triangles_ but **our tests have falsely elevated the importance of our implementation details**. 
+_ليس مهماً في الحقيقة أن المربع شُكّل من مثلثات_، لكن **اختباراتنا رفعت أهمية تفاصيل تنفيذنا زوراً**.
 
-## Favour testing behaviour rather than implementation detail
+## فضّل اختبار السلوك على تفاصيل التنفيذ
 
-When I hear people complaining about unit tests it is often because the tests are at the wrong abstraction level. They're testing implementation details, overly spying on collaborators and mocking too much. 
+حين أسمع الناس يشتكون من اختبارات الوحدة، فكثيراً ما يكون السبب أن الاختبارات على مستوى التجريد الخاطئ. فهي تختبر تفاصيل التنفيذ، وتتجسس أكثر من اللازم على المتعاونين، وتحاكي أكثر من اللازم.
 
-I believe it stems from a misunderstanding of what unit tests are and chasing vanity metrics (test coverage). 
+أعتقد أن هذا ينبع من سوء فهم لماهية اختبارات الوحدة، ومن مطاردة مقاييس التباهي (تغطية الاختبارات).
 
-If I am saying just test behaviour, should we not just only write system/black-box tests? These kind of tests do have lots of value in terms of verifying key user journeys but they are typically expensive to write and slow to run. For that reason they're not too helpful for _refactoring_ because the feedback loop is slow. In addition black box tests don't tend to help you very much with root causes compared to unit tests. 
+إن كنت أقول اختبر السلوك فقط، أفلا ينبغي أن نكتفي بكتابة اختبارات النظام أو الصندوق الأسود؟ لهذا النوع من الاختبارات قيمة كبيرة في التحقق من رحلات المستخدم الأساسية، لكنها عادةً مكلفة الكتابة وبطيئة التشغيل. ولهذا السبب ليست مفيدة جداً لـ_إعادة الهيكلة_، لأن حلقة التغذية الراجعة بطيئة. إضافة إلى ذلك، لا تساعدك اختبارات الصندوق الأسود كثيراً عادةً في الوصول إلى الأسباب الجذرية مقارنة باختبارات الوحدة.
 
-So what _is_ the right abstraction level?
+فما هو مستوى التجريد الصحيح _إذن_؟
 
-## Writing effective unit tests is a design problem
+## كتابة اختبارات وحدة فعالة مسألة تصميم
 
-Forgetting about tests for a moment, it is desirable to have within your system self-contained, decoupled "units" centered around key concepts in your domain. 
+بنسيان الاختبارات للحظة، من المرغوب أن تكون في نظامك "وحدات" مكتفية بذاتها ومنفصلة الأجزاء، تتمحور حول المفاهيم الأساسية في مجالك.
 
-I like to imagine these units as simple Lego bricks which have coherent APIs that I can combine with other bricks to make bigger systems. Underneath these APIs there could be dozens of things (types, functions et al) collaborating to make them work how they need to.
+أحب أن أتخيل هذه الوحدات كقطع ليغو بسيطة، لها واجهات برمجية متماسكة أستطيع جمعها مع قطع أخرى لصنع أنظمة أكبر. وتحت هذه الواجهات البرمجية قد تكون هناك عشرات الأشياء (أنواع، ودوال، وغيرها) تتعاون لتجعلها تعمل كما تحتاج.
 
-For instance if you were writing a bank in Go, you might have an "account" package. It will present an API that does not leak implementation detail and is easy to integrate with.
+فمثلاً إن كنت تكتب مصرفاً بغو، فقد تكون لديك حزمة "account". وستقدّم واجهة برمجية لا تسرّب تفاصيل التنفيذ، ويسهل التكامل معها.
 
-If you have these units that follow these properties you can write unit tests against their public APIs. _By definition_ these tests can only be testing useful behaviour. Underneath these units I am free to refactor the implementation as much as I need to and the tests for the most part should not get in the way.
+إن كانت لديك وحدات تتبع هذه الخصائص، فيمكنك كتابة اختبارات وحدة على واجهاتها البرمجية العامة. وهذه الاختبارات، _بحكم تعريفها_، لا يمكن أن تختبر إلا سلوكاً مفيداً. وتحت هذه الوحدات أكون حراً في إعادة هيكلة التنفيذ قدر ما أحتاج، ولا ينبغي أن تعترض الاختبارات طريقي في معظم الأحيان.
 
-### Are these unit tests?
+### هل هذه اختبارات وحدة؟
 
-**YES**. Unit tests are against "units" like I described. They were _never_ about only being against a single class/function/whatever.
+**نعم**. فاختبارات الوحدة تكون على "وحدات" كالتي وصفتها. ولم تكن _قط_ مقتصرة على صنف أو دالة أو أي شيء واحد فقط.
 
-## Bringing these concepts together
+## جمع هذه المفاهيم معاً
 
-We've covered
+تناولنا
 
-- Refactoring
-- Unit tests
-- Unit design
+- إعادة الهيكلة
+- اختبارات الوحدة
+- تصميم الوحدات
 
-What we can start to see is that these facets of software design reinforce each other. 
+ما نبدأ برؤيته أن هذه الجوانب من تصميم البرمجيات يعزز بعضها بعضاً.
 
-### Refactoring
+### إعادة الهيكلة
 
-- Gives us signals about our unit tests. If we have to do manual checks, we need more tests. If tests are wrongly failing then our tests are at the wrong abstraction level (or have no value and should be deleted).
-- Helps us handle the complexities within and between our units.
+- تعطينا إشارات عن اختبارات الوحدة لدينا. فإن اضطررنا إلى إجراء فحوص يدوية، فنحن نحتاج إلى مزيد من الاختبارات. وإن كانت الاختبارات تفشل خطأً، فاختباراتنا على مستوى التجريد الخاطئ (أو لا قيمة لها وينبغي حذفها).
+- تساعدنا على التعامل مع التعقيدات داخل وحداتنا وفيما بينها.
 
-### Unit tests
+### اختبارات الوحدة
 
-- Give a safety net to refactor.
-- Verify and document the behaviour of our units.
+- تمنح شبكة أمان لإعادة الهيكلة.
+- تتحقق من سلوك وحداتنا وتوثّقه.
 
-### (Well designed) units
+### الوحدات (جيدة التصميم)
 
-- Easy to write _meaningful_ unit tests.
-- Easy to refactor.
+- يسهل كتابة اختبارات وحدة _ذات معنى_ لها.
+- يسهل إعادة هيكلتها.
 
-Is there a process to help us arrive at a point where we can constantly refactor our code to manage complexity and keep our systems malleable?
+هل هناك عملية تساعدنا على الوصول إلى نقطة نستطيع فيها إعادة هيكلة شيفرتنا باستمرار لإدارة التعقيد وإبقاء أنظمتنا طيّعة؟
 
-## Why Test Driven Development (TDD)
+## لماذا التطوير المقاد بالاختبارات (TDD)
 
-Some people might take Lehman's quotes about how software has to change and overthink elaborate designs, wasting lots of time upfront trying to create the "perfect" extensible system and end up getting it wrong and going nowhere. 
+قد يأخذ بعض الناس اقتباسات ليمان عن ضرورة تغير البرمجيات فيبالغون في التفكير في تصاميم متقنة، ويهدرون وقتاً طويلاً مسبقاً في محاولة إنشاء نظام "مثالي" قابل للتوسيع، فينتهي بهم الأمر إلى الخطأ وعدم الوصول إلى أي مكان.
 
-This is the bad old days of software where an analyst team would spend 6 months writing a requirements document and an architect team would spend another 6 months coming up with a design and a few years later the whole project fails.
+هذه هي الأيام السيئة الخوالي للبرمجيات، حين كان فريق من المحللين يقضي 6 أشهر في كتابة وثيقة متطلبات، وفريق من المعماريين يقضي 6 أشهر أخرى في الخروج بتصميم، ثم بعد بضع سنوات يفشل المشروع كله.
 
-I say bad old days but this still happens! 
+أقول الأيام السيئة الخوالي، لكن هذا ما زال يحدث!
 
-Agile teaches us that we need to work iteratively, starting small and evolving the software so that we get fast feedback on the design of our software and how it works with real users;  TDD enforces this approach.
+تعلّمنا المنهجية الرشيقة أننا نحتاج إلى العمل تكرارياً، بالبدء صغاراً وتطوير البرمجيات بحيث نحصل على تغذية راجعة سريعة عن تصميم برمجياتنا وعن كيفية عملها مع المستخدمين الحقيقيين؛ و`TDD` يفرض هذا الأسلوب.
 
-TDD addresses the laws that Lehman talks about and other lessons hard learned through history by encouraging a methodology of constantly refactoring and delivering iteratively.
+يعالج `TDD` القوانين التي يتحدث عنها ليمان، ودروساً أخرى تُعلّمت بصعوبة عبر التاريخ، بتشجيع منهجية تقوم على إعادة الهيكلة المستمرة والتسليم التكراري.
 
-### Small steps
+### خطوات صغيرة
 
-- Write a small test for a small amount of desired behaviour
-- Check the test fails with a clear error (red)
-- Write the minimal amount of code to make the test pass (green)
-- Refactor
-- Repeat
+- اكتب اختباراً صغيراً لقدر صغير من السلوك المطلوب
+- تحقق من أن الاختبار يفشل بخطأ واضح (الأحمر)
+- اكتب أقل قدر من الشيفرة لجعل الاختبار ينجح (الأخضر)
+- أعد الهيكلة
+- كرر
 
-As you become proficient, this way of working will become natural and fast.
+ومع تمكّنك، ستصبح طريقة العمل هذه طبيعية وسريعة.
 
-You'll come to expect this feedback loop to not take very long and feel uneasy if you're in a state where the system isn't "green" because it indicates you may be down a rabbit hole. 
+ستصبح تتوقع ألا تستغرق حلقة التغذية الراجعة هذه وقتاً طويلاً، وستشعر بعدم الارتياح إن كنت في حالة لا يكون فيها النظام "أخضر"، لأن ذلك يشير إلى أنك ربما وقعت في متاهة.
 
-You'll always be driving small & useful functionality comfortably backed by the feedback from your tests.
+وستكون دائماً تقود وظائف صغيرة ومفيدة براحة، مدعوماً بالتغذية الراجعة من اختباراتك.
 
-## Wrapping up 
+## الخلاصة
 
-- The strength of software is that we can change it. _Most_ software will require change over time in unpredictable ways; but don't try and over-engineer because it's too hard to predict the future.
-- Instead we need to make it so we can keep our software malleable. In order to change software we have to refactor it as it evolves or it will turn into a mess
-- A good test suite can help you refactor quicker and in a less stressful manner
-- Writing good unit tests is a design problem so think about structuring your code so you have meaningful units that you can integrate together like Lego bricks.
-- TDD can help and force you to design well factored software iteratively, backed by tests to help future work as it arrives.
+- قوة البرمجيات أننا نستطيع تغييرها. و_معظم_ البرمجيات ستحتاج إلى التغيير مع الوقت بطرق يصعب التنبؤ بها؛ لكن لا تحاول الإفراط في الهندسة، لأن التنبؤ بالمستقبل صعب جداً.
+- بل علينا أن نجعل برمجياتنا قادرة على البقاء طيّعة. ولكي نغيّر البرمجيات علينا إعادة هيكلتها وهي تتطور، وإلا تحولت إلى فوضى
+- يمكن لمجموعة اختبارات جيدة أن تساعدك على إعادة الهيكلة بسرعة أكبر وبضغط أقل
+- كتابة اختبارات وحدة جيدة مسألة تصميم، لذا فكّر في بناء شيفرتك بحيث تكون لديك وحدات ذات معنى تستطيع دمجها معاً كقطع الليغو.
+- يمكن لـ`TDD` أن يساعدك، بل يجبرك، على تصميم برمجيات جيدة الهيكلة تكرارياً، مدعومة بالاختبارات لتساعد العمل المستقبلي حين يأتي.

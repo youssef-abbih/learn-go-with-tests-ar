@@ -404,3 +404,8 @@
 | single responsibility principle | مبدأ المسؤولية الواحدة | مقترح |  |
 | validate | التحقق من الصحة | مقترح |  |
 | annotation | تعليق توضيحي | مقترح |  |
+| legacy | موروث | مقترح | legacy system: نظام موروث |
+| factorisation | التحليل إلى عوامل | مقترح | أصل كلمة refactoring |
+| observability | قابلية الرصد | مقترح |  |
+| vanity metric | مقياس تباهٍ | مقترح |  |
+| backward compatibility | التوافق مع الإصدارات السابقة | مقترح |  |
