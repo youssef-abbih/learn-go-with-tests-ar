@@ -1,17 +1,17 @@
-# Reading files
+# قراءة الملفات
 
-- **[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/reading-files)**
-- [Here is a video of me working through the problem and taking questions from the Twitch stream](https://www.youtube.com/watch?v=nXts4dEJnkU)
+- **[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/reading-files)**
+- [إليك فيديو أعمل فيه على المشكلة وأجيب عن أسئلة البث المباشر على Twitch](https://www.youtube.com/watch?v=nXts4dEJnkU)
 
-In this chapter we're going to learn how to read some files, get some data out of them, and do something useful.
+سنتعلم في هذا الفصل كيف نقرأ بعض الملفات، ونستخرج منها بعض البيانات، ونفعل شيئاً مفيداً.
 
-Pretend you're working with your friend to create some blog software. The idea is an author will write their posts in markdown, with some metadata at the top of the file. On startup, the web server will read a folder to create some `Post`s, and then a separate `NewHandler` function will use those `Post`s as a datasource for the blog's webserver.
+تخيّل أنك تعمل مع صديقك على إنشاء برنامج للمدونات. والفكرة أن يكتب المؤلف تدويناته بصيغة markdown، مع بعض البيانات الوصفية في أعلى الملف. وعند بدء التشغيل، سيقرأ خادم الويب مجلداً لإنشاء بعض قيم `Post`، ثم تستعمل دالة (function) منفصلة هي `NewHandler` قيم `Post` هذه مصدراً للبيانات لخادم الويب الخاص بالمدونة.
 
-We've been asked to create the package that converts a given folder of blog post files into a collection of `Post`s.
+طُلب منا إنشاء الحزمة (package) التي تحوّل مجلداً معيّناً من ملفات التدوينات إلى مجموعة من قيم `Post`.
 
-### Example data
+### بيانات المثال
 
-hello world.md
+الملف `hello world.md`
 ```markdown
 Title: Hello, TDD world!
 Description: First post on our wonderful blog
@@ -22,7 +22,7 @@ Hello world!
 The body of posts starts after the `---`
 ```
 
-### Expected data
+### البيانات المتوقعة
 
 ```go
 type Post struct {
@@ -31,61 +31,61 @@ type Post struct {
 }
 ```
 
-## Iterative, test-driven development
+## التطوير التكراري المقاد بالاختبارات
 
-We'll take an iterative approach where we're always taking simple, safe steps toward our goal.
+سنتبع أسلوباً تكرارياً نتخذ فيه دائماً خطوات بسيطة وآمنة نحو هدفنا.
 
-This requires us to break up our work, but we should be careful not to fall into the trap of taking a ["bottom up"](https://en.wikipedia.org/wiki/Top-down_and_bottom-up_design) approach.
+وهذا يتطلب منا تقسيم عملنا، لكن ينبغي أن نحذر من الوقوع في فخ اتباع أسلوب ["من الأسفل إلى الأعلى"](https://en.wikipedia.org/wiki/Top-down_and_bottom-up_design).
 
-We should not trust our over-active imaginations when we start work. We could be tempted into making some kind of abstraction that is only validated once we stick everything together, such as some kind of `BlogPostFileParser`.
+لا ينبغي أن نثق بخيالنا المفرط في النشاط حين نبدأ العمل. فقد نُغرى بصنع نوع من التجريد لا يُتحقق منه إلا حين نجمع كل شيء معاً، مثل `BlogPostFileParser` ما.
 
-This is _not_ iterative and is missing out on the tight feedback loops that TDD is supposed to bring us.
+هذا _ليس_ تكرارياً، ويفوّت حلقات التغذية الراجعة (feedback loops) المتقاربة التي يُفترض أن يمنحنا إياها `TDD`.
 
-Kent Beck says:
+يقول كينت بيك:
 
-> Optimism is an occupational hazard of programming. Feedback is the treatment.
+> التفاؤل خطر مهني في البرمجة، والتغذية الراجعة هي العلاج.
 
-Instead, our approach should strive to be as close to delivering _real_ consumer value as quickly as possible (often called a "happy path"). Once we have delivered a small amount of consumer value end-to-end, further iteration of the rest of the requirements is usually straightforward.
+بل ينبغي أن يسعى أسلوبنا إلى الاقتراب بأسرع ما يمكن من تقديم قيمة _حقيقية_ للمستهلك (وكثيراً ما يسمى هذا "المسار الناجح"). وبمجرد أن نقدّم قدراً صغيراً من القيمة للمستهلك من البداية إلى النهاية، يصبح التقدم في بقية المتطلبات عادةً أمراً مباشراً.
 
-## Thinking about the kind of test we want to see
+## التفكير في نوع الاختبار الذي نريد رؤيته
 
-Let's remind ourselves of our mindset and goals when starting:
+لنذكّر أنفسنا بطريقة تفكيرنا وأهدافنا حين نبدأ:
 
-- **Write the test we want to see**. Think about how we'd like to use the code we're going to write from a consumer's point of view.
-- Focus on _what_ and _why_, but don't get distracted by _how_.
+- **اكتب الاختبار الذي تريد رؤيته**. فكّر في كيف نحب أن نستعمل الشيفرة (code) التي سنكتبها من وجهة نظر المستهلك.
+- ركّز على _ماذا_ و_لماذا_، ولا تنشغل بـ_كيف_.
 
-Our package needs to offer a function that can be pointed at a folder, and return us some posts.
+تحتاج حزمتنا إلى تقديم دالة يمكن توجيهها إلى مجلد، فتعيد لنا بعض التدوينات.
 
 ```go
 var posts []blogposts.Post
 posts = blogposts.NewPostsFromFS("some-folder")
 ```
 
-To write a test around this, we'd need some kind of test folder with some example posts in it. _There's nothing terribly wrong with this_, but you are making some trade-offs:
+لكتابة اختبار (test) حول هذا، سنحتاج إلى مجلد اختبار ما فيه بعض التدوينات النموذجية. _ليس في هذا خطأ فادح_، لكنك تقبل ببعض المقايضات:
 
-- for each test you may need to create new files to test a particular behaviour
-- some behaviour will be challenging to test, such as failing to load files
-- the tests will run a little slower because they will need to access the file system
+- قد تحتاج في كل اختبار إلى إنشاء ملفات جديدة لاختبار سلوك معيّن
+- سيكون اختبار بعض السلوك صعباً، مثل الفشل في تحميل الملفات
+- ستعمل الاختبارات أبطأ قليلاً لأنها ستحتاج إلى الوصول إلى نظام الملفات
 
-We're also unnecessarily coupling ourselves to a specific implementation of the file system.
+كما أننا نربط أنفسنا دون داعٍ بتنفيذ محدد لنظام الملفات.
 
-### File system abstractions introduced in Go 1.16
+### تجريدات نظام الملفات التي قدّمتها غو 1.16
 
-Go 1.16 introduced an abstraction for file systems; the [io/fs](https://golang.org/pkg/io/fs/) package.
+قدّمت غو (Go) 1.16 تجريداً لأنظمة الملفات هو الحزمة [io/fs](https://golang.org/pkg/io/fs/).
 
-> Package fs defines basic interfaces to a file system. A file system can be provided by the host operating system but also by other packages.
+> تعرّف الحزمة `fs` واجهات أساسية لنظام الملفات. ويمكن أن يوفر نظام الملفات نظامُ التشغيل المضيف، لكن يمكن أن توفره أيضاً حزم أخرى.
 
-This lets us loosen our coupling to a specific file system, which will then let us inject different implementations according to our needs.
+وهذا يتيح لنا تخفيف اقتراننا بنظام ملفات محدد، مما يتيح لنا بعد ذلك حقن تنفيذات مختلفة بحسب احتياجاتنا.
 
-> [On the producer side of the interface, the new embed.FS type implements fs.FS, as does zip.Reader. The new os.DirFS function provides an implementation of fs.FS backed by a tree of operating system files.](https://golang.org/doc/go1.16#fs)
+> [على جانب منتِج الواجهة، يحقق النوع الجديد `embed.FS` الواجهة `fs.FS`، وكذلك يفعل `zip.Reader`. وتوفر الدالة الجديدة `os.DirFS` تنفيذاً لـ`fs.FS` مدعوماً بشجرة من ملفات نظام التشغيل.](https://golang.org/doc/go1.16#fs)
 
-If we use this interface, users of our package have a number of options baked-in to the standard library to use. Learning to leverage interfaces defined in Go's standard library (e.g. `io.fs`, [`io.Reader`](https://golang.org/pkg/io/#Reader), [`io.Writer`](https://golang.org/pkg/io/#Writer)), is vital to writing loosely coupled packages. These packages can then be re-used in contexts different to those you imagined, with minimal fuss from your consumers.
+إن استعملنا هذه الواجهة (interface)، فستكون لدى مستخدمي حزمتنا خيارات عديدة جاهزة في المكتبة القياسية. وتعلّم الاستفادة من الواجهات المعرّفة في مكتبة غو القياسية (مثل `io.fs` و[`io.Reader`](https://golang.org/pkg/io/#Reader) و[`io.Writer`](https://golang.org/pkg/io/#Writer)) أمر حيوي لكتابة حزم ضعيفة الاقتران. ويمكن بعد ذلك إعادة استعمال هذه الحزم في سياقات تختلف عما تخيلته، بأقل قدر من العناء على مستهلكيك.
 
-In our case, maybe our consumer wants the posts to be embedded into the Go binary rather than files in a "real" filesystem? Either way, _our code doesn't need to care_.
+في حالتنا، ربما يريد مستهلكنا تضمين التدوينات في الملف التنفيذي لغو بدلاً من ملفات في نظام ملفات "حقيقي"؟ وفي كلتا الحالتين، _لا تحتاج شيفرتنا إلى الاهتمام_.
 
-For our tests, the package [testing/fstest](https://golang.org/pkg/testing/fstest/) offers us an implementation of [io/FS](https://golang.org/pkg/io/fs/#FS) to use, similar to the tools we're familiar with in [net/http/httptest](https://golang.org/pkg/net/http/httptest/).
+ولاختباراتنا، تقدّم لنا الحزمة [testing/fstest](https://golang.org/pkg/testing/fstest/) تنفيذاً لـ[io/FS](https://golang.org/pkg/io/fs/#FS) نستعمله، يشبه الأدوات التي ألفناها في [net/http/httptest](https://golang.org/pkg/net/http/httptest/).
 
-Given this information, the following feels like a better approach,
+وبناءً على هذه المعلومات، يبدو ما يلي أسلوباً أفضل،
 
 ```go
 var posts []blogposts.Post
@@ -93,11 +93,11 @@ posts = blogposts.NewPostsFromFS(someFS)
 ```
 
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We should keep scope as small and useful as possible. If we prove that we can read all the files in a directory, that will be a good start.  This will give us confidence in the software we're writing.  We can check that the count of `[]Post` returned is the same as the number of files in our fake file system.
+ينبغي أن نُبقي النطاق صغيراً ومفيداً قدر الإمكان. فإن أثبتنا أننا نستطيع قراءة كل الملفات في مجلد، فستكون تلك بداية جيدة.  وهذا سيمنحنا الثقة في البرنامج الذي نكتبه.  ويمكننا التحقق من أن عدد عناصر `[]Post` المعادة يساوي عدد الملفات في نظام ملفاتنا المزيف.
 
-Create a new project to work through this chapter.
+أنشئ مشروعاً جديداً لتعمل عليه خلال هذا الفصل.
 
 - `mkdir blogposts`
 - `cd blogposts`
@@ -127,25 +127,25 @@ func TestNewBlogPosts(t *testing.T) {
 
 ```
 
-Notice that the package of our test is `blogposts_test`. Remember, when TDD is practiced well we take a _consumer-driven_ approach: we don't want to test internal details because _consumers_ don't care about them. By appending `_test` to our intended package name, we only access exported members from our package - just like a real user of our package.
+لاحظ أن حزمة اختبارنا هي `blogposts_test`. وتذكّر أنه حين يُمارس `TDD` جيداً فإننا نتبع أسلوباً _مقاداً بالمستهلك_: فلا نريد اختبار التفاصيل الداخلية لأن _المستهلكين_ لا يهتمون بها. وبإلحاق `_test` باسم الحزمة المقصودة، لا نصل إلا إلى العناصر المُصدَّرة من حزمتنا، تماماً كما يفعل مستخدم حقيقي لها.
 
-We've imported [`testing/fstest`](https://golang.org/pkg/testing/fstest/) which gives us access to the [`fstest.MapFS`](https://golang.org/pkg/testing/fstest/#MapFS) type. Our fake file system will pass `fstest.MapFS` to our package.
+استوردنا [`testing/fstest`](https://golang.org/pkg/testing/fstest/) التي تتيح لنا الوصول إلى النوع [`fstest.MapFS`](https://golang.org/pkg/testing/fstest/#MapFS). وسيمرر نظام ملفاتنا المزيف `fstest.MapFS` إلى حزمتنا.
 
-> A MapFS is a simple in-memory file system for use in tests, represented as a map from path names (arguments to Open) to information about the files or directories they represent.
+> النوع `MapFS` نظام ملفات بسيط في الذاكرة للاستعمال في الاختبارات، ممثَّل كخريطة من أسماء المسارات (الوسطاء الممررة إلى `Open`) إلى معلومات عن الملفات أو المجلدات التي تمثلها.
 
-This feels simpler than maintaining a folder of test files, and it will execute quicker.
+يبدو هذا أبسط من صيانة مجلد من ملفات الاختبار، وسيُنفَّذ أسرع.
 
-Finally, we codified the usage of our API from a consumer's point of view, then checked if it creates the correct number of posts.
+وأخيراً، جسّدنا طريقة استعمال واجهتنا البرمجية من وجهة نظر المستهلك، ثم تحققنا من أنها تُنشئ العدد الصحيح من التدوينات.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./blogpost_test.go:15:12: undefined: blogposts
 ```
 
-## Write the minimal amount of code for the test to run and _check the failing test output_
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار و_تحقق من مخرجات الاختبار الفاشل_
 
-The package doesn't exist. Create a new file `blogposts.go` and put `package blogposts` inside it. You'll need to then import that package into your tests. For me, the imports now look like:
+الحزمة غير موجودة. أنشئ ملفاً جديداً باسم `blogposts.go` وضع فيه `package blogposts`. وستحتاج بعد ذلك إلى استيراد تلك الحزمة في اختباراتك. وعندي صارت الاستيرادات تبدو هكذا:
 
 ```go
 import (
@@ -155,13 +155,13 @@ import (
 )
 ```
 
-Now the tests won't compile because our new package does not have a `NewPostsFromFS` function, that returns some kind of collection.
+لن تُصرَّف الاختبارات الآن لأن حزمتنا الجديدة لا تحتوي على دالة `NewPostsFromFS` تعيد نوعاً ما من المجموعات.
 
 ```
 ./blogpost_test.go:16:12: undefined: blogposts.NewPostsFromFS
 ```
 
-This forces us to make the skeleton of our function to make the test run. Remember not to overthink the code at this point; we're only trying to get a running test, and to make sure it fails as we'd expect. If we skip this step we may skip over assumptions and, write a test which is not useful.
+وهذا يجبرنا على صنع هيكل دالتنا لتشغيل الاختبار. تذكّر ألا تُفرط في التفكير في الشيفرة في هذه المرحلة، فنحن نحاول فقط الحصول على اختبار يعمل، والتأكد من أنه يفشل كما نتوقع. فإن تجاوزنا هذه الخطوة فقد نتجاوز افتراضات، ونكتب اختباراً غير مفيد.
 
 ```go
 package blogposts
@@ -176,16 +176,16 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 }
 ```
 
-The test should now correctly fail
+ينبغي أن يفشل الاختبار الآن بشكل صحيح
 
 ```
 === RUN   TestNewBlogPosts
     blogposts_test.go:48: got 0 posts, wanted 2 posts
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We _could_ ["slime"](https://deniseyu.github.io/leveling-up-tdd/) this to make it pass:
+_يمكننا_ أن ["نلفّق"](https://deniseyu.github.io/leveling-up-tdd/) هذا لجعله ينجح:
 
 ```go
 func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
@@ -193,13 +193,13 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 }
 ```
 
-But, as Denise Yu wrote:
+لكن كما كتبت دينيس يو:
 
->Sliming is useful for giving a “skeleton” to your object. Designing an interface and executing logic are two concerns, and sliming tests strategically lets you focus on one at a time.
+>التلفيق مفيد لإعطاء كائنك "هيكلاً عظمياً". فتصميم الواجهة وتنفيذ المنطق اهتمامان منفصلان، والتلفيق الاستراتيجي في الاختبارات يتيح لك التركيز على واحد منهما في كل مرة.
 
-We already have our structure. So, what do we do instead?
+لدينا بالفعل الشكل العام. فماذا نفعل بدلاً من ذلك؟
 
-As we've cut scope, all we need to do is read the directory and create a post for each file we encounter. We don't have to worry about opening files and parsing them just yet.
+بما أننا قلّصنا النطاق، فكل ما علينا فعله هو قراءة المجلد وإنشاء تدوينة لكل ملف نصادفه. لا نحتاج إلى القلق بشأن فتح الملفات وتحليلها بعد.
 
 ```go
 func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
@@ -212,15 +212,15 @@ func NewPostsFromFS(fileSystem fstest.MapFS) []Post {
 }
 ```
 
-[`fs.ReadDir`](https://golang.org/pkg/io/fs/#ReadDir) reads a directory inside a given `fs.FS` returning [`[]DirEntry`](https://golang.org/pkg/io/fs/#DirEntry).
+تقرأ [`fs.ReadDir`](https://golang.org/pkg/io/fs/#ReadDir) مجلداً داخل `fs.FS` معيّن، وتعيد [`[]DirEntry`](https://golang.org/pkg/io/fs/#DirEntry).
 
-Already our idealised view of the world has been foiled because errors can happen, but remember now our focus is _making the test pass_, not changing design, so we'll ignore the error for now.
+لقد أُحبطت نظرتنا المثالية للعالم بالفعل لأن الأخطاء قد تحدث، لكن تذكّر أن تركيزنا الآن على _جعل الاختبار ينجح_، لا على تغيير التصميم، لذا سنتجاهل الخطأ (error) في الوقت الحالي.
 
-The rest of the code is straightforward: iterate over the entries, create a `Post` for each one and, return the slice.
+بقية الشيفرة مباشرة: نمر على المدخلات، وننشئ `Post` لكل منها، ثم نعيد الشريحة (slice).
 
-## Refactor
+## أعد الهيكلة
 
-Even though our tests are passing, we can't use our new package outside of this context, because it is coupled to a concrete implementation `fstest.MapFS`. But, it doesn't have to be. Change the argument to our `NewPostsFromFS` function to accept the interface from the standard library.
+مع أن اختباراتنا تنجح، لا نستطيع استعمال حزمتنا الجديدة خارج هذا السياق، لأنها مقترنة بتنفيذ ملموس هو `fstest.MapFS`. لكن ليس من الضروري أن تكون كذلك. غيّر وسيط (argument) الدالة `NewPostsFromFS` ليقبل الواجهة الموجودة في المكتبة القياسية.
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) []Post {
@@ -233,11 +233,11 @@ func NewPostsFromFS(fileSystem fs.FS) []Post {
 }
 ```
 
-Re-run the tests: everything should be working.
+أعد تشغيل الاختبارات: ينبغي أن يعمل كل شيء.
 
-### Error handling
+### معالجة الأخطاء
 
-We parked error handling earlier when we focused on making the happy-path work. Before continuing to iterate on the functionality, we should acknowledge that errors can happen when working with files. Beyond reading the directory, we can run into problems when we open individual files. Let's change our API (via our tests first, naturally) so that it can return an `error`.
+أجّلنا معالجة الأخطاء سابقاً حين ركزنا على جعل المسار الناجح يعمل. وقبل مواصلة التقدم في الوظائف، ينبغي أن نقر بأن الأخطاء قد تحدث عند العمل مع الملفات. فإلى جانب قراءة المجلد، قد نواجه مشكلات حين نفتح الملفات منفردة. لنغيّر واجهتنا البرمجية (عبر اختباراتنا أولاً، بطبيعة الحال) كي تستطيع إعادة `error`.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -258,7 +258,7 @@ func TestNewBlogPosts(t *testing.T) {
 }
 ```
 
-Run the test: it should complain about the wrong number of return values. Fixing the code is straightforward.
+شغّل الاختبار: ينبغي أن يعترض على عدد القيم المعادة الخاطئ. وإصلاح الشيفرة أمر مباشر.
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
@@ -274,7 +274,7 @@ func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
 }
 ```
 
-This will make the test pass. The TDD practitioner in you might be annoyed we didn't see a failing test before writing the code to propagate the error from `fs.ReadDir`. To do this "properly", we'd need a new test where we inject a failing `fs.FS` test-double to make `fs.ReadDir` return an `error`.
+هذا سيجعل الاختبار ينجح. وقد ينزعج ممارس `TDD` الذي بداخلك لأننا لم نرَ اختباراً فاشلاً قبل كتابة الشيفرة التي تنشر الخطأ القادم من `fs.ReadDir`. ولفعل هذا "كما ينبغي"، سنحتاج إلى اختبار جديد نحقن فيه بديل اختبار (test double) من `fs.FS` يفشل، لجعل `fs.ReadDir` تعيد `error`.
 
 ```go
 type StubFailingFS struct {
@@ -289,17 +289,17 @@ func (s StubFailingFS) Open(name string) (fs.File, error) {
 _, err := blogposts.NewPostsFromFS(StubFailingFS{})
 ```
 
-This should give you confidence in our approach. The interface we're using has one method, which makes creating test-doubles to test different scenarios trivial.
+ينبغي أن يمنحك هذا الثقة في أسلوبنا. فالواجهة التي نستعملها لها طريقة (method) واحدة، مما يجعل إنشاء بدائل اختبار لاختبار سيناريوهات مختلفة أمراً بسيطاً.
 
-In some cases, testing error handling is the pragmatic thing to do but, in our case, we're not doing anything _interesting_ with the error, we're just propagating it, so it's not worth the hassle of writing a new test.
+في بعض الحالات يكون اختبار معالجة الأخطاء هو التصرف العملي، لكننا في حالتنا لا نفعل أي شيء _مثير للاهتمام_ بالخطأ، بل ننشره فقط، لذا لا يستحق الأمر عناء كتابة اختبار جديد.
 
-Logically, our next iterations will be around expanding our `Post` type so that it has some useful data.
+منطقياً، ستدور تكراراتنا التالية حول توسيع النوع `Post` كي يحتوي على بيانات مفيدة.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We'll start with the first line in the proposed blog post schema, the title field.
+سنبدأ بالسطر الأول من مخطط التدوينة المقترح، أي حقل العنوان.
 
-We need to change the contents of the test files so they match what was specified, and then we can make an assertion that it is parsed correctly.
+علينا تغيير محتويات ملفات الاختبار لتطابق ما حُدد، ثم يمكننا إجراء توكيد (assertion) على أنه يُحلَّل بشكل صحيح.
 ```go
 func TestNewBlogPosts(t *testing.T) {
 	fs := fstest.MapFS{
@@ -317,14 +317,14 @@ func TestNewBlogPosts(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 ```
 ./blogpost_test.go:58:26: unknown field 'Title' in struct literal of type blogposts.Post
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Add the new field to our `Post` type so that the test will run
+أضف الحقل الجديد إلى النوع `Post` كي يعمل الاختبار
 
 ```go
 type Post struct {
@@ -332,7 +332,7 @@ type Post struct {
 }
 ```
 
-Re-run the test, and you should get a clear, failing test
+أعد تشغيل الاختبار، وينبغي أن تحصل على اختبار فاشل واضح
 
 ```
 === RUN   TestNewBlogPosts
@@ -340,9 +340,9 @@ Re-run the test, and you should get a clear, failing test
     blogpost_test.go:61: got {Title:}, want {Title:Post 1}
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We'll need to open each file and then extract the title
+علينا فتح كل ملف ثم استخراج العنوان
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
@@ -378,17 +378,17 @@ func getPost(fileSystem fs.FS, f fs.DirEntry) (Post, error) {
 }
 ```
 
-Remember our focus at this point is not to write elegant code, it's just to get to a point where we have working software.
+تذكّر أن تركيزنا في هذه المرحلة ليس كتابة شيفرة أنيقة، بل مجرد الوصول إلى نقطة يكون لدينا فيها برنامج يعمل.
 
-Even though this feels like a small increment forward it still required us to write a fair amount of code and make some assumptions in respect to error handling. This would be a point where you should talk to your colleagues and decide the best approach.
+مع أن هذا يبدو تقدماً صغيراً، فقد تطلّب منا كتابة قدر لا بأس به من الشيفرة ووضع بعض الافتراضات بشأن معالجة الأخطاء. وهذه نقطة ينبغي أن تتحدث فيها مع زملائك وتقرروا أفضل أسلوب.
 
-The iterative approach has given us fast feedback that our understanding of the requirements is incomplete.
+لقد منحنا الأسلوب التكراري تغذية راجعة سريعة بأن فهمنا للمتطلبات غير مكتمل.
 
-`fs.FS` gives us a way of opening a file within it by name with its `Open` method. From there we read the data from the file and, for now, we do not need any sophisticated parsing, just cutting out the `Title: ` text by slicing the string.
+تتيح لنا `fs.FS` فتح ملف داخلها باسمه عبر طريقتها `Open`. ومن هناك نقرأ البيانات من الملف، ولا نحتاج الآن إلى أي تحليل متطور، بل نقتطع فقط النص `Title: ` بتقطيع السلسلة النصية.
 
-## Refactor
+## أعد الهيكلة
 
-Separating the 'opening file code' from the 'parsing file contents code' will make the code simpler to understand and work with.
+فصل "شيفرة فتح الملف" عن "شيفرة تحليل محتويات الملف" سيجعل الشيفرة أبسط في الفهم والعمل.
 
 ```go
 func getPost(fileSystem fs.FS, f fs.DirEntry) (Post, error) {
@@ -411,11 +411,11 @@ func newPost(postFile fs.File) (Post, error) {
 }
 ```
 
-When you refactor out new functions or methods, take care and think about the arguments. You're designing here, and are free to think deeply about what is appropriate because you have passing tests. Think about coupling and cohesion. In this case you should ask yourself:
+حين تستخرج دوالاً أو طرقاً جديدة بإعادة الهيكلة، فاحرص على التفكير في الوسطاء. فأنت تصمم هنا، وأنت حر في التفكير بعمق فيما هو مناسب لأن لديك اختبارات ناجحة. فكّر في الاقتران والتماسك. وفي هذه الحالة ينبغي أن تسأل نفسك:
 
-> Does `newPost` have to be coupled to an `fs.File` ? Do we use all the methods and data from this type? What do we _really_ need?
+> هل يجب أن تقترن `newPost` بـ`fs.File`؟ هل نستعمل كل طرق هذا النوع وبياناته؟ ما الذي نحتاج إليه _حقاً_؟
 
-In our case we only use it as an argument to `io.ReadAll` which needs an `io.Reader`. So we should loosen the coupling in our function and ask for an `io.Reader`.
+في حالتنا لا نستعمله إلا كوسيط لـ`io.ReadAll` التي تحتاج إلى `io.Reader`. لذا ينبغي أن نخفف الاقتران في دالتنا ونطلب `io.Reader`.
 
 ```go
 func newPost(postFile io.Reader) (Post, error) {
@@ -429,7 +429,7 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-You can make a similar argument for our `getPost` function, which takes an `fs.DirEntry` argument but simply calls `Name()` to get the file name. We don't need all that; let's decouple from that type and pass the file name through as a string. Here's the fully refactored code:
+يمكنك تقديم حجة مشابهة للدالة `getPost`، التي تأخذ وسيطاً من النوع `fs.DirEntry` لكنها لا تفعل إلا استدعاء `Name()` للحصول على اسم الملف. لا نحتاج إلى كل ذلك؛ لنفك الاقتران بذلك النوع ونمرر اسم الملف كسلسلة نصية. إليك الشيفرة بعد إعادة هيكلتها بالكامل:
 
 ```go
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
@@ -468,11 +468,11 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-From now on, most of our efforts can be neatly contained within `newPost`. The concerns of opening and iterating over files are done, and now we can focus on extracting the data for our `Post` type. Whilst not technically necessary, files are a nice way to logically group related things together, so I moved the `Post` type and `newPost` into a new `post.go` file.
+من الآن فصاعداً، يمكن احتواء معظم جهودنا بشكل أنيق داخل `newPost`. فقد انتهينا من مسألتي فتح الملفات والمرور عليها، ويمكننا الآن التركيز على استخراج البيانات للنوع `Post`. ومع أن ذلك ليس ضرورياً تقنياً، فالملفات وسيلة جميلة لتجميع الأشياء المترابطة منطقياً، لذا نقلت النوع `Post` والدالة `newPost` إلى ملف جديد `post.go`.
 
-### Test helper
+### دالة مساعدة للاختبار
 
-We should take care of our tests too. We're going to be making assertions on `Posts` a lot, so we should write some code to help with that
+ينبغي أن نعتني باختباراتنا أيضاً. فسنجري كثيراً من التوكيدات على `Posts`، لذا ينبغي أن نكتب بعض الشيفرة لتساعدنا على ذلك
 
 ```go
 func assertPost(t *testing.T, got blogposts.Post, want blogposts.Post) {
@@ -487,9 +487,9 @@ func assertPost(t *testing.T, got blogposts.Post, want blogposts.Post) {
 assertPost(t, posts[0], blogposts.Post{Title: "Post 1"})
 ```
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Let's extend our test further to extract the next line from the file, the description. Up until making it pass should now feel comfortable and familiar.
+لنوسّع اختبارنا أكثر لاستخراج السطر التالي من الملف، أي الوصف. وينبغي أن تكون الخطوات حتى جعله ينجح مريحة ومألوفة الآن.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -514,15 +514,15 @@ Description: Description 2`
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./blogpost_test.go:47:58: unknown field 'Description' in struct literal of type blogposts.Post
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Add the new field to `Post`.
+أضف الحقل الجديد إلى `Post`.
 
 ```go
 type Post struct {
@@ -531,7 +531,7 @@ type Post struct {
 }
 ```
 
-The tests should now compile, and fail.
+ينبغي أن تُصرَّف الاختبارات الآن، وأن تفشل.
 
 ```
 === RUN   TestNewBlogPosts
@@ -539,11 +539,11 @@ The tests should now compile, and fail.
         Description: Description 1 Description:}, want {Title:Post 1 Description:Description 1}
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-The standard library has a handy library for helping you scan through data, line by line; [`bufio.Scanner`](https://golang.org/pkg/bufio/#Scanner)
+في المكتبة القياسية مكتبة مفيدة تساعدك على المسح عبر البيانات سطراً سطراً: [`bufio.Scanner`](https://golang.org/pkg/bufio/#Scanner)
 
-> Scanner provides a convenient interface for reading data such as a file of newline-delimited lines of text.
+> يوفر `Scanner` واجهة مريحة لقراءة البيانات، مثل ملف من أسطر نصية مفصولة بمحرف السطر الجديد.
 
 ```go
 func newPost(postFile io.Reader) (Post, error) {
@@ -559,15 +559,15 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-Handily, it also takes an `io.Reader` to read through (thank you again, loose-coupling), we don't need to change our function arguments.
+ومن حسن الحظ أنه يأخذ أيضاً `io.Reader` ليقرأ منه (شكراً مرة أخرى للاقتران الضعيف)، فلا نحتاج إلى تغيير وسطاء دالتنا.
 
-Call `Scan` to read a line, and then extract the data using `Text`.
+استدعِ `Scan` لقراءة سطر، ثم استخرج البيانات باستعمال `Text`.
 
-This function could never return an `error`. It would be tempting at this point to remove it from the return type, but we know we'll have to handle invalid file structures later so, we may as well leave it.
+هذه الدالة لا يمكن أن تعيد `error` أبداً. وقد يكون من المغري في هذه المرحلة حذفه من نوع القيمة المعادة، لكننا نعرف أننا سنضطر لاحقاً إلى معالجة صيغ الملفات غير الصالحة، فلنتركه.
 
-## Refactor
+## أعد الهيكلة
 
-We have repetition around scanning a line and then reading the text. We know we're going to do this operation at least one more time, it's a simple refactor to DRY up so let's start with that.
+لدينا تكرار في مسح سطر ثم قراءة النص. ونعرف أننا سنفعل هذه العملية مرة أخرى على الأقل، وإزالة هذا التكرار إعادة هيكلة بسيطة، فلنبدأ بها.
 
 ```go
 func newPost(postFile io.Reader) (Post, error) {
@@ -585,9 +585,9 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-This has barely saved any lines of code, but that's rarely the point of refactoring. What I'm trying to do here is just separating the _what_ from the _how_ of reading lines to make the code a little more declarative to the reader.
+لم يوفّر هذا تقريباً أي أسطر من الشيفرة، لكن هذا نادراً ما يكون الهدف من إعادة الهيكلة. ما أحاول فعله هنا هو فصل _ماذا_ عن _كيف_ في قراءة الأسطر، لجعل الشيفرة أكثر تصريحية للقارئ قليلاً.
 
-Whilst the magic numbers of 7 and 13 get the job done, they're not awfully descriptive.
+ومع أن العددين السحريين 7 و13 يؤديان المهمة، فإنهما ليسا وصفيين على الإطلاق.
 
 ```go
 const (
@@ -610,7 +610,7 @@ func newPost(postFile io.Reader) (Post, error) {
 }
 ```
 
-Now that I'm staring at the code with my creative refactoring mind, I'd like to try making our readLine function take care of removing the tag. There's also a more readable way of trimming a prefix from a string with the function `strings.TrimPrefix`.
+والآن وأنا أحدّق في الشيفرة بعقلي المبدع في إعادة الهيكلة، أود أن أجرّب جعل الدالة `readLine` تتولى إزالة الوسم. وهناك أيضاً طريقة أسهل قراءة لاقتطاع بادئة من سلسلة نصية باستعمال الدالة `strings.TrimPrefix`.
 
 ```go
 func newPost(postBody io.Reader) (Post, error) {
@@ -628,11 +628,11 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-You may or may not like this idea, but I do. The point is in the refactoring state we are free to play with the internal details, and you can keep running your tests to check things still behave correctly. We can always go back to previous states if we're not happy. The TDD approach gives us this license to frequently experiment with ideas, so we have more shots at writing great code.
+قد تعجبك هذه الفكرة وقد لا تعجبك، لكنها تعجبني. والمقصود أننا في حالة إعادة الهيكلة (refactoring) أحرار في التلاعب بالتفاصيل الداخلية، ويمكنك مواصلة تشغيل اختباراتك للتحقق من أن الأمور ما زالت تتصرف بشكل صحيح. ويمكننا دائماً العودة إلى حالات سابقة إن لم نكن راضين. فأسلوب `TDD` يمنحنا هذا الترخيص لتجربة الأفكار كثيراً، فتكون لدينا فرص أكثر لكتابة شيفرة رائعة.
 
-The next requirement is extracting the post's tags. If you're following along, I'd recommend trying to implement it yourself before reading on. You should now have a good, iterative rhythm and feel confident to extract the next line and parse out the data.
+المتطلب التالي هو استخراج وسوم التدوينة. إن كنت تتابع، فأنصحك بمحاولة تنفيذه بنفسك قبل متابعة القراءة. ينبغي أن يكون لديك الآن إيقاع تكراري جيد، وأن تشعر بالثقة لاستخراج السطر التالي وتحليل بياناته.
 
-For brevity, I will not go through the TDD steps, but here's the test with tags added.
+اختصاراً، لن أمر بخطوات `TDD`، لكن إليك الاختبار مع إضافة الوسوم.
 
 ```go
 func TestNewBlogPosts(t *testing.T) {
@@ -654,7 +654,7 @@ Tags: rust, borrow-checker`
 }
 ```
 
-You're only cheating yourself if you just copy and paste what I write. To make sure we're all on the same page, here's my code which includes extracting the tags.
+لن تغش إلا نفسك إن نسخت ما أكتبه ولصقته فحسب. وللتأكد من أننا جميعاً على الصفحة نفسها، إليك شيفرتي التي تتضمن استخراج الوسوم.
 
 ```go
 const (
@@ -679,11 +679,11 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-Hopefully no surprises here. We were able to re-use `readMetaLine` to get the next line for the tags and then split them up using `strings.Split`.
+أرجو ألا تكون هناك مفاجآت هنا. فقد استطعنا إعادة استعمال `readMetaLine` للحصول على السطر التالي للوسوم، ثم تقسيمها باستعمال `strings.Split`.
 
-The last iteration on our happy path is to extract the body.
+التكرار الأخير على مسارنا الناجح هو استخراج متن التدوينة.
 
-Here's a reminder of the proposed file format.
+إليك تذكيراً بصيغة الملف المقترحة.
 
 ```markdown
 Title: Hello, TDD world!
@@ -695,11 +695,11 @@ Hello world!
 The body of posts starts after the `---`
 ```
 
-We've read the first 3 lines already. We then need to read one more line, discard it and then the remainder of the file contains the post's body.
+قرأنا الأسطر الثلاثة الأولى بالفعل. ثم علينا قراءة سطر آخر وتجاهله، وبعد ذلك تحتوي بقية الملف على متن التدوينة.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Change the test data to have the separator, and a body with a few newlines to check we grab all the content.
+غيّر بيانات الاختبار لتحتوي على الفاصل، وعلى متن فيه بعض الأسطر الجديدة للتحقق من أننا نلتقط كل المحتوى.
 
 ```go
 	const (
@@ -719,7 +719,7 @@ M`
 	)
 ```
 
-Add to our assertion like the others
+أضف إلى توكيدنا كما في البقية
 
 ```go
 	assertPost(t, posts[0], blogposts.Post{
@@ -731,17 +731,17 @@ World`,
 	})
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./blogpost_test.go:60:3: unknown field 'Body' in struct literal of type blogposts.Post
 ```
 
-As we'd expect.
+كما كنا نتوقع.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Add `Body` to `Post` and the test should fail.
+أضف `Body` إلى `Post`، وينبغي أن يفشل الاختبار.
 
 ```
 === RUN   TestNewBlogPosts
@@ -749,10 +749,10 @@ Add `Body` to `Post` and the test should fail.
         World}
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-1. Scan the next line to ignore the `---` separator.
-2. Keep scanning until there's nothing left to scan.
+1. امسح السطر التالي لتجاهل الفاصل `---`.
+2. واصل المسح حتى لا يبقى شيء.
 
 ```go
 func newPost(postBody io.Reader) (Post, error) {
@@ -784,13 +784,13 @@ func newPost(postBody io.Reader) (Post, error) {
 }
 ```
 
-- `scanner.Scan()` returns a `bool` which indicates whether there's more data to scan, so we can use that with a `for` loop to keep reading through the data until the end.
-- After every `Scan()` we write the data into the buffer using `fmt.Fprintln`. We use the version that adds a newline because the scanner removes the newlines from each line, but we need to maintain them.
-- Because of the above, we need to trim the final newline, so we don't have a trailing one.
+- تعيد `scanner.Scan()` قيمة `bool` تشير إلى ما إذا كانت هناك بيانات أخرى للمسح، لذا يمكننا استعمالها مع حلقة (loop) `for` لمواصلة قراءة البيانات حتى النهاية.
+- بعد كل `Scan()` نكتب البيانات في المخزن المؤقت باستعمال `fmt.Fprintln`. ونستعمل النسخة التي تضيف سطراً جديداً لأن الماسح يحذف الأسطر الجديدة من كل سطر، لكننا نحتاج إلى الحفاظ عليها.
+- وبسبب ما سبق، علينا اقتطاع السطر الجديد الأخير، كي لا يبقى سطر جديد زائد في النهاية.
 
-## Refactor
+## أعد الهيكلة
 
-Encapsulating the idea of getting the rest of the data into a function will help future readers quickly understand _what_ is happening in `newPost`, without having to concern themselves with implementation specifics.
+تغليف فكرة الحصول على بقية البيانات في دالة سيساعد القراء مستقبلاً على أن يفهموا بسرعة _ما_ يحدث في `newPost`، دون الاضطرار إلى الانشغال بتفاصيل التنفيذ.
 
 ```go
 func newPost(postBody io.Reader) (Post, error) {
@@ -819,28 +819,28 @@ func readBody(scanner *bufio.Scanner) string {
 }
 ```
 
-## Iterating further
+## مزيد من التكرار
 
-We've made our "steel thread" of functionality, taking the shortest route to get to our happy path, but clearly there's some distance to go before it is production ready.
+صنعنا "الخيط الفولاذي" للوظائف، باتخاذ أقصر طريق للوصول إلى المسار الناجح، لكن من الواضح أن أمامنا مسافة قبل أن يصبح جاهزاً للإنتاج.
 
-We haven't handled:
+لم نعالج بعد:
 
-- when the file's format is not correct
-- the file is not a `.md`
-- what if the order of the metadata fields is different? Should that be allowed? Should we be able to handle it?
+- حالة أن تكون صيغة الملف غير صحيحة
+- حالة ألا يكون الملف من نوع `.md`
+- ماذا لو كان ترتيب حقول البيانات الوصفية مختلفاً؟ هل ينبغي السماح بذلك؟ هل ينبغي أن نستطيع معالجته؟
 
-Crucially though, we have working software, and we have defined our interface. The above are just further iterations, more tests to write and drive our behaviour. To support any of the above we shouldn't have to change our _design_, just implementation details.
+لكن الأهم أن لدينا برنامجاً يعمل، وقد عرّفنا واجهتنا. وما سبق ليس إلا تكرارات أخرى، واختبارات أخرى نكتبها لتقود سلوكنا. ولدعم أي مما سبق لا ينبغي أن نحتاج إلى تغيير _تصميمنا_، بل تفاصيل التنفيذ فقط.
 
-Keeping focused on the goal means we made the important decisions, and validated them against the desired behaviour, rather than getting bogged down on matters that won't affect the overall design.
+التركيز على الهدف يعني أننا اتخذنا القرارات المهمة، وتحققنا منها مقابل السلوك المطلوب، بدلاً من الغرق في مسائل لن تؤثر في التصميم العام.
 
-## Wrapping up
+## الخلاصة
 
-`fs.FS`, and the other changes in Go 1.16 give us some elegant ways of reading data from file systems and testing them simply.
+يقدّم لنا `fs.FS` والتغييرات الأخرى في غو 1.16 طرقاً أنيقة لقراءة البيانات من أنظمة الملفات واختبارها ببساطة.
 
-If you wish to try out the code "for real":
+إن أردت تجربة الشيفرة "على أرض الواقع":
 
-- Create a `cmd` folder within the project, add a `main.go` file
-- Add the following code
+- أنشئ مجلداً باسم `cmd` داخل المشروع، وأضف ملف `main.go`
+- أضف الشيفرة التالية
 
 ```go
 import (
@@ -858,35 +858,35 @@ func main() {
 }
 ```
 
-- Add some markdown files into a `posts` folder and run the program!
+- أضف بعض ملفات markdown إلى مجلد `posts` وشغّل البرنامج!
 
-Notice the symmetry between the production code
+لاحظ التناظر بين شيفرة الإنتاج
 
 ```go
 posts, err := blogposts.NewPostsFromFS(os.DirFS("posts"))
 ```
 
-And the tests
+والاختبارات
 
 ```go
 posts, err := blogposts.NewPostsFromFS(fs)
 ```
 
-This is when consumer-driven, top-down TDD _feels correct_.
+هنا _يبدو_ `TDD` المقاد بالمستهلك ومن الأعلى إلى الأسفل _صحيحاً_.
 
-A user of our package can look at our tests and quickly get up to speed with what it's supposed to do and how to use it. As maintainers, we can be _confident our tests are useful because they're from a consumer's point of view_. We're not testing implementation details or other incidental details, so we can be reasonably confident that our tests will help us, rather than hinder us when refactoring.
+يستطيع مستخدم حزمتنا النظر إلى اختباراتنا وفهم ما يُفترض أن تفعله وكيفية استعمالها بسرعة. وبصفتنا القائمين على صيانتها، يمكننا أن _نثق بأن اختباراتنا مفيدة لأنها مكتوبة من وجهة نظر المستهلك_. فنحن لا نختبر تفاصيل التنفيذ أو تفاصيل عرضية أخرى، لذا يمكننا أن نثق إلى حد معقول بأن اختباراتنا ستساعدنا، لا أن تعيقنا، عند إعادة الهيكلة.
 
-By relying on good software engineering practices like  [**dependency injection**](dependency-injection.md) our code is simple to test and re-use.
+وبالاعتماد على ممارسات جيدة في هندسة البرمجيات مثل  [**حقن التبعية**](dependency-injection.md) تصبح شيفرتنا سهلة الاختبار وإعادة الاستعمال.
 
-When you're creating packages, even if they're only internal to your project, prefer a top-down consumer driven approach. This will stop you over-imagining designs and making abstractions you may not even need and will help ensure the tests you write are useful.
+حين تنشئ حزماً، حتى لو كانت داخلية في مشروعك فقط، ففضّل أسلوباً من الأعلى إلى الأسفل مقاداً بالمستهلك. فهذا سيمنعك من الإفراط في تخيّل التصاميم وصنع تجريدات قد لا تحتاج إليها أصلاً، وسيساعد على ضمان أن تكون الاختبارات التي تكتبها مفيدة.
 
-The iterative approach kept every step small, and the continuous feedback helped us uncover unclear requirements possibly sooner than with other, more ad-hoc approaches.
+أبقى الأسلوب التكراري كل خطوة صغيرة، وساعدتنا التغذية الراجعة المستمرة على كشف المتطلبات غير الواضحة ربما أبكر مما لو اتبعنا أساليب أخرى أكثر ارتجالاً.
 
-### Writing?
+### الكتابة؟
 
-It's important to note that these new features only have operations for _reading_ files. If your work needs to do writing, you'll need to look elsewhere. Remember to keep thinking about what the standard library offers currently, if you're writing data you should probably look into leveraging existing interfaces such as `io.Writer` to keep your code loosely-coupled and re-usable.
+من المهم أن تلاحظ أن هذه الميزات الجديدة لا تحتوي إلا على عمليات _قراءة_ الملفات. فإن كان عملك يتطلب الكتابة، فستحتاج إلى البحث في مكان آخر. وتذكّر أن تواصل التفكير فيما توفره المكتبة القياسية حالياً، فإن كنت تكتب بيانات فعليك على الأرجح الاستفادة من الواجهات الموجودة مثل `io.Writer` لتبقى شيفرتك ضعيفة الاقتران وقابلة لإعادة الاستعمال.
 
-### Further reading
+### قراءات إضافية
 
-- This was a light intro to `io/fs`. [Ben Congdon has done an excellent write-up](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) which was a lot of help for writing this chapter.
-- [Discussion on the file system interfaces](https://github.com/golang/go/issues/41190)
+- كان هذا مدخلاً خفيفاً إلى `io/fs`. [وقد كتب بن كونغدون مقالاً ممتازاً](https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/) ساعدني كثيراً في كتابة هذا الفصل.
+- [نقاش حول واجهات نظام الملفات](https://github.com/golang/go/issues/41190)

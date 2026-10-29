@@ -270,3 +270,15 @@
 | library | مكتبة | مقترح |  |
 | remainder operator | عامل باقي القسمة | مقترح |  |
 | template | قالب | مقترح |  |
+| metadata | بيانات وصفية | مقترح |  |
+| consumer | مستهلك | مقترح | consumer-driven: مقاد بالمستهلك |
+| top-down | من الأعلى إلى الأسفل | مقترح | bottom-up: من الأسفل إلى الأعلى |
+| file system | نظام الملفات | مقترح |  |
+| trade-off | مقايضة | مقترح |  |
+| cohesion | التماسك | مقترح |  |
+| loose coupling | اقتران ضعيف | مقترح | loosely coupled: ضعيف الاقتران |
+| sliming | التلفيق | مقترح | إرجاع قيمة مثبّتة لجعل الاختبار ينجح |
+| steel thread | الخيط الفولاذي | مقترح |  |
+| scanner | ماسح | مقترح |  |
+| declarative | تصريحي | مقترح |  |
+| tag | وسم | مقترح | الجمع: وسوم |
