@@ -1,8 +1,8 @@
-# Revisiting arrays and slices with generics
+# عودة إلى المصفوفات والشرائح مع الأنواع العامة
 
-**[The code for this chapter is a continuation from Arrays and Slices, found here](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
+**[شيفرة هذا الفصل استكمال لفصل المصفوفات والشرائح، وتجدها هنا](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
 
-Take a look at both `SumAll` and `SumAllTails` that we wrote in [arrays and slices](arrays-and-slices.md). If you don't have your version please copy the code from the [arrays and slices](arrays-and-slices.md) chapter along with the tests.
+ألقِ نظرة على الدالتين `SumAll` و`SumAllTails` اللتين كتبناهما في فصل [المصفوفات والشرائح](arrays-and-slices.md). وإن لم تكن نسختك لديك، فانسخ الشيفرة (code) من فصل [المصفوفات والشرائح](arrays-and-slices.md) مع الاختبارات.
 
 ```go
 // Sum calculates the total from a slice of numbers.
@@ -30,49 +30,49 @@ func SumAllTails(numbersToSum ...[]int) []int {
 }
 ```
 
-Do you see a recurring pattern?
+هل ترى نمطاً متكرراً؟
 
-- Create some kind of "initial" result value.
-- Iterate over the collection, applying some kind of operation (or function) to the result and the next item in the slice, setting a new value for the result
-- Return the result.
+- أنشئ نوعاً من قيمة النتيجة "الابتدائية".
+- مُرّ على المجموعة، مطبقاً نوعاً من العمليات (أو دالة) على النتيجة والعنصر التالي في الشريحة، ومسنداً قيمة جديدة للنتيجة
+- أعد النتيجة.
 
-This idea is commonly talked about in functional programming circles, often times called 'reduce' or [fold](https://en.wikipedia.org/wiki/Fold_(higher-order_function)).
+يُتحدث عن هذه الفكرة كثيراً في أوساط البرمجة الوظيفية، وغالباً ما تسمى "الاختزال" (reduce) أو [الطيّ](https://en.wikipedia.org/wiki/Fold_(higher-order_function)).
 
-> In functional programming, fold (also termed reduce, accumulate, aggregate, compress, or inject) refers to a family of higher-order functions that analyze a recursive data structure and through use of a given combining operation, recombine the results of recursively processing its constituent parts, building up a return value. Typically, a fold is presented with a combining function, a top node of a data structure, and possibly some default values to be used under certain conditions. The fold then proceeds to combine elements of the data structure's hierarchy, using the function in a systematic way.
+> في البرمجة الوظيفية، يشير الطيّ (ويسمى أيضاً الاختزال أو التراكم أو التجميع أو الضغط أو الحقن) إلى عائلة من الدوال عالية الرتبة التي تحلل هيكل بيانات عَوْدياً، ومن خلال عملية دمج معطاة تعيد دمج نتائج المعالجة العَوْدية لأجزائه المكونة، فتبني قيمة معادة. وعادةً يُقدَّم الطيّ مع دالة دمج، والعقدة العليا لهيكل بيانات، وربما بعض القيم الافتراضية التي تُستعمل في ظروف معيّنة. ثم يمضي الطيّ في دمج عناصر التسلسل الهرمي لهيكل البيانات، مستعملاً الدالة بطريقة منهجية.
 
-Go has always had higher-order functions, and as of version 1.18 it also has [generics](./generics.md), so it is now possible to define some of these functions discussed in our wider field. There's no point burying your head in the sand, this is a very common abstraction outside the Go ecosystem and it'll be beneficial to understand it.
+لطالما كانت في غو (Go) دوال عالية الرتبة، ومنذ الإصدار 1.18 صارت فيها أيضاً [الأنواع العامة](./generics.md)، لذا صار ممكناً الآن تعريف بعض هذه الدوال التي يُتحدث عنها في مجالنا الأوسع. ولا فائدة من دفن رأسك في الرمال، فهذا تجريد شائع جداً خارج منظومة غو، وسيكون من المفيد فهمه.
 
-Now, I know some of you are probably cringing at this.
+أعرف الآن أن بعضكم يتقزز على الأرجح من هذا.
 
-> Go is supposed to be simple
+> يُفترض أن تكون غو بسيطة
 
-**Don't conflate easiness, with simplicity**. Doing loops and copy-pasting code is easy, but it's not necessarily simple. For more on simple vs easy, watch [Rich Hickey's masterpiece of a talk - Simple Made Easy](https://www.youtube.com/watch?v=SxdOUGdseq4).
+**لا تخلط بين السهولة والبساطة**. كتابة الحلقات ونسخ الشيفرة ولصقها أمر سهل، لكنه ليس بالضرورة بسيطاً. ولمزيد عن البسيط مقابل السهل، شاهد [تحفة ريتش هيكي: Simple Made Easy](https://www.youtube.com/watch?v=SxdOUGdseq4).
 
-**Don't conflate unfamiliarity, with complexity**. Fold/reduce may initially sound scary and computer-sciencey but all it really is, is an abstraction over a very common operation. Taking a collection, and combining it into one item. When you step back, you'll realise you probably do this _a lot_.
+**لا تخلط بين عدم الألفة والتعقيد**. قد يبدو الطيّ أو الاختزال مخيفاً ونظرياً في البداية، لكنه في الحقيقة ليس إلا تجريداً فوق عملية شائعة جداً: أخذ مجموعة ودمجها في عنصر واحد. وحين تتراجع خطوة إلى الخلف، ستدرك أنك على الأرجح تفعل هذا _كثيراً_.
 
-## A generic refactor
+## إعادة هيكلة عامة
 
-A mistake people often make with shiny new language features is they start by using them without having a concrete use-case. They rely on conjecture and guesswork to guide their efforts.
+من الأخطاء التي يرتكبها الناس كثيراً مع ميزات اللغة الجديدة اللامعة أنهم يبدؤون باستعمالها دون أن تكون لديهم حالة استعمال ملموسة. فيعتمدون على الحدس والتخمين لتوجيه جهودهم.
 
-Thankfully we've written our "useful" functions and have tests around them, so now we are free to experiment with ideas in the refactoring stage of TDD and know that whatever we're trying, has a verification of its value via our unit tests.
+لحسن الحظ كتبنا دوالنا "المفيدة" ولدينا اختبارات حولها، لذا نحن أحرار الآن في تجربة الأفكار في مرحلة إعادة الهيكلة من `TDD`، ونعرف أن أي شيء نجربه يُتحقق من قيمته عبر اختبارات الوحدة لدينا.
 
-Using generics as a tool for simplifying code via the refactoring step is far more likely to guide you to useful improvements, rather than premature abstractions.
+استعمال الأنواع العامة (generics) كأداة لتبسيط الشيفرة عبر خطوة إعادة الهيكلة أرجح بكثير أن يقودك إلى تحسينات مفيدة، بدلاً من تجريدات سابقة لأوانها.
 
-We are safe to try things out, re-run our tests, if we like the change we can commit. If not, just revert the change. This freedom to experiment is one of the truly huge values of TDD.
+يمكننا تجربة الأشياء بأمان، وإعادة تشغيل اختباراتنا، فإن أعجبنا التغيير نودعه، وإلا نتراجع عنه فحسب. وحرية التجريب هذه من القيم الكبيرة حقاً لـ`TDD`.
 
-You should be familiar with the generics syntax [from the previous chapter](generics.md), try and write your own `Reduce` function and use it inside `Sum` and `SumAllTails`.
+ينبغي أن تكون مألوفاً مع صياغة الأنواع العامة [من الفصل السابق](generics.md)، فحاول كتابة دالة `Reduce` خاصة بك واستعمالها داخل `Sum` و`SumAllTails`.
 
-### Hints
+### تلميحات
 
-If you think about the arguments to your function first, it'll give you a very small set of valid solutions
-  - The array you want to reduce
-  - Some kind of combining function
+إن فكرت في وسطاء دالتك أولاً، فسيعطيك ذلك مجموعة صغيرة جداً من الحلول الصالحة
+  - المصفوفة التي تريد اختزالها
+  - نوع من دوال الدمج
 
-"Reduce" is an incredibly well documented pattern, there's no need to re-invent the wheel. [Read the wiki, in particular the lists section](https://en.wikipedia.org/wiki/Fold_(higher-order_function)), it should prompt you for another argument you'll need.
+"الاختزال" نمط موثّق جيداً للغاية، ولا حاجة إلى إعادة اختراع العجلة. [اقرأ صفحة الويكي، وخصوصاً قسم القوائم](https://en.wikipedia.org/wiki/Fold_(higher-order_function))، فهو ينبغي أن ينبّهك إلى وسيط آخر ستحتاج إليه.
 
-> In practice, it is convenient and natural to have an initial value
+> عملياً، من المريح والطبيعي أن تكون هناك قيمة ابتدائية
 
-### My first-pass of `Reduce`
+### محاولتي الأولى لـ`Reduce`
 
 ```go
 func Reduce[A any](collection []A, f func(A, A) A, initialValue A) A {
@@ -84,11 +84,11 @@ func Reduce[A any](collection []A, f func(A, A) A, initialValue A) A {
 }
 ```
 
-Reduce captures the _essence_ of the pattern, it's a function that takes a collection, an accumulating function, an initial value, and returns a single value. There's no messy distractions around concrete types.
+تجسّد `Reduce` _جوهر_ النمط، فهي دالة (function) تأخذ مجموعة، ودالة مراكِمة، وقيمة ابتدائية، وتعيد قيمة واحدة. ولا تشتيت فوضوياً حول الأنواع الملموسة.
 
-If you understand generics syntax, you should have no problem understanding what this function does. By using the recognised term `Reduce`, programmers from other languages understand the intent too.
+إن كنت تفهم صياغة الأنواع العامة، فلن تجد مشكلة في فهم ما تفعله هذه الدالة. وباستعمال المصطلح المعروف `Reduce`، يفهم المبرمجون القادمون من لغات أخرى القصد أيضاً.
 
-### The usage
+### الاستعمال
 
 ```go
 // Sum calculates the total from a slice of numbers.
@@ -112,11 +112,11 @@ func SumAllTails(numbers ...[]int) []int {
 }
 ```
 
-`Sum` and `SumAllTails` now describe the behaviour of their computations as the functions declared on their first lines respectively. The act of running the computation on the collection is abstracted away in `Reduce`.
+صارت `Sum` و`SumAllTails` تصفان الآن سلوك حساباتهما بالدالتين المصرّح عنهما في سطريهما الأولين على الترتيب. أما فعل تشغيل الحساب على المجموعة فمجرّد داخل `Reduce`.
 
-## Further applications of reduce
+## تطبيقات أخرى للاختزال
 
-Using tests we can play around with our reduce function to see how re-usable it is. I have copied over our generic assertion functions from the previous chapter.
+باستعمال الاختبارات يمكننا التلاعب بدالة الاختزال لنرى مدى قابليتها لإعادة الاستعمال. وقد نسخت دوال التوكيد العامة من الفصل السابق.
 
 ```go
 func TestReduce(t *testing.T) {
@@ -138,29 +138,29 @@ func TestReduce(t *testing.T) {
 }
 ```
 
-### The zero value
+### القيمة الصفرية
 
-In the multiplication example, we show the reason for having a default value as an argument to `Reduce`. If we relied on Go's default value of 0 for `int`, we'd multiply our initial value by 0, and then the following ones, so you'd only ever get 0. By setting it to 1, the first element in the slice will stay the same, and the rest will multiply by the next elements.
+في مثال الضرب، نبيّن سبب وجود قيمة افتراضية كوسيط (argument) لـ`Reduce`. فلو اعتمدنا على القيمة الافتراضية في غو للنوع `int`، وهي 0، لضربنا قيمتنا الابتدائية في 0، ثم ما يليها، فلن تحصل أبداً إلا على 0. أما بضبطها على 1، فسيبقى العنصر الأول في الشريحة كما هو، وتُضرب البقية في العناصر التالية.
 
-If you wish to sound clever with your nerd friends, you'd call this [The Identity Element](https://en.wikipedia.org/wiki/Identity_element).
+وإن أردت أن تبدو ذكياً أمام أصدقائك المهووسين، فستسمي هذا [العنصر المحايد](https://en.wikipedia.org/wiki/Identity_element).
 
-> In mathematics, an identity element, or neutral element, of a binary operation operating on a set is an element of the set which leaves unchanged every element of the set when the operation is applied.
+> في الرياضيات، العنصر المحايد لعملية ثنائية تعمل على مجموعة هو عنصر من المجموعة يُبقي كل عنصر فيها دون تغيير حين تُطبق العملية.
 
-In addition, the identity element is 0.
+في الجمع، العنصر المحايد هو 0.
 
 `1 + 0 = 1`
 
-With multiplication, it is 1.
+وفي الضرب، هو 1.
 
 `1 * 1 = 1`
 
-## What if we wish to reduce into a different type from `A`?
+## ماذا لو أردنا الاختزال إلى نوع مختلف عن `A`؟
 
-Suppose we had a list of transactions `Transaction` and we wanted a function that would take them, plus a name to figure out their bank balance.
+لنفترض أن لدينا قائمة من المعاملات المالية `Transaction`، وأردنا دالة تأخذها مع اسم لحساب الرصيد المصرفي.
 
-Let's follow the TDD process.
+لنتبع عملية `TDD`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestBadBank(t *testing.T) {
@@ -183,16 +183,16 @@ func TestBadBank(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 ```
 # github.com/quii/learn-go-with-tests/arrays/v8 [github.com/quii/learn-go-with-tests/arrays/v8.test]
 ./bad_bank_test.go:6:20: undefined: Transaction
 ./bad_bank_test.go:18:14: undefined: BalanceFor
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We don't have our types or functions yet, add them to make the test run.
+ليست لدينا أنواعنا أو دوالنا بعد، فأضفها لجعل الاختبار يعمل.
 
 ```go
 type Transaction struct {
@@ -206,7 +206,7 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-When you run the test you should see the following:
+حين تشغّل الاختبار (test) ينبغي أن ترى ما يلي:
 
 ```
 === RUN   TestBadBank
@@ -216,9 +216,9 @@ When you run the test you should see the following:
 --- FAIL: TestBadBank (0.00s)
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Let's write the code as if we didn't have a `Reduce` function first.
+لنكتب الشيفرة أولاً كما لو لم تكن لدينا دالة `Reduce`.
 
 ```go
 func BalanceFor(transactions []Transaction, name string) float64 {
@@ -235,11 +235,11 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-At this point, have some source control discipline and commit your work. We have working software, ready to challenge Monzo, Barclays, et al.
+في هذه المرحلة، التزم بانضباط التحكم بالمصدر وأودع عملك. فلدينا برنامج يعمل، جاهز لمنافسة Monzo وBarclays وغيرهما.
 
-Now our work is committed, we are free to play around with it, and try some different ideas out in the refactoring phase. To be fair, the code we have isn't exactly bad, but for the sake of this exercise, I want to demonstrate the same code using `Reduce`.
+والآن بعد أن أودعنا عملنا، نحن أحرار في التلاعب به وتجربة بعض الأفكار المختلفة في مرحلة إعادة الهيكلة (refactoring). وإحقاقاً للحق، الشيفرة التي لدينا ليست سيئة تماماً، لكن من أجل هذا التمرين أريد أن أعرض الشيفرة نفسها باستعمال `Reduce`.
 
 ```go
 func BalanceFor(transactions []Transaction, name string) float64 {
@@ -256,13 +256,13 @@ func BalanceFor(transactions []Transaction, name string) float64 {
 }
 ```
 
-But this won't compile.
+لكن هذا لن يُصرَّف.
 
 ```
 ./bad_bank.go:19:35: type func(acc float64, t Transaction) float64 of adjustBalance does not match inferred type func(Transaction, Transaction) Transaction for func(A, A) A
 ```
 
-The reason is we're trying to reduce to a _different_ type than the type of the collection. This sounds scary, but actually just requires us to adjust the type signature of `Reduce` to make it work. We won't have to change the function body, and we won't have to change any of our existing callers.
+السبب أننا نحاول الاختزال إلى نوع _مختلف_ عن نوع المجموعة. يبدو هذا مخيفاً، لكنه في الحقيقة لا يتطلب منا إلا تعديل توقيع نوع `Reduce` ليعمل. فلن نضطر إلى تغيير جسم الدالة، ولن نضطر إلى تغيير أي من مستدعينا الحاليين.
 
 ```go
 func Reduce[A, B any](collection []A, f func(B, A) B, initialValue B) B {
@@ -274,13 +274,13 @@ func Reduce[A, B any](collection []A, f func(B, A) B, initialValue B) B {
 }
 ```
 
-We've added a second type constraint which has allowed us to loosen the constraints on `Reduce`. This allows people to `Reduce` from a collection of `A` into a `B`. In our case from `Transaction` to `float64`.
+أضفنا قيد نوع ثانياً أتاح لنا تخفيف القيود على `Reduce`. وهذا يتيح للناس اختزال مجموعة من `A` إلى `B` بـ`Reduce`. وفي حالتنا من `Transaction` إلى `float64`.
 
-This makes `Reduce` more general-purpose and reusable, and still type-safe. If you try and run the tests again they should compile, and pass.
+وهذا يجعل `Reduce` أكثر عمومية وقابلية لإعادة الاستعمال، مع بقائها آمنة الأنواع. وإن حاولت تشغيل الاختبارات مجدداً فينبغي أن تُصرَّف وتنجح.
 
-## Extending the bank
+## توسيع المصرف
 
-For fun, I wanted to improve the ergonomics of the bank code. I've omitted the TDD process for brevity.
+للمتعة، أردت تحسين سهولة استعمال شيفرة المصرف. وقد حذفت عملية `TDD` اختصاراً.
 
 ```go
 func TestBadBank(t *testing.T) {
@@ -305,7 +305,7 @@ func TestBadBank(t *testing.T) {
 }
 ```
 
-And here's the updated code
+وإليك الشيفرة المحدّثة
 
 ```go
 package main
@@ -344,26 +344,26 @@ func applyTransaction(a Account, transaction Transaction) Account {
 }
 ```
 
-I feel this really shows the power of using concepts like `Reduce`. The `NewBalanceFor` feels more _declarative_, describing _what_ happens, rather than _how_. Often when we're reading code, we're darting through lots of files, and we're trying to understand _what_ is happening, rather than _how_, and this style of code facilitates this well.
+أشعر أن هذا يبيّن حقاً قوة استعمال مفاهيم مثل `Reduce`. فالدالة `NewBalanceFor` تبدو أكثر _تصريحية_، إذ تصف _ما_ يحدث لا _كيف_. وكثيراً ما نكون حين نقرأ الشيفرة متنقلين بسرعة بين ملفات كثيرة، محاولين فهم _ما_ يحدث لا _كيف_، وهذا الأسلوب في الشيفرة يسهّل ذلك جيداً.
 
-If I wish to dig in to the detail I can, and I can see the _business logic_ of `applyTransaction` without worrying about loops and mutating state; `Reduce` takes care of that separately.
+وإن أردت التعمق في التفاصيل فيمكنني ذلك، ويمكنني أن أرى _منطق الأعمال_ في `applyTransaction` دون القلق بشأن الحلقات وتغيير الحالة؛ فـ`Reduce` تتولى ذلك بشكل منفصل.
 
 
-### Fold/reduce are pretty universal
+### الطيّ والاختزال عامّان جداً
 
-The possibilities are endless™️ with `Reduce` (or `Fold`). It's a common pattern for a reason, it's not just for arithmetic or string concatenation. Try a few other applications.
+الاحتمالات لا نهاية لها™️ مع `Reduce` (أو `Fold`). إنه نمط شائع لسبب وجيه، وليس مقتصراً على الحساب أو دمج السلاسل النصية. جرّب بعض التطبيقات الأخرى.
 
-- Why not mix some `color.RGBA` into a single colour?
-- Total up the number of votes in a poll, or items in a shopping basket.
-- More or less anything involving processing a list.
+- لماذا لا تمزج بعض قيم `color.RGBA` في لون واحد؟
+- اجمع عدد الأصوات في استطلاع، أو العناصر في سلة تسوق.
+- وكل ما يتضمن معالجة قائمة تقريباً.
 
-## Find
+## البحث
 
-Now that Go has generics, combining them with higher-order-functions, we can reduce a lot of boilerplate code within our projects, to help our systems be easier to understand and manage.
+والآن بعد أن صارت في غو الأنواع العامة، وبدمجها مع الدوال عالية الرتبة، يمكننا التخلص من كثير من الشيفرة المتكررة في مشاريعنا، لنساعد أنظمتنا على أن تكون أسهل في الفهم والإدارة.
 
-No longer do you need to write specific `Find` functions for each type of collection you want to search, instead re-use or write a `Find` function. If you understood the `Reduce` function above, writing a `Find` function will be trivial.
+لم تعد بحاجة إلى كتابة دوال `Find` محددة لكل نوع من المجموعات التي تريد البحث فيها، بل أعد استعمال دالة `Find` أو اكتب واحدة. وإن فهمت الدالة `Reduce` أعلاه، فستكون كتابة دالة `Find` أمراً بسيطاً.
 
-Here's a test
+إليك اختباراً
 
 ```go
 func TestFind(t *testing.T) {
@@ -379,7 +379,7 @@ func TestFind(t *testing.T) {
 }
 ```
 
-And here's the implementation
+وإليك التنفيذ
 
 ```go
 func Find[A any](items []A, predicate func(A) bool) (value A, found bool) {
@@ -392,7 +392,7 @@ func Find[A any](items []A, predicate func(A) bool) (value A, found bool) {
 }
 ```
 
-Again, because it takes a generic type, we can re-use it in many ways
+مرة أخرى، لأنها تأخذ نوعاً عاماً، يمكننا إعادة استعمالها بطرق كثيرة
 
 ```go
 type Person struct {
@@ -415,38 +415,38 @@ t.Run("Find the best programmer", func(t *testing.T) {
 })
 ```
 
-As you can see, this code is flawless.
+كما ترى، هذه الشيفرة بلا عيب.
 
-## Wrapping up
+## الخلاصة
 
-When done tastefully, higher-order functions like these will make your code simpler to read and maintain, but remember the rule of thumb:
+حين تُستعمل الدوال عالية الرتبة كهذه بذوق، فإنها تجعل شيفرتك أبسط في القراءة والصيانة، لكن تذكّر القاعدة العامة:
 
-Use the TDD process to drive out real, specific behaviour that you actually need, in the refactoring stage you then _might_ discover some useful abstractions to help tidy the code up.
+استعمل عملية `TDD` لاستخلاص سلوك حقيقي ومحدد تحتاج إليه فعلاً، ثم في مرحلة إعادة الهيكلة _قد_ تكتشف بعض التجريدات المفيدة التي تساعد على ترتيب الشيفرة.
 
-Practice combining TDD with good source control habits. Commit your work when your test is passing, _before_ trying to refactor. This way if you make a mess, you can easily get yourself back to your working state.
+تمرّن على دمج `TDD` مع عادات جيدة في التحكم بالمصدر. أودع عملك حين ينجح اختبارك، _قبل_ محاولة إعادة الهيكلة. فبهذه الطريقة إن أحدثت فوضى، تستطيع بسهولة العودة إلى حالتك التي تعمل.
 
-### Names matter
+### الأسماء مهمة
 
-Make an effort to do some research outside of Go, so you don't re-invent patterns that already exist with an already established name.
+ابذل جهداً في البحث خارج غو، كي لا تعيد اختراع أنماط موجودة بالفعل ولها اسم راسخ.
 
-Writing a function takes a collection of `A` and converts them to `B`? Don't call it `Convert`, that's [`Map`](https://en.wikipedia.org/wiki/Map_(higher-order_function)). Using the "proper" name for these items will reduce the cognitive burden for others and make it more search engine friendly to learn more.
+تكتب دالة تأخذ مجموعة من `A` وتحولها إلى `B`؟ لا تسمّها `Convert`، فهذه [`Map`](https://en.wikipedia.org/wiki/Map_(higher-order_function)). واستعمال الاسم "الصحيح" لهذه الأشياء سيقلل العبء الذهني على الآخرين، ويجعل البحث عنها في محركات البحث لتعلّم المزيد أسهل.
 
-### This doesn't feel idiomatic?
+### ألا يبدو هذا مخالفاً للأسلوب المعتاد في اللغة؟
 
-Try to have an open-mind.
+حاول أن تكون منفتح الذهن.
 
-Whilst the idioms of Go won't, and shouldn't _radically_ change due to generics being released, the idioms _will_ change - due to the language changing! This should not be a controversial point.
+مع أن أساليب غو المعتادة لن تتغير، ولا ينبغي أن تتغير، تغيراً _جذرياً_ بسبب إطلاق الأنواع العامة، فإن الأساليب المعتادة _ستتغير_ لأن اللغة نفسها تتغير! ولا ينبغي أن تكون هذه نقطة خلافية.
 
-Saying
+قول
 
-> This is not idiomatic
+> هذا ليس الأسلوب المعتاد في اللغة
 
-Without any more detail, is not an actionable, or useful thing to say. Especially when discussing new language features.
+دون أي تفاصيل أخرى ليس كلاماً يمكن البناء عليه أو مفيداً، خصوصاً عند مناقشة ميزات جديدة في اللغة.
 
-Discuss with your colleagues patterns and style of code based on their merits rather than dogma. So long as you have well-designed tests, you'll always be able to refactor and shift things as you understand what works well for you, and your team.
+ناقش مع زملائك الأنماط وأسلوب الشيفرة بناءً على مزاياها لا على العقائد الجامدة. فما دامت لديك اختبارات جيدة التصميم، فستستطيع دائماً إعادة الهيكلة وتحريك الأشياء كلما فهمت ما يناسبك ويناسب فريقك.
 
-### Resources
+### مصادر
 
-Fold is a real fundamental in computer science. Here's some interesting resources if you wish to dig more into it
-- [Wikipedia: Fold](https://en.wikipedia.org/wiki/Fold)
-- [A tutorial on the universality and expressiveness of fold](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)
+الطيّ مفهوم أساسي حقيقي في علوم الحاسوب. وإليك بعض المصادر المثيرة للاهتمام إن أردت التعمق فيه أكثر
+- [ويكيبيديا: Fold](https://en.wikipedia.org/wiki/Fold)
+- [درس تعليمي عن عمومية الطيّ وقدرته التعبيرية](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)

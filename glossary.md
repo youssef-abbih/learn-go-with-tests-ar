@@ -310,3 +310,10 @@
 | generalisation | تعميم | مقترح |  |
 | LIFO | LIFO | مقترح | آخر من يدخل أول من يخرج |
 | FUD | FUD | مقترح | الخوف وعدم اليقين والشك |
+| reduce | الاختزال | مقترح | الدالة نفسها `Reduce` |
+| fold | الطيّ | مقترح |  |
+| functional programming | البرمجة الوظيفية | مقترح |  |
+| higher-order function | دالة عالية الرتبة | مقترح |  |
+| identity element | العنصر المحايد | مقترح |  |
+| accumulator | دالة مراكِمة | مقترح | accumulating function |
+| cognitive load | العبء الذهني | مقترح |  |
