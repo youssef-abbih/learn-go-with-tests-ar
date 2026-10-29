@@ -235,3 +235,14 @@
 | thread | خيط | مقترح | single-threaded: أحادي الخيط |
 | ownership | ملكية | مقترح |  |
 | counter | عدّاد | مقترح |  |
+| context | سياق | مقترح | الحزمة والنوع يبقيان `context` و`Context` |
+| cancellation | الإلغاء | مقترح |  |
+| derive | اشتقاق | مقترح | derived: مشتق |
+| call stack | مكدس الاستدعاءات | مقترح |  |
+| propagate | نشر | مقترح | ينشر الإلغاء |
+| asynchronous | غير متزامن | مقترح | قد يلتبس مع التزامن (concurrency)؛ يحتاج إلى مراجعة |
+| downstream | المرحلة التالية | مقترح | الدوال في المراحل التالية |
+| code smell | رائحة شيفرة سيئة | مقترح |  |
+| trace ID | معرّف التتبّع | مقترح |  |
+| long-running process | عملية طويلة الأمد | مقترح |  |
+| concurrency primitives | أدوات التزامن الأساسية | مقترح |  |
