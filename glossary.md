@@ -331,3 +331,18 @@
 | root cause | السبب الجذري | مقترح |  |
 | listener | مستمع | مقترح |  |
 | headless browser | متصفح بلا واجهة | مقترح |  |
+| legacy code | الشيفرة الموروثة | مقترح |  |
+| accidental complexity | التعقيد العَرَضي | مقترح |  |
+| essential complexity | التعقيد الجوهري | مقترح |  |
+| specification | مواصفة | مقترح | الجمع: مواصفات |
+| driver | مشغّل | مقترح | في بنية اختبارات القبول عند فارلي |
+| DSL | اللغة الخاصة بالمجال | مقترح | domain-specific language |
+| staging environment | بيئة التجهيز | مقترح |  |
+| adapter | محوّل | مقترح | نمط المحوّل: adapter pattern |
+| design pattern | نمط تصميم | مقترح |  |
+| ports and adapters | المنافذ والمحوّلات | مقترح |  |
+| endpoint | نقطة نهاية | مقترح |  |
+| blast radius | نطاق الانفجار | مقترح |  |
+| stakeholder | صاحب مصلحة | مقترح |  |
+| BDD | BDD | مقترح | التطوير المقاد بالسلوك |
+| collaborator | متعاون | مقترح |  |

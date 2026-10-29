@@ -1,167 +1,167 @@
-# Learn Go with Tests - Scaling Acceptance Tests (and light intro to gRPC)
+# تعلّم غو بالاختبارات: توسيع اختبارات القبول (ومدخل خفيف إلى gRPC)
 
-This chapter is a follow-up to [Intro to acceptance tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/intro-to-acceptance-tests). You can find [the finished code for this chapter on GitHub](https://github.com/quii/go-specs-greet).
+هذا الفصل متابعة لفصل [مدخل إلى اختبارات القبول](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/intro-to-acceptance-tests). ويمكنك إيجاد [الشيفرة النهائية لهذا الفصل على GitHub](https://github.com/quii/go-specs-greet).
 
-Acceptance tests are essential, and they directly impact your ability to confidently evolve your system over time, with a reasonable cost of change.
+اختبارات القبول (acceptance tests) أساسية، وتؤثر مباشرة في قدرتك على تطوير نظامك بثقة مع مرور الوقت، بتكلفة تغيير معقولة.
 
-They're also a fantastic tool to help you work with legacy code. When faced with a poor codebase without any tests, please resist the temptation to start refactoring. Instead, write some acceptance tests to give you a safety net to freely change the system's internals without affecting its functional external behaviour. ATs need not be concerned with internal quality, so they're a great fit in these situations.
+وهي أيضاً أداة رائعة تساعدك على العمل مع الشيفرة الموروثة. فحين تواجه قاعدة شيفرة رديئة بلا أي اختبارات، أرجوك قاوم إغراء البدء بإعادة الهيكلة. بل اكتب بعض اختبارات القبول لتمنحك شبكة أمان تغيّر بها دواخل النظام بحرية دون التأثير في سلوكه الخارجي الوظيفي. فاختبارات القبول لا يلزمها الاهتمام بالجودة الداخلية، لذا فهي مناسبة جداً لهذه المواقف.
 
-After reading this, you'll appreciate that acceptance tests are useful for verification and can also be used in the development process by helping us change our system more deliberately and methodically, reducing wasted effort.
+وبعد قراءة هذا الفصل، ستدرك أن اختبارات القبول مفيدة للتحقق، ويمكن استعمالها أيضاً في عملية التطوير بمساعدتنا على تغيير نظامنا بقصد ومنهجية أكبر، مما يقلل الجهد المهدر.
 
-## Prerequisite material
+## مواد تمهيدية
 
-The inspiration for this chapter is borne of many years of frustration with acceptance tests. Two videos I would recommend you watch are:
+الإلهام لهذا الفصل وليد سنوات طويلة من الإحباط مع اختبارات القبول. وهناك فيديوهان أنصحك بمشاهدتهما:
 
-- Dave Farley - [How to write acceptance tests](https://www.youtube.com/watch?v=JDD5EEJgpHU)
-- Nat Pryce - [E2E functional tests that can run in milliseconds](https://www.youtube.com/watch?v=Fk4rCn4YLLU)
+- ديف فارلي: [كيف تكتب اختبارات القبول](https://www.youtube.com/watch?v=JDD5EEJgpHU)
+- نات برايس: [اختبارات وظيفية من البداية إلى النهاية يمكن أن تعمل في أجزاء من الثانية](https://www.youtube.com/watch?v=Fk4rCn4YLLU)
 
-"Growing Object Oriented Software" (GOOS) is such an important book for many software engineers, including myself. The approach it prescribes is the one I coach engineers I work with to follow.
+كتاب "Growing Object Oriented Software" (GOOS) كتاب بالغ الأهمية لكثير من مهندسي البرمجيات، وأنا منهم. والأسلوب الذي يصفه هو الأسلوب الذي أدرّب المهندسين الذين أعمل معهم على اتباعه.
 
-- [GOOS](http://www.growing-object-oriented-software.com) - Nat Pryce & Steve Freeman
+- كتاب [GOOS](http://www.growing-object-oriented-software.com) لنات برايس وستيف فريمان
 
-Finally, [Riya Dattani](https://twitter.com/dattaniriya) and I spoke about this topic in the context of BDD in our talk, [Acceptance tests, BDD and Go](https://www.youtube.com/watch?v=ZMWJCk_0WrY).
+وأخيراً، تحدثت أنا و[ريا داتاني](https://twitter.com/dattaniriya) عن هذا الموضوع في سياق BDD في محاضرتنا [اختبارات القبول وBDD وغو](https://www.youtube.com/watch?v=ZMWJCk_0WrY).
 
-## Recap
+## تذكير
 
-We're talking about "black-box" tests that verify your system behaves as expected from the outside, from a "**business perspective**". The tests do not have access to the innards of the system it tests; they're only concerned with **what** your system does rather than **how**.
+نتحدث عن اختبارات "الصندوق الأسود" التي تتحقق من أن نظامك يتصرف كما هو متوقع من الخارج، من "**منظور الأعمال**". فالاختبارات لا تصل إلى دواخل النظام الذي تختبره، بل لا يهمها إلا **ما** يفعله نظامك لا **كيف**.
 
-## Anatomy of bad acceptance tests
+## تشريح اختبارات القبول السيئة
 
-Over many years, I've worked for several companies and teams. Each of them recognised the need for acceptance tests; some way to test a system from a user's point of view and to verify it works how it's intended, but almost without exception, the cost of these tests became a real problem for the team.
+عملت على مدى سنوات طويلة في عدة شركات وفرق. وكل منها أدرك الحاجة إلى اختبارات القبول، أي وسيلة لاختبار النظام من وجهة نظر المستخدم والتحقق من أنه يعمل كما هو مقصود، لكن تكلفة هذه الاختبارات أصبحت دون استثناء تقريباً مشكلة حقيقية للفريق.
 
-- Slow to run
-- Brittle
-- Flaky
-- Expensive to maintain, and seem to make changing the software harder than it ought to be
-- Can only run in a particular environment, causing slow and poor feedback loops
+- بطيئة التشغيل
+- قابلة للكسر بسهولة
+- متقلبة
+- مكلفة الصيانة، وتبدو وكأنها تجعل تغيير البرنامج أصعب مما ينبغي
+- لا تعمل إلا في بيئة معيّنة، مما يسبب حلقات تغذية راجعة بطيئة ورديئة
 
-Let's say you intend to write an acceptance test around a website you're building. You decide to use a headless web browser (like [Selenium](https://www.selenium.dev)) to simulate a user clicking buttons on your website to verify it does what it needs to do.
+لنقل إنك تنوي كتابة اختبار قبول حول موقع ويب تبنيه. فتقرر استعمال متصفح ويب بلا واجهة (مثل [Selenium](https://www.selenium.dev)) لمحاكاة مستخدم ينقر الأزرار في موقعك، للتحقق من أنه يفعل ما يجب.
 
-Over time, your website's markup has to change as new features are discovered, and engineers bike-shed over whether something should be an `<article>` or a `<section>` for the billionth time.
+ومع الوقت، يتغير ترميز موقعك مع اكتشاف ميزات جديدة، ويتجادل المهندسون في التفاهات حول ما إذا كان شيء ما ينبغي أن يكون `<article>` أو `<section>` للمرة المليار.
 
-Even though your team are only making minor changes to the system, barely noticeable to the actual user, you find yourself wasting lots of time updating your ATs.
+ومع أن فريقك لا يجري إلا تغييرات طفيفة على النظام، بالكاد يلاحظها المستخدم الفعلي، تجد نفسك تهدر وقتاً طويلاً في تحديث اختبارات القبول.
 
-### Tight-coupling
+### الاقتران الشديد
 
-Think about what prompts acceptance tests to change:
+فكّر فيما يدفع اختبارات القبول إلى التغير:
 
-- An external behaviour change. If you want to change what the system does, changing the acceptance test suite seems reasonable, if not desirable.
-- An implementation detail change / refactoring. Ideally, this shouldn't prompt a change, or if it does, a minor one.
+- تغيّر في السلوك الخارجي. فإن أردت تغيير ما يفعله النظام، فتغيير مجموعة اختبارات القبول يبدو معقولاً، بل مرغوباً.
+- تغيّر في تفاصيل التنفيذ أو إعادة هيكلة. ففي الوضع المثالي لا ينبغي أن يدفع هذا إلى أي تغيير، أو إن دفع فإلى تغيير طفيف.
 
-Too often, though, the latter is the reason acceptance tests have to change. To the point where engineers even become reluctant to change their system because of the perceived effort of updating tests!
+لكن كثيراً جداً ما يكون الأخير هو سبب اضطرار اختبارات القبول إلى التغير. إلى حد أن المهندسين يصبحون مترددين في تغيير نظامهم بسبب الجهد المتصوَّر لتحديث الاختبارات!
 
-![Riya and myself talking about separating concerns in our tests](https://i.imgur.com/bbG6z57.png)
+![ريا وأنا نتحدث عن فصل الاهتمامات في اختباراتنا](https://i.imgur.com/bbG6z57.png)
 
-These problems stem from not applying well-established and practised engineering habits written by the authors mentioned above. **You can't write acceptance tests like unit tests**; they require more thought and different practices.
+تنبع هذه المشكلات من عدم تطبيق عادات هندسية راسخة ومجرَّبة كتب عنها المؤلفون المذكورون أعلاه. **لا يمكنك كتابة اختبارات القبول كما تكتب اختبارات الوحدة**؛ فهي تتطلب تفكيراً أكبر وممارسات مختلفة.
 
-## Anatomy of good acceptance tests
+## تشريح اختبارات القبول الجيدة
 
-If we want acceptance tests that only change when we change behaviour and not implementation detail, it stands to reason that we need to separate those concerns.
+إن أردنا اختبارات قبول لا تتغير إلا حين نغيّر السلوك لا تفاصيل التنفيذ، فمن المنطقي أن نحتاج إلى فصل هذين الاهتمامين.
 
-### On types of complexity
+### عن أنواع التعقيد
 
-As software engineers, we have to deal with two kinds of complexity.
+علينا كمهندسي برمجيات أن نتعامل مع نوعين من التعقيد.
 
-- **Accidental complexity** is the complexity we have to deal with because we're working with computers, stuff like networks, disks, APIs, etc.
+- **التعقيد العَرَضي** هو التعقيد الذي علينا التعامل معه لأننا نعمل مع الحواسيب، أي أشياء مثل الشبكات والأقراص والواجهات البرمجية وغيرها.
 
-- **Essential complexity** is sometimes referred to as "domain logic". It's the particular rules and truths within your domain.
-  - For example, "if an account owner withdraws more money than is available, they are overdrawn". This statement says nothing about computers; this statement was true before computers were even used in banks!
+- **التعقيد الجوهري** يسمى أحياناً "منطق المجال". وهو القواعد والحقائق الخاصة بمجالك.
+  - على سبيل المثال: "إن سحب صاحب الحساب مالاً أكثر من المتاح، فإن حسابه يصبح مكشوفاً". هذه العبارة لا تقول شيئاً عن الحواسيب؛ فقد كانت صحيحة قبل أن تُستعمل الحواسيب في المصارف أصلاً!
 
-Essential complexity should be expressible to a non-technical person, and it's valuable to have modelled it in our "domain" code, and in our acceptance tests.
+ينبغي أن يكون التعبير عن التعقيد الجوهري ممكناً لشخص غير تقني، ومن القيّم أن نكون قد نمذجناه في شيفرة "المجال" لدينا، وفي اختبارات القبول.
 
-### Separation of concerns
+### فصل الاهتمامات
 
-What Dave Farley proposed in the video earlier, and what Riya and I also discussed, is we should have the idea of **specifications**. Specifications describe the behaviour of the system we want without being coupled with accidental complexity or implementation detail.
+ما اقترحه ديف فارلي في الفيديو السابق، وما ناقشناه أنا وريا أيضاً، هو أن تكون لدينا فكرة **المواصفات**. فالمواصفات تصف سلوك النظام الذي نريده دون أن تقترن بالتعقيد العَرَضي أو تفاصيل التنفيذ.
 
-This idea should feel reasonable to you. In production code, we frequently strive to separate concerns and decouple units of work. Would you not hesitate to introduce an `interface` to allow your `HTTP` handler to decouple it from non-HTTP concerns? Let's take this same line of thinking for our acceptance tests.
+ينبغي أن تبدو لك هذه الفكرة معقولة. ففي شيفرة الإنتاج نسعى كثيراً إلى فصل الاهتمامات وفك الاقتران بين وحدات العمل. ألن تتردد في تقديم `interface` لتتيح لمعالج `HTTP` أن ينفصل عن الاهتمامات غير المتعلقة بـHTTP؟ لنأخذ طريقة التفكير نفسها في اختبارات القبول.
 
-Dave Farley describes a specific structure.
+يصف ديف فارلي بنية محددة.
 
-![Dave Farley on Acceptance Tests](https://i.imgur.com/nPwpihG.png)
+![ديف فارلي عن اختبارات القبول](https://i.imgur.com/nPwpihG.png)
 
-At GopherconUK, Riya and I put this in Go terms.
+وفي مؤتمر GopherconUK، صغت أنا وريا هذا بمصطلحات غو (Go).
 
-![Separation of concerns](https://i.imgur.com/qdY4RJe.png)
+![فصل الاهتمامات](https://i.imgur.com/qdY4RJe.png)
 
-### Testing on steroids
+### اختبار بقوة مضاعفة
 
-Decoupling how the specification is executed allows us to reuse it in different scenarios. We can:
+فصل طريقة تنفيذ المواصفة يتيح لنا إعادة استعمالها في سيناريوهات مختلفة. فيمكننا:
 
-#### Make our drivers configurable
+#### جعل مشغّلاتنا قابلة للضبط
 
-This means you can run your ATs locally, in your staging and (ideally) production environments.
-- Too many teams engineer their systems such that acceptance tests are impossible to run locally. This introduces an intolerably slow feedback loop. Wouldn't you rather be confident your ATs will pass _before_ integrating your code? If the tests start breaking, is it acceptable that you'd be unable to reproduce the failure locally and instead, have to commit changes and cross your fingers that it'll pass 20 minutes later in a different environment?
-- Remember, just because your tests pass in staging doesn't mean your system will work. Dev/Prod parity is, at best, a white lie. [I test in prod](https://increment.com/testing/i-test-in-production/).
-- There are always differences between the environments that can affect the *behaviour* of your system. A CDN could have some cache headers incorrectly set; a downstream service you depend on may behave differently; a configuration value may be incorrect. But wouldn't it be nice if you could run your specifications in prod to catch these problems quickly?
+وهذا يعني أنك تستطيع تشغيل اختبارات القبول محلياً، وفي بيئة التجهيز، و(في الوضع المثالي) في بيئة الإنتاج.
+- كثير جداً من الفرق تبني أنظمتها بحيث يستحيل تشغيل اختبارات القبول محلياً. وهذا يُدخل حلقة تغذية راجعة بطيئة إلى حد لا يُحتمل. ألا تفضّل أن تكون واثقاً من أن اختبارات القبول ستنجح _قبل_ دمج شيفرتك؟ وإن بدأت الاختبارات بالفشل، هل من المقبول ألا تستطيع إعادة إنتاج الفشل محلياً، وأن تضطر بدلاً من ذلك إلى إيداع التغييرات وانتظار نجاحها بعد 20 دقيقة في بيئة مختلفة وأنت تدعو الله؟
+- تذكّر أن نجاح اختباراتك في بيئة التجهيز لا يعني أن نظامك سيعمل. فالتطابق بين بيئتي التطوير والإنتاج كذبة بيضاء في أحسن الأحوال. [أنا أختبر في الإنتاج](https://increment.com/testing/i-test-in-production/).
+- هناك دائماً فروق بين البيئات قد تؤثر في *سلوك* نظامك. فقد تكون ترويسات التخزين المؤقت في شبكة توزيع المحتوى (CDN) مضبوطة بشكل خاطئ، وقد تتصرف خدمة تعتمد عليها في المراحل التالية بشكل مختلف، وقد تكون قيمة إعداد ما غير صحيحة. لكن ألن يكون جميلاً لو استطعت تشغيل مواصفاتك في بيئة الإنتاج لاكتشاف هذه المشكلات بسرعة؟
 
-#### Plug in _different_ drivers to test other parts of your system
+#### توصيل مشغّلات _مختلفة_ لاختبار أجزاء أخرى من نظامك
 
-This flexibility allows us to test behaviours at different abstraction and architectural layers, which allows us to have more focused tests beyond black-box tests.
-- For instance, you may have a web page with an API behind it. Why not use the same specification to test both? You can use a headless web browser for the web page, and HTTP calls for the API.
-- Taking this idea further, ideally, we want the **code to model essential complexity** (as "domain" code) so we should also be able to use our specifications for unit tests. This will give swift feedback that the essential complexity in our system is modelled and behaves correctly.
+هذه المرونة تتيح لنا اختبار السلوك على مستويات مختلفة من التجريد والطبقات المعمارية، مما يتيح لنا اختبارات أكثر تركيزاً تتجاوز اختبارات الصندوق الأسود.
+- فمثلاً، قد تكون لديك صفحة ويب خلفها واجهة برمجية. فلماذا لا تستعمل المواصفة نفسها لاختبار كليهما؟ يمكنك استعمال متصفح ويب بلا واجهة لصفحة الويب، واستدعاءات HTTP للواجهة البرمجية.
+- وبأخذ هذه الفكرة أبعد، نريد في الوضع المثالي أن **تنمذج الشيفرة التعقيد الجوهري** (كشيفرة "مجال")، لذا ينبغي أن نستطيع أيضاً استعمال مواصفاتنا في اختبارات الوحدة. وهذا سيعطينا تغذية راجعة سريعة بأن التعقيد الجوهري في نظامنا منمذج ويتصرف بشكل صحيح.
 
 
-### Acceptance tests changing for the right reasons
+### اختبارات قبول تتغير للأسباب الصحيحة
 
-With this approach, the only reason for your specifications to change is if the behaviour of the system changes, which is reasonable.
+بهذا الأسلوب، يكون السبب الوحيد لتغير مواصفاتك هو تغير سلوك النظام، وهذا معقول.
 
-- If your HTTP API has to change, you have one obvious place to update it, the driver.
-- If your markup changes, again, update the specific driver.
+- إن اضطرت واجهتك البرمجية عبر HTTP إلى التغير، فلديك مكان واحد واضح لتحديثه، وهو المشغّل.
+- وإن تغير ترميزك، فحدّث مرة أخرى المشغّل المعني.
 
-As your system grows, you'll find yourself reusing drivers for multiple tests, which again means if implementation detail changes, you only have to update one, usually obvious place.
+ومع نمو نظامك، ستجد نفسك تعيد استعمال المشغّلات في عدة اختبارات، مما يعني مرة أخرى أنه إن تغيرت تفاصيل التنفيذ فلا يلزمك إلا تحديث مكان واحد واضح عادةً.
 
-When done right, this approach gives us flexibility in our implementation detail and stability in our specifications. Importantly, it provides a simple and obvious structure for managing change, which becomes essential as a system and its team grows.
+حين يُطبق هذا الأسلوب كما ينبغي، يمنحنا مرونة في تفاصيل التنفيذ واستقراراً في المواصفات. والأهم أنه يوفر بنية بسيطة وواضحة لإدارة التغيير، وهذا يصبح ضرورياً مع نمو النظام وفريقه.
 
-### Acceptance tests as a method for software development
+### اختبارات القبول كأسلوب لتطوير البرمجيات
 
-In our talk, Riya and I discussed acceptance tests and their relation to BDD. We talked about how starting your work by trying to _understand the problem you're trying to solve_ and expressing it as a specification helps focus your intent and is a great way to start your work.
+ناقشنا أنا وريا في محاضرتنا اختبارات القبول وعلاقتها بـBDD. وتحدثنا عن أن بدء عملك بمحاولة _فهم المشكلة التي تحاول حلها_ والتعبير عنها كمواصفة يساعد على تركيز قصدك، وهو طريقة رائعة لبدء العمل.
 
-I was first introduced to this way of working in GOOS. A while ago, I summarised the ideas on my blog. Here is an extract from my post [Why TDD](https://quii.dev/The_Why_of_TDD)
+تعرّفت على طريقة العمل هذه أول مرة في كتاب GOOS. ولخّصت الأفكار قبل فترة في مدونتي. إليك مقتطفاً من تدوينتي [لماذا TDD](https://quii.dev/The_Why_of_TDD)
 
 ---
 
-TDD is focused on letting you design for the behaviour you precisely need, iteratively. When starting a new area, you must identify a key, necessary behaviour and aggressively cut scope.
+يركز `TDD` على أن يتيح لك التصميم للسلوك الذي تحتاج إليه بالضبط، بشكل تكراري. فحين تبدأ في منطقة جديدة، عليك تحديد سلوك أساسي ضروري وتقليص النطاق بحزم.
 
-Follow a "top-down" approach, starting with an acceptance test (AT) that exercises the behaviour from the outside. This will act as a north-star for your efforts. All you should be focused on is making that test pass. This test will likely be failing for a while whilst you develop enough code to make it pass.
+اتبع أسلوباً "من الأعلى إلى الأسفل"، مبتدئاً باختبار قبول (AT) يختبر السلوك من الخارج. وسيعمل هذا كنجم شمال لجهودك. وكل ما ينبغي أن تركز عليه هو جعل ذلك الاختبار ينجح. والأرجح أن يظل هذا الاختبار فاشلاً لبعض الوقت ريثما تطوّر ما يكفي من الشيفرة لجعله ينجح.
 
 ![](https://i.imgur.com/pxTaYu4.png)
 
-Once your AT is set up, you can break into the TDD process to drive out enough units to make the AT pass. The trick is to not worry too much about design at this point; get enough code to make the AT pass because you're still learning and exploring the problem.
+بمجرد إعداد اختبار القبول، يمكنك الانتقال إلى عملية `TDD` لاستخلاص ما يكفي من الوحدات لجعل اختبار القبول ينجح. والحيلة ألا تقلق كثيراً بشأن التصميم في هذه المرحلة؛ بل اكتب ما يكفي من الشيفرة لجعل اختبار القبول ينجح، لأنك ما زلت تتعلم المشكلة وتستكشفها.
 
-Taking this first step is often more extensive than you think, setting up web servers, routing, configuration, etc., which is why keeping the scope of the work small is essential. We want to make that first positive step on our blank canvas and have it backed by a passing AT so we can continue to iterate quickly and safely.
+اتخاذ هذه الخطوة الأولى كثيراً ما يكون أوسع مما تظن، من إعداد خوادم الويب والتوجيه والإعدادات وغير ذلك، ولهذا فإن إبقاء نطاق العمل صغيراً أمر ضروري. نريد أن نخطو تلك الخطوة الإيجابية الأولى على لوحتنا البيضاء، وأن تكون مدعومة باختبار قبول ناجح، كي نواصل التقدم بسرعة وأمان.
 
 ![](https://i.imgur.com/t5y5opw.png)
 
-As you develop, listen to your tests, and they should give you signals to help you push your design in a better direction but, again, anchored to the behaviour rather than our imagination.
+وأثناء التطوير، أصغِ إلى اختباراتك، فينبغي أن تعطيك إشارات تساعدك على دفع تصميمك في اتجاه أفضل، لكن مرة أخرى مع الارتكاز على السلوك لا على خيالنا.
 
-Typically, your first "unit" that does the hard work to make the AT pass will grow too big to be comfortable, even for this small amount of behaviour. This is when you can start thinking about how to break the problem down and introduce new collaborators.
+وعادةً، ستكبر "وحدتك" الأولى التي تقوم بالعمل الشاق لجعل اختبار القبول ينجح أكثر مما هو مريح، حتى لهذا القدر الصغير من السلوك. وهنا يمكنك أن تبدأ بالتفكير في كيفية تقسيم المشكلة وتقديم متعاونين جدد.
 
 ![](https://i.imgur.com/UYqd7Cq.png)
 
-This is where test doubles (e.g. fakes, mocks) are handy because most of the complexity that lives internally within software doesn't usually reside in implementation detail but "between" the units and how they interact.
+وهنا تكون بدائل الاختبار (test doubles)، مثل البدائل المزيفة والبدائل الوهمية، مفيدة، لأن معظم التعقيد الذي يعيش داخل البرمجيات لا يكمن عادةً في تفاصيل التنفيذ، بل "بين" الوحدات وفي طريقة تفاعلها.
 
-#### The perils of bottom-up
+#### مخاطر الأسلوب من الأسفل إلى الأعلى
 
-This is a "top-down" approach rather than a "bottom-up". Bottom-up has its uses, but it carries an element of risk. By building "services" and code without it being integrated into your application quickly and without verifying a high-level test, **you risk wasting lots of effort on unvalidated ideas**.
+هذا أسلوب "من الأعلى إلى الأسفل" لا "من الأسفل إلى الأعلى". وللأسلوب من الأسفل إلى الأعلى استعمالاته، لكنه يحمل عنصراً من المخاطرة. فببناء "خدمات" وشيفرة دون دمجها في تطبيقك بسرعة ودون التحقق منها باختبار عالي المستوى، **فإنك تخاطر بهدر جهد كبير على أفكار غير متحقق منها**.
 
-This is a crucial property of the acceptance-test-driven approach, using tests to get real validation of our code.
+وهذه خاصية حاسمة في الأسلوب المقاد باختبارات القبول، إذ نستعمل الاختبارات للحصول على تحقق حقيقي من شيفرتنا.
 
-Too many times, I've encountered engineers who have made a chunk of code, in isolation, bottom-up, they think is going to solve a job, but it:
+مرات كثيرة جداً صادفت مهندسين صنعوا جزءاً من الشيفرة، بمعزل عن غيره ومن الأسفل إلى الأعلى، يظنون أنه سيؤدي مهمة ما، لكنه:
 
-- Doesn't work how we want to
-- Does stuff we don't need
-- Doesn't integrate easily
-- Requires a ton of re-writing anyway
+- لا يعمل كما نريد
+- يفعل أشياء لا نحتاج إليها
+- لا يندمج بسهولة
+- يتطلب على أي حال قدراً هائلاً من إعادة الكتابة
 
-This is waste.
+وهذا هدر.
 
-## Enough talk, time to code
+## كفى كلاماً، حان وقت الشيفرة
 
-Unlike other chapters, you'll need [Docker](https://www.docker.com) installed because we'll be running our applications in containers. It's assumed at this point in the book you're comfortable writing Go code, importing from different packages, etc.
+على خلاف الفصول الأخرى، ستحتاج إلى تثبيت [Docker](https://www.docker.com) لأننا سنشغّل تطبيقاتنا في حاويات. ونفترض في هذه المرحلة من الكتاب أنك مرتاح لكتابة شيفرة غو، والاستيراد من حزم مختلفة، وما إلى ذلك.
 
-Create a new project with `go mod init github.com/quii/go-specs-greet` (you can put whatever you like here but if you change the path you will need to change all internal imports to match)
+أنشئ مشروعاً جديداً بالأمر `go mod init github.com/quii/go-specs-greet` (يمكنك وضع ما تشاء هنا، لكن إن غيّرت المسار فعليك تغيير كل الاستيرادات الداخلية لتطابقه)
 
-Make a folder `specifications` to hold our specifications, and add a file `greet.go`
+أنشئ مجلداً باسم `specifications` لاحتواء مواصفاتنا، وأضف ملفاً باسم `greet.go`
 
 ```go
 package specifications
@@ -183,37 +183,37 @@ func GreetSpecification(t testing.TB, greeter Greeter) {
 }
 ```
 
-My IDE (Goland) takes care of the fuss of adding dependencies for me, but if you need to do it manually, you'd do
+تتولى بيئة التطوير المتكاملة لدي (Goland) عناء إضافة التبعيات، لكن إن احتجت إلى فعل ذلك يدوياً، فستكتب
 
 `go get github.com/alecthomas/assert/v2`
 
-Given Farley's acceptance test design (Specification->DSL->Driver->System), we now have a decoupled specification from implementation. It doesn't know or care about _how_ we `Greet`; it's just concerned with the essential complexity of our domain. Admittedly this complexity isn't much right now, but we'll expand upon the spec to add more functionality as we further iterate. It's always important to start small!
+بالنظر إلى تصميم فارلي لاختبارات القبول (المواصفة ثم اللغة الخاصة بالمجال ثم المشغّل ثم النظام)، صارت لدينا الآن مواصفة منفصلة عن التنفيذ. فهي لا تعرف _كيف_ نحيّي بـ`Greet` ولا تهتم بذلك؛ بل لا يهمها إلا التعقيد الجوهري لمجالنا. صحيح أن هذا التعقيد ليس كبيراً الآن، لكننا سنوسّع المواصفة لإضافة مزيد من الوظائف مع تقدمنا. فمن المهم دائماً أن نبدأ صغاراً!
 
-You could view the interface as our first step of a DSL; as the project grows, you may find the need to abstract differently, but for now, this is fine.
+يمكنك أن تعدّ الواجهة الخطوة الأولى من لغتنا الخاصة بالمجال (DSL)؛ ومع نمو المشروع قد تجد الحاجة إلى تجريد مختلف، لكن هذا جيد في الوقت الحالي.
 
-At this point, this level of ceremony to decouple our specification from implementation might make some people accuse us of "overly abstracting". **I promise you that acceptance tests that are too coupled to implementation become a real burden on engineering teams**. I am confident that most acceptance tests out in the wild are expensive to maintain due to this inappropriate coupling; rather than the reverse of being overly abstract.
+في هذه المرحلة، قد يدفع هذا القدر من الشكليات لفصل مواصفتنا عن التنفيذ بعض الناس إلى اتهامنا بـ"الإفراط في التجريد". **أعدك بأن اختبارات القبول المقترنة بالتنفيذ أكثر من اللازم تصبح عبئاً حقيقياً على الفرق الهندسية**. وأنا واثق من أن معظم اختبارات القبول الموجودة في العالم مكلفة الصيانة بسبب هذا الاقتران غير المناسب، لا العكس، أي الإفراط في التجريد.
 
-We can use this specification to verify any "system" that can `Greet`.
+يمكننا استعمال هذه المواصفة للتحقق من أي "نظام" يستطيع التحية بـ`Greet`.
 
-### First system: HTTP API
+### النظام الأول: واجهة برمجية عبر HTTP
 
-We require to provide a "greeter service" over HTTP. So we'll need to create:
+نحتاج إلى تقديم "خدمة تحية" عبر HTTP. لذا علينا أن ننشئ:
 
-1. A **driver**. In this case, one works with an HTTP system by using an **HTTP client**. This code will know how to work with our API. Drivers translate DSLs into system-specific calls; in our case, the driver will implement the interface specifications define.
-2. An **HTTP server** with a greet API
-3. A **test**, which is responsible for managing the life-cycle of spinning up the server and then plugging the driver into the specification to run it as a test
+1. **مشغّلاً**. في هذه الحالة، يُتعامل مع نظام HTTP باستعمال **عميل HTTP**. وستعرف هذه الشيفرة كيف تعمل مع واجهتنا البرمجية. فالمشغّلات تترجم اللغات الخاصة بالمجال إلى استدعاءات خاصة بالنظام؛ وفي حالتنا سيحقق المشغّل الواجهة التي تعرّفها المواصفات.
+2. **خادم HTTP** بواجهة برمجية للتحية
+3. **اختباراً**، مسؤولاً عن إدارة دورة حياة تشغيل الخادم، ثم توصيل المشغّل بالمواصفة لتشغيلها كاختبار
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-The initial process for creating a black-box test that compiles and runs your program, executes the test and then cleans everything up can be quite labour intensive. That's why it's preferable to do it at the start of your project with minimal functionality. I typically start all my projects with a "hello world" server implementation, with all of my tests set up and ready for me to build the actual functionality quickly.
+قد تكون العملية الأولية لإنشاء اختبار صندوق أسود يصرّف برنامجك ويشغّله، وينفّذ الاختبار، ثم ينظف كل شيء، مجهدة إلى حد كبير. ولهذا يُفضَّل فعلها في بداية مشروعك بأقل قدر من الوظائف. وعادةً أبدأ كل مشاريعي بتنفيذ خادم "hello world"، مع إعداد كل اختباراتي وجاهزيتها لأبني الوظائف الفعلية بسرعة.
 
-The mental model of "specifications", "drivers", and "acceptance tests" can take a little time to get used to, so follow carefully. It can be helpful to "work backwards" by trying to call the specification first.
+قد يستغرق الاعتياد على النموذج الذهني لـ"المواصفات" و"المشغّلات" و"اختبارات القبول" بعض الوقت، فتابع بعناية. وقد يكون من المفيد "العمل بالعكس" بمحاولة استدعاء المواصفة أولاً.
 
-Create some structure to house the program we intend to ship.
+أنشئ بنية تضم البرنامج الذي ننوي إطلاقه.
 
 `mkdir -p cmd/httpserver`
 
-Inside the new folder, create a new file `greeter_server_test.go`, and add the following.
+داخل المجلد الجديد، أنشئ ملفاً جديداً باسم `greeter_server_test.go`، وأضف ما يلي.
 
 ```go
 package main_test
@@ -229,9 +229,9 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-We wish to run our specification in a Go test. We already have access to a `*testing.T`, so that's the first argument, but what about the second?
+نريد تشغيل مواصفتنا في اختبار غو. ولدينا بالفعل الوصول إلى `*testing.T`، فهذا هو الوسيط (argument) الأول، لكن ماذا عن الثاني؟
 
-`specifications.Greeter` is an interface, which we will implement with a `Driver` by changing the new TestGreeterServer code to the following:
+النوع `specifications.Greeter` واجهة (interface)، وسنحققها بـ`Driver` بتغيير شيفرة `TestGreeterServer` الجديدة إلى ما يلي:
 
 ```go
 import (
@@ -244,21 +244,21 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-It would be favourable for our `Driver` to be configurable to run it against different environments, including locally, so we have added a `BaseURL` field.
+سيكون من المستحسن أن يكون `Driver` قابلاً للضبط لتشغيله على بيئات مختلفة، بما فيها البيئة المحلية، لذا أضفنا الحقل `BaseURL`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./greeter_server_test.go:46:12: undefined: go_specs_greet.Driver
 ```
 
-We're still practising TDD here! It's a big first step we have to make; we need to make a few files and write maybe more code than we're typically used to, but when you're first starting, this is often the case. It's so important we try to remember the red step's rules.
+ما زلنا نمارس `TDD` هنا! إنها خطوة أولى كبيرة علينا اتخاذها؛ فعلينا إنشاء بعض الملفات وكتابة شيفرة ربما أكثر مما اعتدنا عادةً، لكن هذا كثيراً ما يكون الحال حين تبدأ. ومن المهم جداً أن نحاول تذكّر قواعد خطوة الأحمر.
 
-> Commit as many sins as necessary to get the test passing
+> ارتكب من الخطايا ما يلزم لجعل الاختبار ينجح
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Hold your nose; remember, we can refactor when the test has passed. Here's the code for the driver in `driver.go` which we will place in the project root:
+أمسك أنفك، وتذكّر أننا نستطيع إعادة الهيكلة حين ينجح الاختبار. إليك شيفرة المشغّل في `driver.go`، التي سنضعها في جذر المشروع:
 
 ```go
 package go_specs_greet
@@ -287,28 +287,28 @@ func (d Driver) Greet() (string, error) {
 ```
 
 
-Notes:
+ملاحظات:
 
-- You could argue that I should be writing tests to drive out the various `if err != nil`, but in my experience, so long as you're not doing anything with the `err`, tests that say "you return the error you get" are relatively low value.
-- **You shouldn't use the default HTTP client**. Later we'll pass in an HTTP client to configure it with timeouts etc., but for now, we're just trying to get ourselves to a passing test.
--  In our `greeter_server_test.go` we called the Driver function from `go_specs_greet` package which we have now created, don't forget to add `github.com/quii/go-specs-greet` to its imports.
-Try and rerun the tests; they should now compile but not pass.
+- قد تقول إن عليّ كتابة اختبارات لاستخلاص الحالات المختلفة لـ`if err != nil`، لكن بحسب خبرتي، ما دمت لا تفعل أي شيء بـ`err`، فإن الاختبارات التي تقول "أنت تعيد الخطأ الذي تحصل عليه" قليلة القيمة نسبياً.
+- **لا ينبغي أن تستعمل عميل HTTP الافتراضي**. لاحقاً سنمرر عميل HTTP لضبطه بمهل زمنية وغيرها، لكننا الآن نحاول فقط الوصول إلى اختبار ناجح.
+-  في `greeter_server_test.go` استدعينا الدالة `Driver` من الحزمة `go_specs_greet` التي أنشأناها الآن، فلا تنسَ إضافة `github.com/quii/go-specs-greet` إلى استيراداته.
+حاول إعادة تشغيل الاختبارات؛ ينبغي أن تُصرَّف الآن لكنها لا تنجح.
 
 ```
 Get "http://localhost:8080/greet": dial tcp [::1]:8080: connect: connection refused
 ```
 
-We have a `Driver`, but we have not started our application yet, so it cannot do an HTTP request. We need our acceptance test to coordinate building, running and finally killing our system for the test to run.
+لدينا `Driver`، لكننا لم نشغّل تطبيقنا بعد، لذا لا يستطيع إجراء طلب HTTP. نحتاج إلى أن ينسّق اختبار القبول بناء نظامنا وتشغيله وأخيراً قتله، كي يعمل الاختبار.
 
-### Running our application
+### تشغيل تطبيقنا
 
-It's common for teams to build Docker images of their systems to deploy, so for our test we'll do the same
+من الشائع أن تبني الفرق صور Docker لأنظمتها لنشرها، لذا سنفعل الشيء نفسه في اختبارنا
 
-To help us use Docker in our tests, we will use [Testcontainers](https://golang.testcontainers.org). Testcontainers gives us a programmatic way to build Docker images and manage container life-cycles.
+ولمساعدتنا على استعمال Docker في اختباراتنا، سنستعمل [Testcontainers](https://golang.testcontainers.org). فهي تمنحنا طريقة برمجية لبناء صور Docker وإدارة دورات حياة الحاويات.
 
 `go get github.com/testcontainers/testcontainers-go`
 
-Now you can edit `cmd/httpserver/greeter_server_test.go` to read as follows:
+يمكنك الآن تعديل `cmd/httpserver/greeter_server_test.go` ليصبح كما يلي:
 
 ```go
 package main_test
@@ -351,7 +351,7 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-Try and run the test.
+حاول تشغيل الاختبار.
 
 ```
 === RUN   TestGreeterHandler
@@ -363,7 +363,7 @@ Try and run the test.
 --- FAIL: TestGreeterHandler (0.59s)
 ```
 
-We need to create a Dockerfile for our program. Inside our `httpserver` folder, create a `Dockerfile` and add the following.
+نحتاج إلى إنشاء `Dockerfile` لبرنامجنا. داخل المجلد `httpserver`، أنشئ `Dockerfile` وأضف ما يلي.
 
 ```dockerfile
 # Make sure to specify the same Go version as the one in the go.mod file.
@@ -384,13 +384,13 @@ EXPOSE 8080
 CMD [ "./svr" ]
 ```
 
-Don't worry too much about the details here; it can be refined and optimised, but for this example, it'll suffice. The advantage of our approach here is we can later improve our Dockerfile and have a test to prove it works as we intend it to. This is a real strength of having black-box tests!
+لا تقلق كثيراً بشأن التفاصيل هنا؛ فيمكن تحسينها وتهذيبها، لكنها تكفي لهذا المثال. وميزة أسلوبنا هنا أننا نستطيع لاحقاً تحسين `Dockerfile` ويكون لدينا اختبار يثبت أنه يعمل كما نقصد. وهذه نقطة قوة حقيقية لامتلاك اختبارات الصندوق الأسود!
 
-Try and rerun the test; it should complain about not being able to build the image. Of course, that's because we haven't written a program to build yet!
+حاول إعادة تشغيل الاختبار؛ ينبغي أن يعترض على عدم القدرة على بناء الصورة. وهذا طبيعي، لأننا لم نكتب برنامجاً لبنائه بعد!
 
-For the test to fully execute, we'll need to create a program that listens on `8080`, but **that's all**. Stick to the TDD discipline, don't write the production code that would make the test pass until we've verified the test fails as we'd expect.
+لكي يُنفَّذ الاختبار بالكامل، سنحتاج إلى إنشاء برنامج يستمع على `8080`، لكن **هذا كل شيء**. التزم بانضباط `TDD`، ولا تكتب شيفرة الإنتاج التي ستجعل الاختبار ينجح حتى نتحقق من أن الاختبار يفشل كما نتوقع.
 
-Create a `main.go` inside our `httpserver` folder with the following
+أنشئ `main.go` داخل المجلد `httpserver` بما يلي
 
 ```go
 package main
@@ -409,7 +409,7 @@ func main() {
 }
 ```
 
-Try to run the test again, and it should fail with the following.
+حاول تشغيل الاختبار مجدداً، وينبغي أن يفشل بما يلي.
 
 ```
     greet.go:16: Expected values to be equal:
@@ -418,9 +418,9 @@ Try to run the test again, and it should fail with the following.
 --- FAIL: TestGreeterHandler (2.09s)
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Update the handler to behave how our specification wants it to
+حدّث المعالج ليتصرف كما تريد مواصفتنا
 
 ```go
 import (
@@ -439,9 +439,9 @@ func main() {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-Whilst this technically isn't a refactor, we shouldn't rely on the default HTTP client, so let's change our Driver, so we can supply one, which our test will give.
+مع أن هذا ليس إعادة هيكلة من الناحية التقنية، فلا ينبغي أن نعتمد على عميل HTTP الافتراضي، لذا لنغيّر `Driver` بحيث نستطيع تقديم عميل، يعطيه إياه اختبارنا.
 
 ```go
 import (
@@ -468,7 +468,7 @@ func (d Driver) Greet() (string, error) {
 }
 ```
 
-In our test in `cmd/httpserver/greeter_server_test.go`, update the creation of the driver to pass in a client.
+في اختبارنا في `cmd/httpserver/greeter_server_test.go`، حدّث إنشاء المشغّل ليمرر عميلاً.
 
 ```go
 client := http.Client{
@@ -479,9 +479,9 @@ driver := go_specs_greet.Driver{BaseURL: "http://localhost:8080", Client: &clien
 specifications.GreetSpecification(t, driver)
 ```
 
-It's good practice to keep `main.go` as simple as possible; it should only be concerned with piecing together the building blocks you make into an application.
+من الممارسات الجيدة إبقاء `main.go` بأبسط ما يمكن؛ فلا ينبغي أن يهتم إلا بتركيب لبنات البناء التي تصنعها في تطبيق.
 
-Create a file in the project root called `handler.go` and move our code into there.
+أنشئ ملفاً في جذر المشروع باسم `handler.go` وانقل شيفرتنا إليه.
 
 ```go
 package go_specs_greet
@@ -496,7 +496,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Update `main.go` to import and use the handler instead.
+حدّث `main.go` ليستورد المعالج ويستعمله بدلاً من ذلك.
 
 ```go
 package main
@@ -513,17 +513,17 @@ func main() {
 }
 ```
 
-## Reflect
+## تأمّل
 
-The first step felt like an effort. We've made several `go` files to create and test an HTTP handler that returns a hard-coded string. This "iteration 0" ceremony and setup will serve us well for further iterations.
+بدت الخطوة الأولى مجهدة. فقد أنشأنا عدة ملفات `go` لإنشاء معالج HTTP يعيد سلسلة نصية ثابتة واختباره. لكن شكليات "التكرار رقم 0" وإعداده سيخدماننا جيداً في التكرارات التالية.
 
-Changing functionality should be simple and controlled by driving it through the specification and dealing with whatever changes it forces us to make. Now the `DockerFile` and `testcontainers` are set up for our acceptance test; we shouldn't have to change these files unless the way we construct our application changes.
+ينبغي أن يكون تغيير الوظائف بسيطاً ومتحكماً به، بقيادته عبر المواصفة والتعامل مع أي تغييرات تجبرنا عليها. والآن بعد أن صار `DockerFile` و`testcontainers` مُعدَّين لاختبار القبول، لا ينبغي أن نضطر إلى تغيير هذه الملفات ما لم تتغير طريقة بناء تطبيقنا.
 
-We'll see this with our following requirement, greet a particular person.
+سنرى هذا في متطلبنا التالي: تحية شخص معيّن.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Edit our specification
+عدّل مواصفتنا
 
 ```go
 package specifications
@@ -545,9 +545,9 @@ func GreetSpecification(t testing.TB, greeter Greeter) {
 }
 ```
 
-To allow us to greet specific people, we need to change the interface to our system to accept a `name` parameter.
+لكي نستطيع تحية أشخاص محددين، علينا تغيير واجهة نظامنا لتقبل معاملاً (parameter) باسم `name`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./greeter_server_test.go:48:39: cannot use driver (variable of type go_specs_greet.Driver) as type specifications.Greeter in argument to specifications.GreetSpecification:
@@ -556,11 +556,11 @@ To allow us to greet specific people, we need to change the interface to our sys
 		want Greet(name string) (string, error)
 ```
 
-The change in the specification has meant our driver needs to be updated.
+التغيير في المواصفة يعني أن مشغّلنا يحتاج إلى تحديث.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Update the driver so that it specifies a `name` query value in the request to ask for a particular `name` to be greeted.
+حدّث المشغّل بحيث يحدد قيمة استعلام `name` في الطلب، ليطلب تحية `name` معيّن.
 
 ```go
 import "io"
@@ -579,7 +579,7 @@ func (d Driver) Greet(name string) (string, error) {
 }
 ```
 
-The test should now run, and fail.
+ينبغي أن يعمل الاختبار الآن، وأن يفشل.
 
 ```
     greet.go:16: Expected values to be equal:
@@ -590,9 +590,9 @@ The test should now run, and fail.
 --- FAIL: TestGreeterHandler (1.92s)
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Extract the `name` from the request and greet.
+استخرج `name` من الطلب وألقِ التحية.
 
 ```go
 import (
@@ -605,15 +605,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The test should now pass.
+ينبغي أن ينجح الاختبار الآن.
 
-## Refactor
+## أعد الهيكلة
 
-In [HTTP Handlers Revisited,](https://github.com/quii/learn-go-with-tests/blob/main/http-handlers-revisited.md) we discussed how important it is for HTTP handlers should only be responsible for handling HTTP concerns; any "domain logic" should live outside of the handler. This allows us to develop domain logic in isolation from HTTP, making it simpler to test and understand.
+في فصل [عودة إلى معالجات HTTP](https://github.com/quii/learn-go-with-tests/blob/main/http-handlers-revisited.md) ناقشنا أهمية ألا تكون معالجات HTTP مسؤولة إلا عن اهتمامات HTTP؛ وأن يعيش أي "منطق مجال" خارج المعالج. وهذا يتيح لنا تطوير منطق المجال بمعزل عن HTTP، مما يجعل اختباره وفهمه أبسط.
 
-Let's pull apart these concerns.
+لنفصل هذه الاهتمامات.
 
-Update our handler in `./handler.go` as follows:
+حدّث معالجنا في `./handler.go` كما يلي:
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -622,7 +622,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Create new file `./greet.go`:
+أنشئ ملفاً جديداً `./greet.go`:
 ```go
 package go_specs_greet
 
@@ -633,13 +633,13 @@ func Greet(name string) string {
 }
 ```
 
-## A slight diversion in to the "adapter" design pattern
+## استطراد قصير إلى نمط التصميم "المحوّل"
 
-Now that we've separated our domain logic of greeting people into a separate function, we are now free to write unit tests for our greet function. This is undoubtedly a lot simpler than testing it through a specification that goes through a driver that hits a web server, to get a string!
+والآن بعد أن فصلنا منطق مجالنا في تحية الناس إلى دالة منفصلة، صرنا أحراراً في كتابة اختبارات وحدة لدالة التحية. وهذا بلا شك أبسط بكثير من اختبارها عبر مواصفة تمر بمشغّل يتصل بخادم ويب، للحصول على سلسلة نصية!
 
-Wouldn't it be nice if we could reuse our specification here too? After all, the specification's point is decoupled from implementation details. If the specification captures our **essential complexity** and our "domain" code is supposed to model it, we should be able to use them together.
+ألن يكون جميلاً لو استطعنا إعادة استعمال مواصفتنا هنا أيضاً؟ ففي النهاية، الغاية من المواصفة أنها منفصلة عن تفاصيل التنفيذ. وإن كانت المواصفة تجسّد **التعقيد الجوهري** لدينا، وكانت شيفرة "المجال" يُفترض أن تنمذجه، فينبغي أن نستطيع استعمالهما معاً.
 
-Let's give it a go by creating  `./greet_test.go` as follows:
+لنجرّب ذلك بإنشاء  `./greet_test.go` كما يلي:
 
 ```go
 package go_specs_greet_test
@@ -657,22 +657,22 @@ func TestGreet(t *testing.T) {
 
 ```
 
-This would be nice, but it doesn't work
+سيكون هذا جميلاً، لكنه لا يعمل
 
 ```
 ./greet_test.go:11:39: cannot use go_specs_greet.Greet (value of type func(name string) string) as type specifications.Greeter in argument to specifications.GreetSpecification:
 	func(name string) string does not implement specifications.Greeter (missing Greet method)
 ```
 
-Our specification wants something that has a method `Greet()` not a function.
+تريد مواصفتنا شيئاً له طريقة (method) اسمها `Greet()`، لا دالة.
 
-The compilation error is frustrating; we have a thing that we "know" is a `Greeter`, but it's not quite in the right **shape** for the compiler to let us use it. This is what the **adapter** pattern caters for.
+خطأ التصريف محبط؛ فلدينا شيء "نعرف" أنه `Greeter`، لكنه ليس تماماً في **الشكل** الصحيح ليسمح لنا المصرِّف باستعماله. وهذا ما يعالجه نمط **المحوّل**.
 
-> In [software engineering](https://en.wikipedia.org/wiki/Software_engineering), the **adapter pattern** is a [software design pattern](https://en.wikipedia.org/wiki/Software_design_pattern) (also known as [wrapper](https://en.wikipedia.org/wiki/Wrapper_function), an alternative naming shared with the [decorator pattern](https://en.wikipedia.org/wiki/Decorator_pattern)) that allows the [interface](https://en.wikipedia.org/wiki/Interface_(computer_science)) of an existing [class](https://en.wikipedia.org/wiki/Class_(computer_science)) to be used as another interface.[[1\]](https://en.wikipedia.org/wiki/Adapter_pattern#cite_note-HeadFirst-1) It is often used to make existing classes work with others without modifying their [source code](https://en.wikipedia.org/wiki/Source_code).
+> في [هندسة البرمجيات](https://en.wikipedia.org/wiki/Software_engineering)، **نمط المحوّل** [نمط تصميم برمجي](https://en.wikipedia.org/wiki/Software_design_pattern) (يُعرف أيضاً بـ[الغلاف](https://en.wikipedia.org/wiki/Wrapper_function)، وهي تسمية بديلة يشترك فيها مع [نمط المزخرِف](https://en.wikipedia.org/wiki/Decorator_pattern)) يتيح استعمال [واجهة](https://en.wikipedia.org/wiki/Interface_(computer_science)) [صنف](https://en.wikipedia.org/wiki/Class_(computer_science)) موجود كواجهة أخرى.[[1\]](https://en.wikipedia.org/wiki/Adapter_pattern#cite_note-HeadFirst-1) وكثيراً ما يُستعمل لجعل الأصناف الموجودة تعمل مع غيرها دون تعديل [شيفرتها المصدرية](https://en.wikipedia.org/wiki/Source_code).
 
-A lot of fancy words for something relatively simple, which is often the case with design patterns, which is why people tend to roll their eyes at them. The value of design patterns is not specific implementations but a language to describe specific solutions to common problems engineers face. If you have a team that has a shared vocabulary, it reduces the friction in communication.
+كثير من الكلمات المنمقة لشيء بسيط نسبياً، وهذا كثيراً ما يكون الحال مع أنماط التصميم، ولهذا يميل الناس إلى التبرم منها. لكن قيمة أنماط التصميم ليست في تنفيذات محددة، بل في كونها لغة لوصف حلول محددة لمشكلات شائعة يواجهها المهندسون. فإن كان لدى فريقك مفردات مشتركة، قلّ الاحتكاك في التواصل.
 
-Add this code in `./specifications/adapters.go`
+أضف هذه الشيفرة في `./specifications/adapters.go`
 
 ```go
 type GreetAdapter func(name string) string
@@ -682,7 +682,7 @@ func (g GreetAdapter) Greet(name string) (string, error) {
 }
 ```
 
-We can now use our adapter in our test to plug our `Greet` function into the specification.
+يمكننا الآن استعمال المحوّل في اختبارنا لتوصيل الدالة `Greet` بالمواصفة.
 
 ```go
 package go_specs_greet_test
@@ -702,21 +702,21 @@ func TestGreet(t *testing.T) {
 }
 ```
 
-The adapter pattern is handy when you have a type that exhibits the behaviour that an interface wants, but isn't in the right shape.
+نمط المحوّل مفيد حين يكون لديك نوع يُظهر السلوك الذي تريده واجهة ما، لكنه ليس في الشكل الصحيح.
 
-## Reflect
+## تأمّل
 
-The behaviour change felt simple, right? OK, maybe it was simply due to the nature of the problem, but this method of work gives you discipline and a simple, repeatable way of changing your system from top to bottom:
+بدا تغيير السلوك بسيطاً، أليس كذلك؟ حسناً، ربما كان ذلك ببساطة بسبب طبيعة المشكلة، لكن طريقة العمل هذه تمنحك الانضباط، وطريقة بسيطة قابلة للتكرار لتغيير نظامك من الأعلى إلى الأسفل:
 
-- Analyse your problem and identify a slight improvement to your system that pushes you in the right direction
-- Capture the new essential complexity in a specification
-- Follow the compilation errors until the AT runs
-- Update your implementation to make the system behave according to the specification
-- Refactor
+- حلّل مشكلتك وحدد تحسيناً طفيفاً لنظامك يدفعك في الاتجاه الصحيح
+- جسّد التعقيد الجوهري الجديد في مواصفة
+- اتبع أخطاء التصريف حتى يعمل اختبار القبول
+- حدّث تنفيذك ليتصرف النظام وفقاً للمواصفة
+- أعد الهيكلة
 
-After the pain of the first iteration, we didn't have to edit our acceptance test code because we have the separation of specifications, drivers and implementation. Changing our specification required us to update our driver and finally our implementation, but the boilerplate code around _how_ to spin up the system as a container was unaffected.
+بعد عناء التكرار الأول، لم نحتج إلى تعديل شيفرة اختبار القبول لأن لدينا فصلاً بين المواصفات والمشغّلات والتنفيذ. وتطلّب تغيير مواصفتنا تحديث المشغّل ثم التنفيذ أخيراً، لكن الشيفرة المتكررة حول _كيفية_ تشغيل النظام كحاوية لم تتأثر.
 
-Even with the overhead of building a docker image for our application and spinning up the container, the feedback loop for testing our **entire** application is very tight:
+وحتى مع عبء بناء صورة Docker لتطبيقنا وتشغيل الحاوية، فإن حلقة التغذية الراجعة لاختبار تطبيقنا **كله** متقاربة جداً:
 
 ```
 quii@Chriss-MacBook-Pro go-specs-greet % go test ./...
@@ -725,23 +725,23 @@ ok  	github.com/quii/go-specs-greet/cmd/httpserver	2.221s
 ?   	github.com/quii/go-specs-greet/specifications	[no test files]
 ```
 
-Now, imagine your CTO has now decided that gRPC is _the future_. She wants you to expose this same functionality over a gRPC server whilst maintaining the existing HTTP server.
+تخيّل الآن أن مديرتك التقنية قررت أن gRPC هو _المستقبل_. وهي تريد منك أن تتيح هذه الوظيفة نفسها عبر خادم gRPC مع الحفاظ على خادم HTTP الحالي.
 
-This is an example of **accidental complexity**. Remember, accidental complexity is the complexity we have to deal with because we're working with computers, stuff like networks, disks, APIs, etc. **The essential complexity has not changed**, so we shouldn't have to change our specifications.
+هذا مثال على **التعقيد العَرَضي**. تذكّر أن التعقيد العَرَضي هو التعقيد الذي علينا التعامل معه لأننا نعمل مع الحواسيب، أي أشياء مثل الشبكات والأقراص والواجهات البرمجية وغيرها. **فالتعقيد الجوهري لم يتغير**، لذا لا ينبغي أن نضطر إلى تغيير مواصفاتنا.
 
-Many repository structures and design patterns are mainly dealing with separating types of complexity. For instance, "ports and adapters" ask that you separate your domain code from anything to do with accidental complexity; that code lives in an "adapters" folder.
+كثير من بنى المستودعات وأنماط التصميم تتعامل أساساً مع فصل أنواع التعقيد. فمثلاً، يطلب نمط "المنافذ والمحوّلات" أن تفصل شيفرة مجالك عن أي شيء يتعلق بالتعقيد العَرَضي؛ وتعيش تلك الشيفرة في مجلد "adapters".
 
-### Making the change easy
+### جعل التغيير سهلاً
 
-Sometimes, it makes sense to do some refactoring _before_ making a change.
+أحياناً يكون من المنطقي إجراء بعض إعادة الهيكلة _قبل_ إجراء التغيير.
 
-> First make the change easy, then make the easy change
+> اجعل التغيير سهلاً أولاً، ثم أجرِ التغيير السهل
 
-~Kent Beck
+~كينت بيك
 
-For that reason, let's move our `http` code - `driver.go` and `handler.go` - into a package called `httpserver` within an `adapters` folder and change their package names to `httpserver`.
+لهذا السبب، لننقل شيفرة `http`، أي `driver.go` و`handler.go`، إلى حزمة (package) باسم `httpserver` داخل مجلد `adapters`، ونغيّر اسمي حزمتيهما إلى `httpserver`.
 
-You'll now need to import the root package into `handler.go` to refer to the Greet method...
+ستحتاج الآن إلى استيراد الحزمة الجذرية في `handler.go` للإشارة إلى الطريقة `Greet`...
 
 ```go
 package httpserver
@@ -760,7 +760,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 ```
 
-import your httpserver adapter into main.go:
+واستورد المحوّل `httpserver` في `main.go`:
 
 ```go
 package main
@@ -777,29 +777,29 @@ func main() {
 }
 ```
 
-and update the import and reference to `Driver` in greeter_server_test.go:
+وحدّث الاستيراد والإشارة إلى `Driver` في `greeter_server_test.go`:
 
 ```go
 driver := httpserver.Driver{BaseURL: "http://localhost:8080", Client: &client}
 ```
 
-Finally, it's helpful to gather our domain level code in to its own folder too. Don't be lazy and have a `domain` folder in your projects with hundreds of unrelated types and functions. Make an effort to think about your domain and group ideas that belong together, together. This will make your project easier to understand and will improve the quality of your imports.
+وأخيراً، من المفيد تجميع شيفرتنا على مستوى المجال في مجلدها الخاص أيضاً. لا تتكاسل فيكون في مشاريعك مجلد `domain` فيه مئات الأنواع والدوال غير المترابطة. ابذل جهداً في التفكير في مجالك، واجمع معاً الأفكار التي تنتمي بعضها إلى بعض. فهذا سيجعل مشروعك أسهل فهماً، وسيحسّن جودة استيراداتك.
 
-Rather than seeing
+فبدلاً من رؤية
 
 ```go
 domain.Greet
 ```
 
-Which is just a bit weird, instead favour
+وهو غريب بعض الشيء، فضّل بدلاً من ذلك
 
 ```go
 interactions.Greet
 ```
 
-Create a `domain` folder to house all your domain code, and within it, an `interactions` folder. Depending on your tooling, you may have to update some imports and code.
+أنشئ مجلد `domain` ليضم كل شيفرة مجالك، وداخله مجلد `interactions`. وبحسب أدواتك، قد تحتاج إلى تحديث بعض الاستيرادات والشيفرة.
 
-Our project tree should now look like this:
+ينبغي أن تبدو شجرة مشروعنا الآن هكذا:
 
 ```
 quii@Chriss-MacBook-Pro go-specs-greet % tree
@@ -827,18 +827,18 @@ quii@Chriss-MacBook-Pro go-specs-greet % tree
 
 ```
 
-Our domain code, **essential complexity**, lives at the root of our go module, and code that will allow us to use them in "the real world" are organised into **adapters**. The `cmd` folder is where we can compose these logical groupings into practical applications, which have black-box tests to verify it all works. Nice!
+شيفرة مجالنا، أي **التعقيد الجوهري**، تعيش في جذر الوحدة النمطية لغو، والشيفرة التي ستتيح لنا استعمالها في "العالم الحقيقي" منظمة في **محوّلات**. والمجلد `cmd` هو المكان الذي نستطيع فيه تركيب هذه التجميعات المنطقية في تطبيقات عملية، لها اختبارات صندوق أسود تتحقق من أن كل شيء يعمل. رائع!
 
-Finally, we can do a _tiny_ bit of tidying up our acceptance test. If you consider the high-level steps of our acceptance test:
+وأخيراً، يمكننا إجراء قدر _ضئيل_ من الترتيب في اختبار القبول. فإن نظرت في الخطوات عالية المستوى لاختبار القبول:
 
-- Build a docker image
-- Wait for it to be listening on _some_ port
-- Create a driver that understands how to translate the DSL into system specific calls
-- Plug in the driver into the specification
+- ابنِ صورة Docker
+- انتظر حتى تستمع على منفذ _ما_
+- أنشئ مشغّلاً يفهم كيف يترجم اللغة الخاصة بالمجال إلى استدعاءات خاصة بالنظام
+- وصّل المشغّل بالمواصفة
 
-... you'll realise we have the same requirements for an acceptance test for the gRPC server!
+... فستدرك أن لدينا المتطلبات نفسها لاختبار قبول خادم gRPC أيضاً!
 
-The `adapters` folder seems a good place as any, so inside a file called `docker.go`, encapsulate the first two steps in a function that we'll reuse next.
+يبدو المجلد `adapters` مكاناً مناسباً كأي مكان آخر، لذا غلّف الخطوتين الأوليين داخل ملف باسم `docker.go` في دالة (function) سنعيد استعمالها لاحقاً.
 
 ```go
 package adapters
@@ -882,7 +882,7 @@ func StartDockerServer(
 }
 ```
 
-This gives us an opportunity to clean up our acceptance test a little
+وهذا يمنحنا فرصة لتنظيف اختبار القبول قليلاً
 
 ```go
 func TestGreeterServer(t *testing.T) {
@@ -900,17 +900,17 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-This should make writing the _next_ test simpler.
+ينبغي أن يجعل هذا كتابة الاختبار _التالي_ أبسط.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-This new functionality can be accomplished by creating a new `adapter` to interact with our domain code. For that reason we:
+يمكن تحقيق هذه الوظيفة الجديدة بإنشاء `adapter` جديد للتفاعل مع شيفرة مجالنا. ولهذا السبب:
 
-- Shouldn't have to change the specification;
-- Should be able to reuse the specification;
-- Should be able to reuse the domain code.
+- لا ينبغي أن نضطر إلى تغيير المواصفة؛
+- ينبغي أن نستطيع إعادة استعمال المواصفة؛
+- ينبغي أن نستطيع إعادة استعمال شيفرة المجال.
 
-Create a new folder `grpcserver` inside `cmd` to house our new program and the corresponding acceptance test. Inside `cmd/grpc_server/greeter_server_test.go`, add an acceptance test, which looks very similar to our HTTP server test, not by coincidence but by design.
+أنشئ مجلداً جديداً `grpcserver` داخل `cmd` ليضم برنامجنا الجديد واختبار القبول المقابل له. وداخل `cmd/grpc_server/greeter_server_test.go`، أضف اختبار قبول يشبه كثيراً اختبار خادم HTTP، لا مصادفة بل عن قصد.
 
 ```go
 package main_test
@@ -936,22 +936,22 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-The only differences are:
+الفروق الوحيدة هي:
 
-- We use a different docker file, because we're building a different program
-- This means we'll need a new `Driver`, that'll use `gRPC` to interact with our new program
+- نستعمل ملف Docker مختلفاً، لأننا نبني برنامجاً مختلفاً
+- وهذا يعني أننا سنحتاج إلى `Driver` جديد يستعمل `gRPC` للتفاعل مع برنامجنا الجديد
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./greeter_server_test.go:26:12: undefined: grpcserver
 ```
 
-We haven't created a `Driver` yet, so it won't compile.
+لم ننشئ `Driver` بعد، لذا لن يُصرَّف.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Create a `grpcserver` folder inside `adapters` and inside it create `driver.go`
+أنشئ مجلد `grpcserver` داخل `adapters` وأنشئ داخله `driver.go`
 
 ```go
 package grpcserver
@@ -965,9 +965,9 @@ func (d Driver) Greet(name string) (string, error) {
 }
 ```
 
-If you run again, it should now _compile_ but not pass because we haven't created a Dockerfile and corresponding program to run.
+إن شغّلته مجدداً فينبغي أن _يُصرَّف_ الآن لكنه لا ينجح، لأننا لم ننشئ `Dockerfile` والبرنامج المقابل لتشغيله.
 
-Create a new `Dockerfile` inside `cmd/grpcserver`.
+أنشئ `Dockerfile` جديداً داخل `cmd/grpcserver`.
 
 ```dockerfile
 # Make sure to specify the same Go version as the one in the go.mod file.
@@ -987,7 +987,7 @@ EXPOSE 50051
 CMD [ "./svr" ]
 ```
 
-And a `main.go`
+و`main.go`
 
 ```go
 package main
@@ -999,19 +999,19 @@ func main() {
 }
 ```
 
-You should find now that the test fails because our server is not listening on the port. Now is the time to start building our client and server with gRPC.
+ينبغي أن تجد الآن أن الاختبار يفشل لأن خادمنا لا يستمع على المنفذ. وحان الآن وقت استعمال gRPC لبدء بناء العميل والخادم.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-### gRPC
+### إطار gRPC
 
-If you're unfamiliar with gRPC, I'd start by looking at the [gRPC website](https://grpc.io). Still, for this chapter, it's just another kind of adapter into our system, a way for other systems to call (**r**emote **p**rocedure **c**all) our excellent domain code.
+إن لم تكن مألوفاً مع gRPC، فأنصحك بالبدء بإلقاء نظرة على [موقع gRPC](https://grpc.io). ومع ذلك، فهو في هذا الفصل مجرد نوع آخر من المحوّلات إلى نظامنا، أي وسيلة لأنظمة أخرى لاستدعاء (**ا**ستدعاء **إ**جراء **ب**عيد، أي remote procedure call) شيفرة مجالنا الممتازة.
 
-The twist is you define a "service definition" using Protocol Buffers. You then generate server and client code from the definition. This not only works for Go but for most mainstream languages too. This means you can share a definition with other teams in your company who may not even write Go and can still do service-to-service communication smoothly.
+والحيلة أنك تعرّف "تعريف خدمة" باستعمال Protocol Buffers، ثم تولّد شيفرة الخادم والعميل من التعريف. وهذا لا يعمل مع غو فحسب، بل مع معظم اللغات الشائعة أيضاً. وهذا يعني أنك تستطيع مشاركة تعريف مع فرق أخرى في شركتك قد لا تكتب بغو أصلاً، ويظل التواصل بين الخدمات سلساً.
 
-If you haven't used gRPC before, you'll need to install a **Protocol buffer compiler** and some **Go plugins**. [The gRPC website has clear instructions on how to do this](https://grpc.io/docs/languages/go/quickstart/).
+إن لم تكن قد استعملت gRPC من قبل، فستحتاج إلى تثبيت **مصرِّف Protocol buffer** وبعض **إضافات غو**. [وفي موقع gRPC تعليمات واضحة عن كيفية فعل ذلك](https://grpc.io/docs/languages/go/quickstart/).
 
-Inside the same folder as our new driver, add a `greet.proto` file with the following
+داخل المجلد نفسه الذي فيه مشغّلنا الجديد، أضف ملف `greet.proto` بما يلي
 
 ```protobuf
 syntax = "proto3";
@@ -1033,9 +1033,9 @@ message GreetReply {
 }
 ```
 
-To understand this definition, you don't need to be an expert in Protocol Buffers. We define a service with a Greet method and then describe the incoming and outgoing message types.
+لفهم هذا التعريف، لا تحتاج إلى أن تكون خبيراً في Protocol Buffers. فنحن نعرّف خدمة لها طريقة `Greet`، ثم نصف أنواع الرسائل الواردة والصادرة.
 
-Inside `adapters/grpcserver` run the following to generate the client and server code
+داخل `adapters/grpcserver` شغّل ما يلي لتوليد شيفرة العميل والخادم
 
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
@@ -1043,7 +1043,7 @@ protoc --go_out=. --go_opt=paths=source_relative \
     greet.proto
 ```
 
-If it worked, we would have some code generated for us to use. Let's start by using the generated client code inside our `Driver`.
+إن نجح ذلك، فستكون لدينا شيفرة مولّدة لنستعملها. لنبدأ باستعمال شيفرة العميل المولّدة داخل `Driver`.
 
 ```go
 package grpcserver
@@ -1079,7 +1079,7 @@ func (d Driver) Greet(name string) (string, error) {
 }
 ```
 
-Now that we have a client, we need to update our `main.go` to create a server. Remember, at this point; we're just trying to get our test to pass and not worrying about code quality.
+والآن بعد أن صار لدينا عميل، علينا تحديث `main.go` لإنشاء خادم. وتذكّر أننا في هذه المرحلة نحاول فقط جعل اختبارنا ينجح، ولا نقلق بشأن جودة الشيفرة.
 
 ```go
 package main
@@ -1115,7 +1115,7 @@ func (g GreetServer) Greet(ctx context.Context, request *grpcserver.GreetRequest
 }
 ```
 
-To create our gRPC server, we have to implement the interface it generated for us
+لإنشاء خادم gRPC، علينا تحقيق الواجهة التي ولّدها لنا
 
 ```go
 // GreeterServer is the server API for Greeter service.
@@ -1127,13 +1127,13 @@ type GreeterServer interface {
 }
 ```
 
-Our `main` function:
+الدالة `main` لدينا:
 
-- Listens on a port
-- Creates a `GreetServer` that implements the interface, and then registers it with `grpcServer.RegisterGreeterServer`, along with a `grpc.Server`.
-- Uses the server with the listener
+- تستمع على منفذ
+- تنشئ `GreetServer` يحقق الواجهة، ثم تسجّله باستعمال `grpcServer.RegisterGreeterServer`، مع `grpc.Server`.
+- تستعمل الخادم مع المستمع
 
-It wouldn't be a massive extra effort to call our domain code inside `greetServer.Greet` rather than hard-coding `fix-me` in the message, but I'd like to run our acceptance test first to see if everything is working on a transport level and verify the failing test output.
+لن يكون جهداً إضافياً كبيراً أن نستدعي شيفرة مجالنا داخل `greetServer.Greet` بدلاً من تثبيت `fix-me` في الرسالة، لكنني أود تشغيل اختبار القبول أولاً لأرى إن كان كل شيء يعمل على مستوى النقل، وأتحقق من مخرجات الاختبار الفاشل.
 
 ```
 greet.go:16: Expected values to be equal:
@@ -1143,9 +1143,9 @@ greet.go:16: Expected values to be equal:
 \ No newline at end of file
 ```
 
-Nice! We can see our driver is able to connect to our gRPC server in the test.
+رائع! نرى أن مشغّلنا يستطيع الاتصال بخادم gRPC في الاختبار.
 
-Now, call our domain code inside our `GreetServer`
+والآن، استدعِ شيفرة مجالنا داخل `GreetServer`
 
 ```go
 type GreetServer struct {
@@ -1157,19 +1157,19 @@ func (g GreetServer) Greet(ctx context.Context, request *grpcserver.GreetRequest
 }
 ```
 
-Finally, it passes! We have an acceptance test that proves our gRPC greet server behaves how we'd like.
+أخيراً، ينجح! لدينا اختبار قبول يثبت أن خادم التحية عبر gRPC يتصرف كما نريد.
 
-## Refactor
+## أعد الهيكلة
 
-We committed several sins to get the test passing, but now they're passing, we have the safety net to refactor.
+ارتكبنا عدة خطايا لجعل الاختبار ينجح، لكن الآن وقد نجحت الاختبارات، صارت لدينا شبكة الأمان لإعادة الهيكلة.
 
-### Simplify main
+### بسّط `main`
 
-As before, we don't want `main` to have too much code inside it. We can move our new `GreetServer` into `adapters/grpcserver` as that's where it should live. In terms of cohesion, if we change the service definition, we want the "blast-radius" of change to be confined to that area of our code.
+كما في السابق، لا نريد أن يحتوي `main` على شيفرة كثيرة. يمكننا نقل `GreetServer` الجديد إلى `adapters/grpcserver` لأن ذلك هو مكانه الطبيعي. ومن حيث التماسك، إن غيّرنا تعريف الخدمة، فإننا نريد أن يقتصر "نطاق انفجار" التغيير على تلك المنطقة من شيفرتنا.
 
-### Don't redial in our driver every time
+### لا تُعِد الاتصال في المشغّل في كل مرة
 
-We only have one test, but if we expand our specification (we will), it doesn't make sense for the Driver to redial for every RPC call.
+لدينا اختبار واحد فقط، لكن إن وسّعنا مواصفتنا (وسنفعل)، فليس من المنطقي أن يعيد المشغّل الاتصال مع كل استدعاء RPC جديد.
 
 ```go
 package grpcserver
@@ -1216,9 +1216,9 @@ func (d *Driver) getClient() (GreeterClient, error) {
 }
 ```
 
-Here we're showing how we can use [`sync.Once`](https://pkg.go.dev/sync#Once) to ensure our `Driver` only attempts to create a connection to our server once.
+نبيّن هنا كيف يمكننا استعمال [`sync.Once`](https://pkg.go.dev/sync#Once) لضمان ألا يحاول `Driver` إنشاء اتصال بخادمنا إلا مرة واحدة.
 
-Let's take a look at the current state of our project structure before moving on.
+لنلقِ نظرة على الحالة الحالية لبنية مشروعنا قبل المتابعة.
 
 ```
 quii@Chriss-MacBook-Pro go-specs-greet % tree
@@ -1255,15 +1255,15 @@ quii@Chriss-MacBook-Pro go-specs-greet % tree
     └── greet.go
 ```
 
-- `adapters` have cohesive units of functionality grouped together
-- `cmd` holds our applications and corresponding acceptance tests
-- Our code is totally decoupled from any accidental complexity
+- يضم المجلد `adapters` وحدات متماسكة من الوظائف مجمّعة معاً
+- يضم المجلد `cmd` تطبيقاتنا واختبارات القبول المقابلة لها
+- شيفرتنا منفصلة تماماً عن أي تعقيد عَرَضي
 
-### Consolidating `Dockerfile`
+### توحيد `Dockerfile`
 
-You've probably noticed the two `Dockerfiles` are almost identical beyond the path to the binary we wish to build.
+لعلك لاحظت أن ملفي `Dockerfiles` متطابقان تقريباً باستثناء مسار الملف التنفيذي الذي نريد بناءه.
 
-`Dockerfiles` can accept arguments to let us reuse them in different contexts, which sounds perfect. We can delete our 2 Dockerfiles and instead have one at the root of the project with the following
+يمكن لملفات `Dockerfiles` أن تقبل وسطاء تتيح لنا إعادة استعمالها في سياقات مختلفة، وهذا يبدو مثالياً. يمكننا حذف ملفي Docker وأن يكون لدينا بدلاً منهما ملف واحد في جذر المشروع بما يلي
 
 ```dockerfile
 # Make sure to specify the same Go version as the one in the go.mod file.
@@ -1284,7 +1284,7 @@ RUN go build -o svr cmd/${bin_to_build}/main.go
 CMD [ "./svr" ]
 ```
 
-We'll have to update our `StartDockerServer` function to pass in the argument when we build the images
+سنضطر إلى تحديث الدالة `StartDockerServer` لتمرير الوسيط حين نبني الصور
 
 ```go
 func StartDockerServer(
@@ -1317,7 +1317,7 @@ func StartDockerServer(
 }
 ```
 
-And finally, update our tests to pass in the image to build (do this for the other test and change `grpcserver` to `httpserver`).
+وأخيراً، حدّث اختباراتنا لتمرير الصورة المراد بناؤها (افعل هذا للاختبار الآخر وغيّر `grpcserver` إلى `httpserver`).
 
 ```go
 func TestGreeterServer(t *testing.T) {
@@ -1331,25 +1331,25 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-### Separating different kinds of tests
+### فصل الأنواع المختلفة من الاختبارات
 
-Acceptance tests are great in that they test the whole system works from a pure user-facing, behavioural POV, but they do have their downsides compared to unit tests:
+اختبارات القبول رائعة من حيث إنها تختبر أن النظام كله يعمل من منظور سلوكي خالص يواجه المستخدم، لكن لها عيوبها مقارنة باختبارات الوحدة:
 
-- Slower
-- Quality of feedback is often not as focused as a unit test
-- Doesn't help you with internal quality, or design
+- أبطأ
+- جودة التغذية الراجعة كثيراً ما تكون أقل تركيزاً من اختبار الوحدة
+- لا تساعدك في الجودة الداخلية أو التصميم
 
-[The Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html) guides us on the kind of mix we want for our test suite, you should read Fowler's post for more detail, but the very simplistic summary for this post is "lots of unit tests and a few acceptance tests".
+يرشدنا [هرم الاختبارات](https://martinfowler.com/articles/practical-test-pyramid.html) إلى نوع المزيج الذي نريده في مجموعة اختباراتنا، وينبغي أن تقرأ مقال فاولر لمزيد من التفاصيل، لكن الملخص المبسّط جداً لهذا الفصل هو "كثير من اختبارات الوحدة وقليل من اختبارات القبول".
 
-For that reason, as a project grows you often may be in situations where the acceptance tests can take a few minutes to run. To offer a friendly developer experience for people checking out your project, you can enable developers to run the different kinds of tests separately.
+ولهذا السبب، مع نمو المشروع قد تجد نفسك كثيراً في مواقف تستغرق فيها اختبارات القبول بضع دقائق لتعمل. ولتقديم تجربة ودية للمطورين الذين ينزّلون مشروعك، يمكنك تمكين المطورين من تشغيل الأنواع المختلفة من الاختبارات بشكل منفصل.
 
-It's preferable that running `go test ./...` should be runnable with no further set up from an engineer, beyond say a few key dependencies such as the Go compiler (obviously) and perhaps Docker.
+يُفضَّل أن يكون تشغيل `go test ./...` ممكناً دون أي إعداد إضافي من المهندس، باستثناء بعض التبعيات الأساسية، كمصرِّف غو (بالطبع) وربما Docker أيضاً.
 
-Go provides a mechanism for engineers to run only "short" tests with the [short flag](https://pkg.go.dev/testing#Short)
+توفر غو آلية للمهندسين لتشغيل الاختبارات "القصيرة" فقط بـ[الراية short](https://pkg.go.dev/testing#Short)
 
 `go test -short ./...`
 
-We can add to our acceptance tests to see if the user wants to run our acceptance tests by inspecting the value of the flag
+يمكننا الإضافة إلى اختبارات القبول للتحقق مما إذا كان المستخدم يريد تشغيلها، بفحص قيمة الراية
 
 ```go
 if testing.Short() {
@@ -1357,7 +1357,7 @@ if testing.Short() {
 }
 ```
 
-I made a `Makefile` to show this usage
+أنشأت `Makefile` لبيان هذا الاستعمال
 
 ```makefile
 build:
@@ -1368,26 +1368,26 @@ unit-tests:
 	go test -short ./...
 ```
 
-### When should I write acceptance tests?
+### متى ينبغي أن أكتب اختبارات القبول؟
 
-The best practice is to favour having lots of fast running unit tests and a few acceptance tests, but how do you decide when you should write an acceptance test, vs unit tests?
+أفضل ممارسة هي تفضيل وجود كثير من اختبارات الوحدة السريعة وقليل من اختبارات القبول، لكن كيف تقرر متى تكتب اختبار قبول مقابل اختبارات الوحدة؟
 
-It's difficult to give a concrete rule, but the questions I typically ask myself are:
+من الصعب إعطاء قاعدة ملموسة، لكن الأسئلة التي أطرحها على نفسي عادةً هي:
 
-- Is this an edge case? I'd prefer to unit test those
-- Is this something that the non-computer people talk about a lot? I would prefer to have a lot of confidence the key thing "really" works, so I'd add an acceptance test
-- Am I describing a user journey, rather than a specific function? Acceptance test
-- Would unit tests give me enough confidence? Sometimes you're taking an existing journey that already has an acceptance test, but you're adding other functionality to deal with different scenarios due to different inputs. In this case, adding another acceptance test adds a cost but brings little value, so I'd prefer some unit tests.
+- هل هذه حالة حدّية؟ أفضّل اختبار هذه الحالات باختبارات الوحدة
+- هل هذا شيء يتحدث عنه غير المختصين بالحواسيب كثيراً؟ عندها أفضّل أن تكون لدي ثقة كبيرة بأن الشيء الأساسي يعمل "حقاً"، لذا أضيف اختبار قبول
+- هل أصف رحلة مستخدم، لا دالة محددة؟ اختبار قبول
+- هل ستمنحني اختبارات الوحدة ثقة كافية؟ أحياناً تأخذ رحلة موجودة لها اختبار قبول بالفعل، لكنك تضيف وظائف أخرى للتعامل مع سيناريوهات مختلفة بسبب مدخلات مختلفة. وفي هذه الحالة، إضافة اختبار قبول آخر تضيف تكلفة لكنها تجلب قيمة قليلة، لذا أفضّل بعض اختبارات الوحدة.
 
-## Iterating on our work
+## التقدم في عملنا
 
-With all this effort, you'd hope extending our system will now be simple. Making a system that is simple to work on, is not necessarily easy, but it's worth the time, and is substantially easier to do when you start a project.
+مع كل هذا الجهد، تأمل أن يكون توسيع نظامنا بسيطاً الآن. صنع نظام بسيط للعمل عليه ليس بالضرورة سهلاً، لكنه يستحق الوقت، وهو أسهل بكثير حين تبدأ مشروعاً.
 
-Let's extend our API to include a "curse" functionality.
+لنوسّع واجهتنا البرمجية لتتضمن وظيفة "اللعن".
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-This is brand-new behaviour, so we should start with an acceptance test. In our specification file, add the following
+هذا سلوك جديد كلياً، لذا ينبغي أن نبدأ باختبار قبول. أضف ما يلي في ملف المواصفة
 
 ```go
 type MeanGreeter interface {
@@ -1401,7 +1401,7 @@ func CurseSpecification(t *testing.T, meany MeanGreeter) {
 }
 ```
 
-Pick one of our acceptance tests and try to use the specification
+اختر أحد اختبارات القبول وحاول استعمال المواصفة
 
 ```go
 func TestGreeterServer(t *testing.T) {
@@ -1420,7 +1420,7 @@ func TestGreeterServer(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 # github.com/quii/go-specs-greet/cmd/grpcserver_test [github.com/quii/go-specs-greet/cmd/grpcserver.test]
@@ -1428,11 +1428,11 @@ func TestGreeterServer(t *testing.T) {
 	*grpcserver.Driver does not implement specifications.MeanGreeter (missing Curse method)
 ```
 
-Our `Driver` doesn't support `Curse` yet.
+`Driver` لا يدعم `Curse` بعد.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Remember we're just trying to get the test to run, so add the method to `Driver`
+تذكّر أننا نحاول فقط جعل الاختبار يعمل، لذا أضف الطريقة إلى `Driver`
 
 ```go
 func (d *Driver) Curse(name string) (string, error) {
@@ -1440,7 +1440,7 @@ func (d *Driver) Curse(name string) (string, error) {
 }
 ```
 
-If you try again, the test should compile, run, and fail
+إن حاولت مجدداً، فينبغي أن يُصرَّف الاختبار ويعمل ويفشل
 
 ```
 greet.go:26: Expected values to be equal:
@@ -1448,9 +1448,9 @@ greet.go:26: Expected values to be equal:
 \ No newline at end of file
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We'll need to update our protocol buffer specification have a `Curse` method on it, and then regenerate our code.
+سنحتاج إلى تحديث مواصفة Protocol Buffer لتحتوي على طريقة `Curse`، ثم إعادة توليد شيفرتنا.
 
 ```protobuf
 service Greeter {
@@ -1459,9 +1459,9 @@ service Greeter {
 }
 ```
 
-You could argue that reusing the types `GreetRequest` and `GreetReply` is inappropriate coupling, but we can deal with that in the refactoring stage. As I keep stressing, we're just trying to get the test passing, so we verify the software works, _then_ we can make it nice.
+قد تقول إن إعادة استعمال النوعين `GreetRequest` و`GreetReply` اقتران غير مناسب، لكن يمكننا معالجة ذلك في مرحلة إعادة الهيكلة. وكما أشدد دائماً، نحن نحاول فقط جعل الاختبار ينجح كي نتحقق من أن البرنامج يعمل، _ثم_ نجعله جميلاً.
 
-Re-generate our code with (inside `adapters/grpcserver`).
+أعد توليد شيفرتنا بما يلي (داخل `adapters/grpcserver`).
 
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
@@ -1469,9 +1469,9 @@ protoc --go_out=. --go_opt=paths=source_relative \
     greet.proto
 ```
 
-### Update driver
+### تحديث المشغّل
 
-Now the client code has been updated, we can now call `Curse` in our `Driver`
+والآن بعد تحديث شيفرة العميل، يمكننا استدعاء `Curse` في `Driver`
 
 ```go
 func (d *Driver) Curse(name string) (string, error) {
@@ -1491,9 +1491,9 @@ func (d *Driver) Curse(name string) (string, error) {
 }
 ```
 
-### Update server
+### تحديث الخادم
 
-Finally, we need to add the `Curse` method to our `Server`
+وأخيراً، علينا إضافة الطريقة `Curse` إلى `Server`
 
 ```go
 package grpcserver
@@ -1518,58 +1518,58 @@ func (g GreetServer) Greet(ctx context.Context, request *GreetRequest) (*GreetRe
 }
 ```
 
-The tests should now pass.
+ينبغي أن تنجح الاختبارات الآن.
 
-## Refactor
+## أعد الهيكلة
 
-Try doing this yourself.
+جرّب فعل هذا بنفسك.
 
-- Extract the `Curse` "domain logic", away from the grpc server, as we did for `Greet`. Use the specification as a unit test against your domain logic
-- Have different types in the protobuf to ensure the message types for `Greet` and `Curse` are decoupled.
+- استخرج "منطق المجال" الخاص بـ`Curse` بعيداً عن خادم gRPC، كما فعلنا مع `Greet`. واستعمل المواصفة كاختبار وحدة على منطق مجالك
+- استعمل أنواعاً مختلفة في protobuf لضمان أن أنواع رسائل `Greet` و`Curse` منفصلة.
 
-## Implementing `Curse` for the HTTP server
+## تنفيذ `Curse` لخادم HTTP
 
-Again, an exercise for you, the reader. We have our domain-level specification and our domain-level logic neatly separated. If you've followed this chapter, this should be very straightforward.
+مرة أخرى، هذا تمرين لك أيها القارئ. فلدينا مواصفتنا على مستوى المجال ومنطقنا على مستوى المجال مفصولين بشكل أنيق. وإن كنت قد تابعت هذا الفصل، فينبغي أن يكون هذا مباشراً جداً.
 
-- Add the specification to the existing acceptance test for the HTTP server
-- Update your `Driver`
-- Add the new endpoint to the server, and reuse the domain code to implement the functionality. You may wish to use `http.NewServeMux` to handle the routeing to the separate endpoints.
+- أضف المواصفة إلى اختبار القبول الموجود لخادم HTTP
+- حدّث `Driver`
+- أضف نقطة النهاية الجديدة إلى الخادم، وأعد استعمال شيفرة المجال لتنفيذ الوظيفة. وقد ترغب في استعمال `http.NewServeMux` لمعالجة التوجيه إلى نقاط النهاية المنفصلة.
 
-Remember to work in small steps, commit and run your tests frequently. If you get really stuck [you can find my implementation on GitHub](https://github.com/quii/go-specs-greet).
+تذكّر أن تعمل بخطوات صغيرة، وأن تودع وتشغّل اختباراتك كثيراً. وإن علقت حقاً [فيمكنك إيجاد تنفيذي على GitHub](https://github.com/quii/go-specs-greet).
 
-## Enhance both systems by updating the domain logic with a unit test
+## حسّن النظامين كليهما بتحديث منطق المجال باختبار وحدة
 
-As mentioned, not every change to a system should be driven via an acceptance test. Permutations of business rules and edge cases should be simple to drive via a unit test if you have separated concerns well.
+كما ذكرنا، ليس كل تغيير في النظام ينبغي أن يُقاد عبر اختبار قبول. فتبديلات قواعد الأعمال والحالات الحدّية ينبغي أن تكون قيادتها عبر اختبار وحدة بسيطة إن كنت قد فصلت الاهتمامات جيداً.
 
-Add a unit test to our `Greet` function to default the `name` to `World` if it is empty. You should see how simple this is, and then the business rules are reflected in both applications for "free".
+أضف اختبار وحدة للدالة `Greet` يجعل `name` افتراضياً `World` إن كان فارغاً. وينبغي أن ترى مدى بساطة ذلك، ثم تنعكس قواعد الأعمال في التطبيقين كليهما "مجاناً".
 
-## Wrapping up
+## الخلاصة
 
-Building systems with a reasonable cost of change requires you to have ATs engineered to help you, not become a maintenance burden. They can be used as a means of guiding, or as a GOOS says, "growing" your software methodically.
+بناء أنظمة بتكلفة تغيير معقولة يتطلب أن تكون لديك اختبارات قبول مصممة لتساعدك، لا لتصبح عبئاً في الصيانة. ويمكن استعمالها وسيلة للتوجيه، أو كما يقول كتاب GOOS، "لإنماء" برمجياتك بمنهجية.
 
-Hopefully, with this example, you can see our application's predictable, structured workflow for driving change and how you could use it for your work.
+أرجو أن ترى بهذا المثال سير العمل المنظم والقابل للتنبؤ في تطبيقنا لقيادة التغيير، وكيف يمكنك استعماله في عملك.
 
-You can imagine talking to a stakeholder who wants to extend the system you work on in some way. Capture it in a domain-centric, implementation-agnostic way in a specification, and use it as a north star towards your efforts. Riya and I describe leveraging BDD techniques like "Example Mapping" [in our GopherconUK talk](https://www.youtube.com/watch?v=ZMWJCk_0WrY) to help you understand the essential complexity more deeply and allow you to write more detailed and meaningful specifications.
+يمكنك أن تتخيل التحدث مع صاحب مصلحة يريد توسيع النظام الذي تعمل عليه بطريقة ما. جسّد ذلك في مواصفة بطريقة تتمحور حول المجال ولا تعتمد على التنفيذ، واستعملها نجم شمال لجهودك. وقد وصفنا أنا وريا الاستفادة من أساليب BDD مثل "رسم خرائط الأمثلة" (Example Mapping) [في محاضرتنا في GopherconUK](https://www.youtube.com/watch?v=ZMWJCk_0WrY) لمساعدتك على فهم التعقيد الجوهري بعمق أكبر، وتمكينك من كتابة مواصفات أكثر تفصيلاً ومعنى.
 
-Separating essential and accidental complexity concerns will make your work less ad-hoc and more structured and deliberate; this ensures the resiliency of your acceptance tests and helps them become less of a maintenance burden.
+فصل الاهتمامات بين التعقيد الجوهري والعَرَضي سيجعل عملك أقل ارتجالاً وأكثر تنظيماً وقصداً؛ وهذا يضمن صلابة اختبارات القبول ويساعدها على أن تكون عبئاً أقل في الصيانة.
 
-Dave Farley gives an excellent tip:
+يقدّم ديف فارلي نصيحة ممتازة:
 
-> Imagine the least technical person that you can think of, who understands the problem-domain, reading your Acceptance Tests. The tests should make sense to that person.
+> تخيّل أقل شخص تقني يخطر ببالك، ممن يفهمون مجال المشكلة، وهو يقرأ اختبارات القبول لديك. ينبغي أن تكون الاختبارات مفهومة لذلك الشخص.
 
-Specifications should then double up as documentation. They should specify clearly how a system should behave. This idea is the principle around tools like [Cucumber](https://cucumber.io), which offers you a DSL for capturing behaviours as code, and then you convert that DSL into system calls, just like we did here.
+ينبغي إذن أن تكون المواصفات توثيقاً في الوقت نفسه. فينبغي أن تحدد بوضوح كيف ينبغي أن يتصرف النظام. وهذه الفكرة هي المبدأ وراء أدوات مثل [Cucumber](https://cucumber.io)، التي توفر لك لغة خاصة بالمجال لتجسيد السلوك كشيفرة، ثم تحوّل تلك اللغة إلى استدعاءات للنظام، تماماً كما فعلنا هنا.
 
-### What has been covered
+### ما تناولناه
 
-- Writing abstract specifications allows you to express the essential complexity of the problem you're solving and remove accidental complexity. This will enable you to reuse the specifications in different contexts.
-- How to use [Testcontainers](https://golang.testcontainers.org) to manage the life-cycle of your system for ATs. This allows you to thoroughly test the image you intend to ship on your computer, giving you fast feedback and confidence.
-- A brief intro into containerising your application with Docker
-- gRPC
-- Rather than chasing canned folder structures, you can use your development approach to naturally drive out the structure of your application, based on your own needs
+- كتابة مواصفات مجردة تتيح لك التعبير عن التعقيد الجوهري للمشكلة التي تحلها وإزالة التعقيد العَرَضي. وهذا سيمكّنك من إعادة استعمال المواصفات في سياقات مختلفة.
+- كيف تستعمل [Testcontainers](https://golang.testcontainers.org) لإدارة دورة حياة نظامك لاختبارات القبول. وهذا يتيح لك اختبار الصورة التي تنوي إطلاقها اختباراً شاملاً على حاسوبك، فيمنحك تغذية راجعة سريعة وثقة.
+- مدخل موجز إلى وضع تطبيقك في حاوية باستعمال Docker
+- إطار gRPC
+- بدلاً من مطاردة بنى مجلدات جاهزة، يمكنك استعمال أسلوبك في التطوير لاستخلاص بنية تطبيقك بشكل طبيعي، بناءً على احتياجاتك الخاصة
 
-### Further material
+### مواد إضافية
 
-- In this example, our "DSL" is not much of a DSL; we just used interfaces to decouple our specification from the real world and allow us to express domain logic cleanly. As your system grows, this level of abstraction might become clumsy and unclear. [Read into the "Screenplay Pattern"](https://cucumber.io/blog/bdd/understanding-screenplay-(part-1)/) if you want to find more ideas as to how to structure your specifications.
-- For emphasis, [Growing Object-Oriented Software, Guided by Tests,](http://www.growing-object-oriented-software.com) is a classic. It demonstrates applying this "London style", "top-down" approach to writing software. Anyone who has enjoyed Learn Go with Tests should get much value from reading GOOS.
-- [In the example code repository](https://github.com/quii/go-specs-greet), there's more code and ideas I haven't written about here, such as multi-stage docker build, you may wish to check this out.
-  - In particular, *for fun*, I made a **third program**, a website with some HTML forms to `Greet` and `Curse`. The `Driver` leverages the excellent-looking [https://github.com/go-rod/rod](https://github.com/go-rod/rod) module, which allows it to work with the website with a browser, just like a user would. Looking at the git history, you can see how I started not using any templating tools "just to make it work" Then, once I passed my acceptance test, I had the freedom to do so without fear of breaking things. -->
+- في هذا المثال، لغتنا "الخاصة بالمجال" ليست لغة خاصة بالمجال بالمعنى الكامل؛ فقد استعملنا الواجهات فقط لفصل مواصفتنا عن العالم الحقيقي وتمكيننا من التعبير عن منطق المجال بنظافة. ومع نمو نظامك، قد يصبح هذا المستوى من التجريد مرتبكاً وغير واضح. [اقرأ عن "نمط السيناريو" (Screenplay Pattern)](https://cucumber.io/blog/bdd/understanding-screenplay-(part-1)/) إن أردت مزيداً من الأفكار عن كيفية بناء مواصفاتك.
+- للتأكيد، كتاب [Growing Object-Oriented Software, Guided by Tests](http://www.growing-object-oriented-software.com) كتاب كلاسيكي. فهو يبيّن تطبيق أسلوب "مدرسة لندن" "من الأعلى إلى الأسفل" في كتابة البرمجيات. وكل من استمتع بكتاب "تعلّم غو بالاختبارات" ينبغي أن يجني قيمة كبيرة من قراءة GOOS.
+- [في مستودع الشيفرة النموذجية](https://github.com/quii/go-specs-greet) شيفرة وأفكار أخرى لم أكتب عنها هنا، مثل بناء Docker متعدد المراحل، وقد ترغب في الاطلاع عليها.
+  - وتحديداً، *للمتعة*، صنعت **برنامجاً ثالثاً**، وهو موقع ويب فيه بعض نماذج HTML لـ`Greet` و`Curse`. ويستفيد `Driver` من الوحدة الممتازة [https://github.com/go-rod/rod](https://github.com/go-rod/rod)، التي تتيح له العمل مع الموقع بمتصفح، تماماً كما يفعل المستخدم. وبالنظر إلى سجل git، يمكنك أن ترى كيف بدأت دون استعمال أي أدوات قوالب "لمجرد أن يعمل"، ثم بمجرد أن نجح اختبار القبول، صارت لدي حرية فعل ذلك دون خوف من إفساد الأشياء. -->
