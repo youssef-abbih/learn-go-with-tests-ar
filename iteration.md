@@ -1,14 +1,14 @@
-# Iteration
+# التكرار
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/for)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/for)**
 
-To do stuff repeatedly in Go, you'll need `for`. In Go there are no `while`, `do`, `until` keywords, you can only use `for`. Which is a good thing!
+لتنفيذ الأشياء بشكل متكرر في غو (Go)، تحتاج إلى `for`. فليس في غو كلمات محجوزة مثل `while` أو `do` أو `until`، ولا يمكنك أن تستعمل إلا `for`. وهذا أمر جيد!
 
-Let's write a test for a function that repeats a character 5 times.
+لنكتب اختباراً (test) لدالة (function) تكرر حرفاً 5 مرات.
 
-There's nothing new so far, so try and write it yourself for practice.
+لا جديد حتى الآن، فحاول أن تكتبه بنفسك للتمرّن.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 package iteration
@@ -25,15 +25,15 @@ func TestRepeat(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 `./repeat_test.go:6:14: undefined: Repeat`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-_Keep the discipline!_ You don't need to know anything new right now to make the test fail properly.
+_حافظ على الانضباط!_ لا تحتاج الآن إلى معرفة أي شيء جديد لجعل الاختبار يفشل كما ينبغي.
 
-All you need to do right now is enough to make it compile so you can check your test is written well.
+كل ما عليك فعله الآن هو ما يكفي لجعله يُصرَّف كي تتحقق من أن اختبارك مكتوب جيداً.
 
 ```go
 package iteration
@@ -43,13 +43,13 @@ func Repeat(character string) string {
 }
 ```
 
-Isn't it nice to know you already know enough Go to write tests for some basic problems? This means you can now play with the production code as much as you like and know it's behaving as you'd hope.
+أليس من الجميل أن تعرف أنك تعرف من غو ما يكفي لكتابة اختبارات لبعض المشكلات الأساسية؟ وهذا يعني أنك تستطيع الآن أن تجرّب في شيفرة (code) الإنتاج قدر ما تشاء، وأنت تعرف أنها تتصرف كما تأمل.
 
 `repeat_test.go:10: expected 'aaaaa' but got ''`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-The `for` syntax is very unremarkable and follows most C-like languages.
+صياغة `for` عادية جداً وتتبع معظم اللغات الشبيهة بلغة C في ذلك.
 
 ```go
 func Repeat(character string) string {
@@ -61,21 +61,21 @@ func Repeat(character string) string {
 }
 ```
 
-Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces `{ }` are always required. You might wonder what is happening in the row
+على خلاف لغات أخرى مثل C وJava وJavaScript، لا توجد أقواس حول المكونات الثلاثة لتعليمة `for`، والأقواس المعقوصة `{ }` مطلوبة دائماً. لعلك تتساءل عما يحدث في السطر
 
 ```go
 	var repeated string
 ```
 
-as we've been using `:=` so far to declare and initializing variables. However, `:=` is simply [short hand for both steps](https://gobyexample.com/variables). Here we are declaring a `string` variable only. Hence, the explicit version. We can also use `var` to declare functions, as we'll see later on.
+إذ إننا نستعمل `:=` حتى الآن للتصريح عن المتغيرات (variables) وتهيئتها. لكن `:=` ليس إلا [اختصاراً للخطوتين معاً](https://gobyexample.com/variables). وهنا نصرّح فقط عن متغير من النوع `string`، ولذلك استعملنا الصيغة الصريحة. ويمكننا أيضاً استعمال `var` للتصريح عن الدوال، كما سنرى لاحقاً.
 
-Run the test and it should pass.
+شغّل الاختبار، وينبغي أن ينجح.
 
-Additional variants of the for loop are described [here](https://gobyexample.com/for).
+الأشكال الأخرى لحلقة (loop) `for` موصوفة [هنا](https://gobyexample.com/for).
 
-## Refactor
+## أعد الهيكلة
 
-Now it's time to refactor and introduce another construct `+=` assignment operator.
+حان الآن وقت إعادة الهيكلة (refactor) وتقديم تركيب لغوي آخر، هو عامل الإسناد `+=`.
 
 ```go
 const repeatCount = 5
@@ -89,11 +89,11 @@ func Repeat(character string) string {
 }
 ```
 
-`+=` called _"the Add AND assignment operator"_, adds the right operand to the left operand and assigns the result to left operand. It works with other types like integers.
+العامل `+=` يسمى _"عامل الجمع والإسناد"_، وهو يضيف الطرف الأيمن إلى الطرف الأيسر ويسند النتيجة إلى الطرف الأيسر. ويعمل مع أنواع أخرى مثل الأعداد الصحيحة.
 
-### Benchmarking
+### قياس الأداء
 
-Writing [benchmarks](https://golang.org/pkg/testing/#hdr-Benchmarks) in Go is another first-class feature of the language and it is very similar to writing tests.
+كتابة [قياسات الأداء (benchmarks)](https://golang.org/pkg/testing/#hdr-Benchmarks) في غو ميزة أخرى من الدرجة الأولى في اللغة، وهي تشبه كثيراً كتابة الاختبارات.
 
 ```go
 func BenchmarkRepeat(b *testing.B) {
@@ -103,15 +103,15 @@ func BenchmarkRepeat(b *testing.B) {
 }
 ```
 
-You'll see the code is very similar to a test.
+سترى أن الشيفرة تشبه كثيراً الاختبار.
 
-The `testing.B` gives you access to the cryptically named `b.N`.
+يمنحك `testing.B` الوصول إلى `b.N` ذي الاسم الغامض.
 
-When the benchmark code is executed, it runs `b.N` times and measures how long it takes.
+حين تُنفَّذ شيفرة قياس الأداء، فإنها تعمل `b.N` مرة وتقيس المدة التي تستغرقها.
 
-The amount of times the code is run shouldn't matter to you, the framework will determine what is a "good" value for that to let you have some decent results.
+لا ينبغي أن يهمك عدد مرات تشغيل الشيفرة، فإطار العمل سيحدد القيمة "الجيدة" لذلك ليعطيك نتائج معقولة.
 
-To run the benchmarks do `go test -bench=.` (or if you're in Windows Powershell `go test -bench="."`)
+لتشغيل قياسات الأداء، نفّذ `go test -bench=.` (أو `go test -bench="."` إن كنت تستعمل Windows Powershell)
 
 ```text
 goos: darwin
@@ -121,20 +121,20 @@ pkg: github.com/quii/learn-go-with-tests/for/v4
 PASS
 ```
 
-What `136 ns/op` means is our function takes on average 136 nanoseconds to run \(on my computer\). Which is pretty ok! To test this it ran it 10000000 times.
+معنى `136 ns/op` أن دالتنا تستغرق في المتوسط 136 نانوثانية لتعمل (على حاسوبي). وهذا جيد إلى حد كبير! ولاختبار ذلك شغّلها 10000000 مرة.
 
-**Note:** By default benchmarks are run sequentially.
+**ملاحظة:** تُشغَّل قياسات الأداء افتراضياً بشكل تسلسلي.
 
-**Note:** Sometimes, Go can optimize your benchmarks in a way that makes them inaccurate, such as eliminating the function being benchmarked. Check your benchmarks to see if the values make sense. If they seem overly optimized, you can follow the strategies in this **[blog post](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)**.
+**ملاحظة:** قد تُحسّن غو أحياناً قياسات أدائك بطريقة تجعلها غير دقيقة، كأن تحذف الدالة التي يُقاس أداؤها. افحص قياسات أدائك لترى إن كانت القيم منطقية. وإن بدت مُحسّنة أكثر من اللازم، فيمكنك اتباع الاستراتيجيات الواردة في **[هذه التدوينة](https://dave.cheney.net/2013/06/30/how-to-write-benchmarks-in-go)**.
 
-## Practice exercises
+## تمارين للتدرّب
 
-* Change the test so a caller can specify how many times the character is repeated and then fix the code
-* Write `ExampleRepeat` to document your function
-* Have a look through the [strings](https://golang.org/pkg/strings) package. Find functions you think could be useful and experiment with them by writing tests like we have here. Investing time learning the standard library will really pay off over time.
+* غيّر الاختبار بحيث يستطيع المستدعي تحديد عدد مرات تكرار الحرف، ثم أصلح الشيفرة
+* اكتب `ExampleRepeat` لتوثيق دالتك
+* ألقِ نظرة على الحزمة [strings](https://golang.org/pkg/strings). ابحث عن دوال تظن أنها قد تكون مفيدة، وجرّبها بكتابة اختبارات كما فعلنا هنا. فاستثمار الوقت في تعلّم المكتبة القياسية سيؤتي ثماره مع الوقت.
 
-## Wrapping up
+## الخلاصة
 
-* More TDD practice
-* Learned `for`
-* Learned how to write benchmarks
+* مزيد من التمرّن على `TDD`
+* تعلّمنا `for`
+* تعلّمنا كيف نكتب قياسات الأداء
