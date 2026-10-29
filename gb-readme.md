@@ -1,27 +1,27 @@
-# Learn Go with Tests
+# تعلّم غو بالاختبارات
 
 <div style="text-align: center">
   <img src="red-green-blue-gophers-smaller.png" />
 </div>
 
-[Art by Denise](https://twitter.com/deniseyu21)
+[رسم دينيس](https://twitter.com/deniseyu21)
 
-## Support me
+## ادعمني
 
-I am proud to offer this resource for free, but if you wish to give some appreciation
+أفخر بتقديم هذا المصدر مجاناً، لكن إن أردت أن تعبّر عن تقديرك فيمكنك أن:
 
-- [Tweet me @quii](https://twitter.com/quii)
-- <a rel="me" href="https://mastodon.cloud/@quii">Mastodon</a>
-- [Buy me a coffee](https://www.buymeacoffee.com/quii)
-- [Sponsor me on GitHub](https://github.com/sponsors/quii)
+- [تغرّد لي على @quii](https://twitter.com/quii)
+- <a rel="me" href="https://mastodon.cloud/@quii">تتابعني على Mastodon</a>
+- [تشتري لي فنجان قهوة](https://www.buymeacoffee.com/quii)
+- [ترعاني على GitHub](https://github.com/sponsors/quii)
 
-## Learn test-driven development with Go
+## تعلّم التطوير المقاد بالاختبارات (test-driven development) مع غو
 
-* Explore the Go language by writing tests
-* **Get a grounding with TDD**. Go is a good language for learning TDD because it is a simple language to learn and testing is built-in
-* Be confident that you'll be able to start writing robust, well-tested systems in Go
+* استكشف لغة غو (Go) بكتابة الاختبارات (tests)
+* **اكتسب أساساً متيناً في `TDD`**. لغة غو مناسبة لتعلّم `TDD` لأنها لغة بسيطة التعلّم، والاختبار مدمج فيها
+* كن واثقاً من أنك ستستطيع البدء بكتابة أنظمة (systems) متينة ومختبَرة جيداً بلغة غو
 
-Translations:
+الترجمات:
 
 - [中文](https://studygolang.gitbook.io/learn-go-with-tests)
 - [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
@@ -29,61 +29,61 @@ Translations:
 - [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
 - [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
 
-## Background
+## الخلفية
 
-I have some experience introducing Go to development teams and have tried different approaches as to how to grow a team from some people curious about Go into highly effective writers of Go systems.
+لديّ بعض الخبرة في تعريف فرق التطوير بلغة غو، وجرّبت أساليب مختلفة لتحويل فريق من أشخاص لديهم فضول تجاه غو إلى كتّاب فعّالين جداً لأنظمة مكتوبة بها.
 
-### What didn't work
+### ما لم ينجح
 
-#### Read _the_ book
+#### اقرأ _الكتاب_
 
-An approach we tried was to take [the blue book](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) and every week discuss the next chapter along with the exercises.
+من الأساليب التي جرّبناها أن نأخذ [الكتاب الأزرق](https://www.amazon.co.uk/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) ونناقش كل أسبوع الفصل التالي مع تمارينه.
 
-I love this book but it requires a high level of commitment. The book is very detailed in explaining concepts, which is obviously great but it means that the progress is slow and steady - this is not for everyone.
+أحب هذا الكتاب، لكنه يتطلب قدراً كبيراً من الالتزام. فهو مفصّل جداً في شرح المفاهيم، وهذا رائع بلا شك، لكنه يعني أن التقدّم بطيء ومنتظم، وهذا لا يناسب الجميع.
 
-I found that whilst a small number of people would read chapter X and do the exercises, many people didn't.
+لاحظت أنه في حين كان عدد قليل من الناس يقرؤون الفصل X ويحلّون التمارين، فإن كثيرين لم يفعلوا.
 
-#### Solve some problems
+#### حلّ بعض المسائل
 
-Katas are fun but they are usually limited in their scope for learning a language; you're unlikely to use goroutines to solve a kata.
+تمارين الكاتا (katas) ممتعة، لكن نطاقها محدود عادةً حين يتعلق الأمر بتعلّم لغة؛ فمن غير المرجّح أن تستعمل `goroutines` لحل تمرين كاتا.
 
-Another problem is when you have varying levels of enthusiasm. Some people just learn way more of the language than others and when demonstrating what they have done end up confusing people with features the others are not familiar with.
+ومن المشكلات الأخرى تفاوت مستويات الحماس. فبعض الناس يتعلّمون من اللغة أكثر بكثير من غيرهم، وحين يعرضون ما أنجزوه ينتهي بهم الأمر إلى إرباك الآخرين بميزات (features) لا يعرفونها.
 
-This ends up making the learning feel quite _unstructured_ and _ad hoc_.
+وهكذا يصبح التعلّم في النهاية _غير منظّم_ و_مرتجلاً_ إلى حد بعيد.
 
-### What did work
+### ما نجح
 
-By far the most effective way was by slowly introducing the fundamentals of the language by reading through [go by example](https://gobyexample.com/), exploring them with examples and discussing them as a group. This was a more interactive approach than "read chapter x for homework".
+كان الأسلوب الأكثر فعالية بفارق كبير هو التعريف التدريجي بأساسيات اللغة عبر قراءة موقع [go by example](https://gobyexample.com/)، واستكشافها بالأمثلة، ومناقشتها معاً كمجموعة. كان هذا أسلوباً أكثر تفاعلاً من «اقرأ الفصل X واجباً منزلياً».
 
-Over time the team gained a solid foundation of the _grammar_ of the language so we could then start to build systems.
+ومع الوقت اكتسب الفريق أساساً متيناً في _قواعد_ اللغة، فصار بإمكاننا البدء ببناء الأنظمة.
 
-This to me seems analogous to practicing scales when trying to learn guitar.
+يبدو لي هذا شبيهاً بالتمرّن على السلالم الموسيقية عند محاولة تعلّم الغيتار.
 
-It doesn't matter how artistic you think you are, you are unlikely to write good music without understanding the fundamentals and practicing the mechanics.
+لا يهم مدى اعتقادك بأنك فنان، فمن غير المرجّح أن تكتب موسيقى جيدة دون أن تفهم الأساسيات وتتمرّن على التقنيات.
 
-### What works for me
+### ما ينجح معي
 
-When _I_ learn a new programming language I usually start by messing around in a REPL but eventually, I need more structure.
+عندما أتعلّم _أنا_ لغة برمجة (programming language) جديدة، أبدأ عادةً بالعبث في بيئة `REPL`، لكنني في النهاية أحتاج إلى مزيد من التنظيم.
 
-What I like to do is explore concepts and then solidify the ideas with tests. Tests verify the code I write is correct and documents the feature I have learned.
+ما أحب فعله هو استكشاف المفاهيم ثم ترسيخ الأفكار بالاختبارات. فالاختبارات تتحقق من أن الشيفرة (code) التي أكتبها صحيحة، وتوثّق الميزة التي تعلّمتها.
 
-Taking my experience of learning with a group and my own personal way I am going to try and create something that hopefully proves useful to other teams. Learning the fundamentals by writing small tests so that you can then take your existing software design skills and ship some great systems.
+سأجمع تجربتي في التعلّم مع مجموعة وأسلوبي الشخصي، وأحاول أن أصنع شيئاً أرجو أن يكون مفيداً لفرق أخرى: تعلّم الأساسيات بكتابة اختبارات صغيرة، كي تستطيع بعدها أن توظّف مهاراتك الحالية في تصميم البرمجيات (software design) وتطلق أنظمة رائعة.
 
-## Who this is for
+## لمن هذا الكتاب
 
-* People who are interested in picking up Go
-* People who already know some Go, but want to explore testing more
+* للأشخاص المهتمين بتعلّم غو
+* للأشخاص الذين يعرفون شيئاً من غو لكنهم يريدون استكشاف الاختبار أكثر
 
-## What you'll need
+## ما ستحتاج إليه
 
-* A computer!
-* [Installed Go](https://golang.org/)
-* A text editor
-* Some experience with programming. Understanding of concepts like `if`, variables, functions etc.
-* Comfortable using the terminal
+* حاسوب!
+* [لغة غو مثبّتة](https://golang.org/)
+* محرر نصوص (text editor)
+* بعض الخبرة في البرمجة، وفهم مفاهيم مثل `if` والمتغيرات (variables) والدوال (functions) وغيرها
+* ارتياح في استعمال الطرفية (terminal)
 
-## Feedback
+## التغذية الراجعة (Feedback)
 
-* Add issues/submit PRs [here](https://github.com/quii/learn-go-with-tests) or [tweet me @quii](https://twitter.com/quii)
+* افتح `issues` أو أرسل طلبات سحب (pull requests) [هنا](https://github.com/quii/learn-go-with-tests)، أو [غرّد لي على @quii](https://twitter.com/quii)
 
-[MIT license](https://github.com/quii/learn-go-with-tests/blob/main/LICENSE.md)
+[رخصة MIT](https://github.com/quii/learn-go-with-tests/blob/main/LICENSE.md)

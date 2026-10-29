@@ -1,8 +1,7 @@
 # Arabic translation of Learn Go with Tests
 
 This repository is a fork of `quii/learn-go-with-tests`. The goal is a
-complete, consistent Arabic translation published as a GitBook site, an
-EPUB and a PDF.
+complete, consistent Arabic translation published as a GitBook site.
 
 ## Layout
 
@@ -11,11 +10,10 @@ EPUB and a PDF.
 - Branch `arabic-version`: the untouched English base this translation
   started from. **Never modify it.** It is the reference for every check:
   `git show arabic-version:<file>` gives the English original of `<file>`.
-- `SUMMARY.md`: table of contents (GitBook + build order), translated.
+- `SUMMARY.md`: table of contents (GitBook), translated.
 - `glossary.md`: the single source of truth for terminology.
 - `tools/check_translation.py`: structural and terminology checker.
-- `build/`: EPUB/PDF build (`build/build-ar.sh`) with RTL settings.
-- Text direction is handled by the build and by GitBook settings.
+- Text direction is handled by GitBook settings.
   **Never add manual direction markup** (HTML `dir` attributes, `<div>`
   wrappers, Unicode direction marks) to chapters. If an existing chapter
   has some, remove it.
@@ -39,9 +37,10 @@ EPUB and a PDF.
    - First occurrence of a glossary term in a chapter: Arabic term followed
      by the English in parentheses. After that: Arabic only.
 5. **Bidirectional text rules** (these keep the RTL rendering correct):
-   - No paragraph, list item or heading may start or end with a Latin word
-     or with inline code. Rephrase the Arabic sentence so the Latin part
-     sits in the middle.
+   - No paragraph, list item or heading may start with a Latin word or
+     with inline code, and none may end with a Latin word followed by
+     punctuation. Rephrase the Arabic sentence so the Latin part sits in
+     the middle.
    - Use Arabic punctuation next to Arabic text: `،` `؛` `؟`.
    - Use Western digits (0-9), consistent with code and program output.
 6. **Style.** Modern Standard Arabic, clear technical prose, not literal
@@ -56,7 +55,6 @@ EPUB and a PDF.
   `python3 tools/check_translation.py <chapter>.md`
   Errors must be zero. Warnings must be fixed or explained in the report.
   A warning "inline code added" is expected when rule 2 added backticks.
-- Build: `./build/build-ar.sh` (or `epub` / `pdf`). The build must succeed.
 
 ## Updating after upstream changes
 

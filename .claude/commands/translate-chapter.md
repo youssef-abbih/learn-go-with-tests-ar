@@ -28,8 +28,7 @@ Translate the chapter `$ARGUMENTS` into Arabic, following every rule in
 3. Run `python3 tools/check_translation.py $ARGUMENTS` and fix every error.
    Fix every warning you can; keep the rest for the report.
 4. Make sure the chapter's title in `SUMMARY.md` is in Arabic.
-5. Run `./build/build-ar.sh` and make sure it succeeds.
-6. Report, briefly:
+5. Report, briefly:
    - warnings left and why,
    - `مقترح` terms still used,
    - passages you were unsure about, with line numbers in `$ARGUMENTS`.

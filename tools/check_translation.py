@@ -242,12 +242,16 @@ def check(chapter: str, ref: str) -> int:
             continue
         words = plain.split()
         first = words[0].strip("*_()[]") if words else ""
-        last = words[-1].strip("*_()[].:،؛؟!") if words else ""
+        last_raw = words[-1].strip("*_()[]") if words else ""
         preview = plain[:60]
         if LATIN_WORD_RE.fullmatch(first):
             warnings.append(f"paragraph starts with a Latin word: {preview!r}")
-        if LATIN_WORD_RE.fullmatch(last):
-            warnings.append(f"paragraph ends with a Latin word: {preview!r}")
+        # A Latin word at the very end only misrenders when punctuation
+        # follows it: the punctuation then jumps to the wrong side.
+        if re.fullmatch(r"[A-Za-z][A-Za-z0-9_'-]*[.:!?،؛؟]+", last_raw):
+            warnings.append(
+                f"paragraph ends with a Latin word followed by punctuation: {preview!r}"
+            )
         if LATIN_PUNCT_NEAR_ARABIC_RE.search(plain):
             warnings.append(f"Latin punctuation in Arabic text: {preview!r}")
 
