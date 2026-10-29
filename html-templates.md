@@ -1,26 +1,26 @@
-# HTML Templates
+# قوالب HTML
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/blogrenderer)**
+**[تجد كل الشيفرة هنا](https://github.com/quii/learn-go-with-tests/tree/main/blogrenderer)**
 
-We live in a world where everyone wants to build web applications with the latest flavour of the month frontend framework built upon gigabytes of transpiled JavaScript, working with a Byzantine build system; [but maybe that's not always necessary](https://quii.dev/The_Web_I_Want).  
+نعيش في عالم يريد فيه الجميع بناء تطبيقات ويب بأحدث إطار عمل للواجهة الأمامية رائج هذا الشهر، مبني على غيغابايتات من JavaScript المحوَّلة، ويعمل مع نظام بناء بيزنطي التعقيد؛ [لكن ربما لا يكون ذلك ضرورياً دائماً](https://quii.dev/The_Web_I_Want).
 
-I'd say most Go developers value a simple, stable & fast toolchain but the frontend world frequently fails to deliver on this front.
+أستطيع القول إن معظم مطوري غو (Go) يقدّرون سلسلة أدوات بسيطة ومستقرة وسريعة، لكن عالم الواجهة الأمامية كثيراً ما يخفق في تحقيق ذلك.
 
-Many websites do not need to be an [SPA](https://en.wikipedia.org/wiki/Single-page_application). **HTML and CSS are fantastic ways of delivering content** and you can use Go to make a website to deliver HTML. 
+كثير من المواقع لا تحتاج إلى أن تكون [تطبيق صفحة واحدة (SPA)](https://en.wikipedia.org/wiki/Single-page_application). **فلغتا HTML وCSS وسيلتان رائعتان لتقديم المحتوى**، ويمكنك استعمال غو لصنع موقع يقدّم صفحات HTML للمستخدمين.
 
-If you wish to still have some dynamic elements, you can still sprinkle in some client side JavaScript, or you may even want to try experimenting with [Hotwire](https://hotwired.dev) which allows you to deliver a dynamic experience with a server-side approach. 
+وإن أردت مع ذلك بعض العناصر الديناميكية، فما زال بإمكانك نثر قليل من JavaScript على جانب العميل، أو قد ترغب حتى في تجربة [Hotwire](https://hotwired.dev) التي تتيح لك تقديم تجربة ديناميكية بأسلوب يعتمد على جانب الخادم.
 
-You can generate your HTML in Go with elaborate usage of [`fmt.Fprintf`](https://pkg.go.dev/fmt#Fprintf), but in this chapter you'll learn that Go's standard library has some tools to generate HTML in a simpler and more maintainable way. You'll also learn more effective ways of testing this kind of code that you may not have run in to before.
+يمكنك توليد HTML في غو باستعمال مُتقَن لـ[`fmt.Fprintf`](https://pkg.go.dev/fmt#Fprintf)، لكنك ستتعلم في هذا الفصل أن في مكتبة غو القياسية أدوات لتوليد HTML بطريقة أبسط وأسهل في الصيانة. وستتعلم أيضاً طرقاً أكثر فعالية لاختبار هذا النوع من الشيفرة (code) ربما لم تصادفها من قبل.
 
-## What we're going to build
+## ما سنبنيه
 
-In the [Reading Files](/reading-files.md) chapter we wrote some code that would take an [`fs.FS`](https://pkg.go.dev/io/fs)  (a file-system), and return a slice of `Post` for each markdown file it encountered.
+في فصل [قراءة الملفات](/reading-files.md) كتبنا شيفرة تأخذ [`fs.FS`](https://pkg.go.dev/io/fs)  (نظام ملفات)، وتعيد شريحة (slice) من `Post` لكل ملف markdown تصادفه.
 
 ```go
 posts, err := blogposts.NewPostsFromFS(os.DirFS("posts"))
 ```
 
-Here is how we defined `Post`
+إليك كيف عرّفنا `Post`
 
 ```go
 type Post struct {
@@ -29,7 +29,7 @@ type Post struct {
 }
 ```
 
-Here's an example of one of the markdown files that can be parsed.
+وإليك مثالاً على أحد ملفات markdown التي يمكن تحليلها.
 
 ```markdown
 Title: Welcome to my blog
@@ -40,32 +40,32 @@ Tags: cooking, family, live-laugh-love
 Welcome to my **amazing recipe blog**. I am going to write about my family recipes, and make sure I write a long, irrelevant and boring story about my family before you get to the actual instructions.
 ```
 
-If we continue our journey of writing blog software, we'd take this data and generate HTML from it for our web server to return in response to HTTP requests.
+إن واصلنا رحلتنا في كتابة برنامج المدونة، فسنأخذ هذه البيانات ونولّد منها HTML يعيده خادم الويب رداً على طلبات HTTP الواردة.
 
-For our blog, we want to generate two kinds of page:
+نريد لمدونتنا توليد نوعين من الصفحات:
 
-1. **View post**. Renders a specific post. The `Body` field in `Post` is a string containing markdown so that should be converted to HTML. 
-2. **Index**. Lists all of the posts, with hyperlinks to view the specific post.
+1. **عرض التدوينة**. تعرض تدوينة محددة. والحقل `Body` في `Post` سلسلة نصية تحتوي على markdown، لذا ينبغي تحويلها إلى HTML.
+2. **الفهرس**. يسرد كل التدوينات، مع روابط لعرض كل تدوينة.
 
-We'll also want a consistent look and feel across our site, so for each page we'll have the usual HTML furniture like `<html>` and a `<head>` containing links to CSS stylesheets and whatever else we may want.
+وسنريد أيضاً مظهراً وإحساساً متسقين في موقعنا، لذا سيكون لكل صفحة أثاث HTML المعتاد مثل `<html>` و`<head>` الذي يحتوي على روابط أوراق أنماط CSS وأي شيء آخر قد نريده.
 
-When you're building blog software you have a few options in terms of approach of how you build and send HTML to the user's browser. 
+حين تبني برنامج مدونة، تكون أمامك بعض الخيارات في طريقة بناء HTML وإرساله إلى متصفح المستخدم.
 
-We'll design our code so it accepts an `io.Writer`. This means the caller of our code has the flexibility to:
+سنصمم شيفرتنا بحيث تقبل `io.Writer`. وهذا يعني أن من يستدعي شيفرتنا يملك المرونة في أن:
 
-- Write them to an [os.File](https://pkg.go.dev/os#File) , so they can be statically served
-- Write out the HTML directly to a [`http.ResponseWriter`](https://pkg.go.dev/net/http#ResponseWriter)
-- Or just write them to anything really! So long as it implements `io.Writer` the user can generate some HTML from a `Post`
+- يكتب الصفحات إلى [os.File](https://pkg.go.dev/os#File)، كي تُقدَّم بشكل ساكن
+- يكتب HTML مباشرة إلى [`http.ResponseWriter`](https://pkg.go.dev/net/http#ResponseWriter)
+- أو يكتبها إلى أي شيء في الحقيقة! فما دام يحقق `io.Writer` يستطيع المستخدم توليد HTML من `Post`
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-As always, it's important to think about requirements before diving in too fast. How can we take this large-ish set of requirements and break it down in to a small, achievable step that we can focus on?
+كالعادة، من المهم التفكير في المتطلبات قبل الغوص بسرعة. كيف نأخذ هذه المجموعة الكبيرة نسبياً من المتطلبات ونقسمها إلى خطوة صغيرة قابلة للتحقيق نركز عليها؟
 
-In my view, actually viewing content is higher priority than an index page. We could launch this product and share direct links to our wonderful content. An index page which can't link to the actual content isn't useful.
+في رأيي، عرض المحتوى فعلياً أولى من صفحة الفهرس. فيمكننا إطلاق هذا المنتج ومشاركة روابط مباشرة إلى محتوانا الرائع. أما صفحة فهرس لا تستطيع الربط بالمحتوى الفعلي فليست مفيدة.
 
-Still, rendering a post as described earlier still feels big. All the HTML furniture, converting the body markdown into HTML, listing tags, e.t.c. 
+ومع ذلك، ما زال عرض تدوينة كما وُصف سابقاً يبدو كبيراً. كل أثاث HTML، وتحويل متن markdown إلى HTML، وسرد الوسوم، وغير ذلك.
 
-At this stage I'm not overly concerned with the specific markup, and an easy first step would be just to check we can render the post's title as an `<h1>`. This *feels* like the smallest first step that can move us forward a bit.
+في هذه المرحلة لا أهتم كثيراً بالترميز المحدد، وخطوة أولى سهلة هي مجرد التحقق من أننا نستطيع عرض عنوان التدوينة كعنصر `<h1>`. هذه *تبدو* أصغر خطوة أولى يمكن أن تدفعنا إلى الأمام قليلاً.
 
 ```go
 package blogrenderer_test
@@ -103,17 +103,17 @@ func TestRender(t *testing.T) {
 }
 ```
 
-Our decision to accept an `io.Writer` also makes testing simple, in this case we're writing to a [`bytes.Buffer`](https://pkg.go.dev/bytes#Buffer) which we can then later inspect the contents.
+قرارنا قبول `io.Writer` يجعل الاختبار أيضاً بسيطاً، ففي هذه الحالة نكتب إلى [`bytes.Buffer`](https://pkg.go.dev/bytes#Buffer) الذي يمكننا فحص محتوياته لاحقاً.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
-If you've read the previous chapters of this book you should be well-practiced at this now. You won't be able to run the test because we don't have the package defined or the `Render` function. Try and follow the compiler messages yourself and get to a state where you can run the test and see that it fails with a clear message. 
+إن كنت قد قرأت الفصول السابقة من هذا الكتاب، فينبغي أن تكون متمرّساً في هذا الآن. لن تستطيع تشغيل الاختبار (test) لأن الحزمة (package) والدالة (function) `Render` غير معرّفتين. حاول اتباع رسائل المصرِّف بنفسك والوصول إلى حالة تستطيع فيها تشغيل الاختبار ورؤيته يفشل برسالة واضحة.
 
-It's really important that you exercise your tests failing, you'll thank yourself when you accidentally make a test fail 6 months later that you put in the effort *now* to check it fails with a clear message.
+من المهم حقاً أن تختبر فشل اختباراتك، فستشكر نفسك حين تُفشل اختباراً عن غير قصد بعد 6 أشهر لأنك بذلت الجهد *الآن* للتحقق من أنه يفشل برسالة واضحة.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-This is the minimal code to get the test running
+هذه أقل شيفرة لجعل الاختبار يعمل
 
 ```go
 package blogrenderer
@@ -129,9 +129,9 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-The test should complain that an empty string doesn't equal what we want.
+ينبغي أن يعترض الاختبار على أن السلسلة النصية الفارغة لا تساوي ما نريد.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -140,17 +140,17 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-Remember, software development is primarily a learning activity. In order to discover and learn as we work, we need to work in a way that gives us frequent, high-quality feedback loops, and the easiest way to do that is work in small steps. 
+تذكّر أن تطوير البرمجيات نشاط تعلّم في المقام الأول. ولكي نكتشف ونتعلم ونحن نعمل، علينا أن نعمل بطريقة تمنحنا حلقات تغذية راجعة (feedback loops) متكررة وعالية الجودة، وأسهل طريقة لذلك هي العمل بخطوات صغيرة.
 
-So we're not worrying about using any templating libraries right now. You can make HTML just with "normal" string templating just fine, and by skipping the template part we can validate a small bit of useful behaviour and we've done a small bit of design work for our package's API.
+لذا لا نقلق الآن بشأن استعمال أي مكتبات قوالب. فيمكنك صنع HTML بقوالب السلاسل النصية "العادية" دون مشكلة، وبتجاوز جزء القوالب نستطيع التحقق من قدر صغير من السلوك المفيد، وقد أنجزنا جزءاً صغيراً من العمل التصميمي على الواجهة البرمجية لحزمتنا.
 
-## Refactor
+## أعد الهيكلة
 
-Not much to refactor yet, so let's move to the next iteration
+لا يوجد الكثير مما يمكن إعادة هيكلته بعد، فلننتقل إلى التكرار التالي
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Now we have a very basic version working, we can now iterate on the test to expand on the functionality. In this case, rendering more information from the `Post`.
+والآن بعد أن صارت لدينا نسخة بسيطة جداً تعمل، يمكننا التقدم في الاختبار لتوسيع الوظائف. وفي هذه الحالة، عرض مزيد من المعلومات من `Post`.
 
 ```go
 	t.Run("it converts a single post into HTML", func(t *testing.T) {
@@ -172,17 +172,17 @@ Tags: <ul><li>go</li><li>tdd</li></ul>`
 	})
 ```
 
-Notice that writing this, *feels* awkward. Seeing all that markup in the test feels bad, and we haven't even put the body in, or the actual HTML we'd want with all of the `<head>` content and whatever page furniture we need.
+لاحظ أن كتابة هذا *تبدو* محرجة. فرؤية كل ذلك الترميز في الاختبار شعور سيئ، ونحن لم نضع حتى المتن، ولا HTML الفعلي الذي نريده مع كل محتوى `<head>` وأي أثاث نحتاج إليه في الصفحة.
 
-Nonetheless, let's put up with the pain *for now*.
+ومع ذلك، لنتحمل الألم *في الوقت الحالي*.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
-It should fail, complaining it doesn't have the string we expect, as we're not rendering the description and tags. 
+ينبغي أن يفشل، معترضاً على أنه لا يحتوي على السلسلة النصية التي نتوقعها، لأننا لا نعرض الوصف والوسوم.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Try and do this yourself rather than copying the code. What you should find is that making this test pass _is a bit annoying_! When I tried, my first attempt got this error
+حاول فعل هذا بنفسك بدلاً من نسخ الشيفرة. ما ستجده أن جعل هذا الاختبار ينجح _مزعج بعض الشيء_! فحين حاولت، ظهر لي هذا الخطأ (error) في محاولتي الأولى
 
 ```
 === RUN   TestRender
@@ -192,7 +192,7 @@ Try and do this yourself rather than copying the code. What you should find is t
         Tags: <ul><li>go</li><li></li></ul>'
 ```
 
-New lines! Who cares? Well, our test does, because it's matching on an exact string value. Should it? I removed the newlines for now just to get the test passing.
+أسطر جديدة! من يهتم؟ حسناً، اختبارنا يهتم، لأنه يطابق على قيمة نصية دقيقة. هل ينبغي له ذلك؟ حذفت الأسطر الجديدة في الوقت الحالي فقط لجعل الاختبار ينجح.
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -222,33 +222,33 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-**Yikes**. Not the nicest code i've written, and we're still only at a very early implementation of our markup. We'll need so much more content and things on our page, we're quickly seeing that this approach is not appropriate. 
+**يا للهول**. ليست أجمل شيفرة كتبتها، وما زلنا في تنفيذ مبكر جداً للترميز. سنحتاج إلى محتوى وأشياء أكثر بكثير في صفحتنا، ونرى بسرعة أن هذا الأسلوب غير مناسب.
 
-Crucially though, we have a passing test; we have working software.
+لكن الأهم أن لدينا اختباراً ناجحاً؛ لدينا برنامج يعمل.
 
-## Refactor
+## أعد الهيكلة
 
-With the safety-net of a passing test for working code, we can now think about changing our implementation approach at the refactoring stage. 
+مع شبكة الأمان التي يوفرها اختبار ناجح لشيفرة تعمل، يمكننا الآن التفكير في تغيير أسلوب التنفيذ في مرحلة إعادة الهيكلة (refactoring).
 
-### Introducing templates
+### تقديم القوالب
 
-Go has two templating packages [text/template](https://pkg.go.dev/text/template) and [html/template](https://pkg.go.dev/html/template) and they share the same interface.  What they both do is allow you to combine a template and some data to produce a string. 
+لدى غو حزمتا قوالب، [text/template](https://pkg.go.dev/text/template) و[html/template](https://pkg.go.dev/html/template)، وتشتركان في الواجهة (interface) نفسها.  وكلتاهما تتيح لك دمج قالب مع بعض البيانات لإنتاج سلسلة نصية.
 
-What's the difference with the HTML version?
+فما الفرق في النسخة الخاصة بـHTML إذن؟
 
-> Package template (html/template) implements data-driven templates for generating HTML output safe against code injection. It provides the same interface as package text/template and should be used instead of text/template whenever the output is HTML.
+> تنفّذ الحزمة `template` (أي `html/template`) قوالب مقادة بالبيانات لتوليد مخرجات HTML آمنة من حقن الشيفرة. وتوفر الواجهة نفسها التي توفرها الحزمة `text/template`، وينبغي استعمالها بدلاً من `text/template` كلما كانت المخرجات بصيغة HTML تحديداً.
 
-The templating language is very similar to [Mustache](https://mustache.github.io) and allows you to dynamically generate content in a very clean fashion with a nice separation of concerns. Compared to other templating languages you may have used, it is very constrained or "logic-less" as Mustache likes to say. This is an important, **and deliberate** design decision.
+لغة القوالب تشبه كثيراً [Mustache](https://mustache.github.io)، وتتيح لك توليد المحتوى ديناميكياً بطريقة نظيفة جداً مع فصل جميل للاهتمامات. ومقارنة بلغات القوالب الأخرى التي ربما استعملتها، فهي مقيدة جداً، أو "خالية من المنطق" كما تحب Mustache أن تقول. وهذا قرار تصميمي مهم **ومقصود**.
 
-Whilst we're focusing on generating HTML here, if your project is doing complex string concatenations and incantations, you might want to reach for `text/template` to clean up your code.
+ومع أننا نركز هنا على توليد HTML، فإن كان مشروعك يجري عمليات دمج معقدة للسلاسل النصية وتعاويذ غامضة، فقد ترغب في اللجوء إلى `text/template` لتنظيف شيفرتك.
 
-### Back to the code
+### العودة إلى الشيفرة
 
-Here is a template for our blog: 
+إليك قالباً لمدونتنا:
 
 `<h1>{{.Title}}</h1><p>{{.Description}}</p>Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>`
 
-Where do we define this string? Well, we have a few options, but to keep the steps small, let's just start with a plain old string
+أين نعرّف هذه السلسلة النصية؟ حسناً، لدينا بعض الخيارات، لكن لإبقاء الخطوات صغيرة، لنبدأ بسلسلة نصية عادية
 
 ```go
 package blogrenderer
@@ -276,27 +276,27 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-We create a new template with a name, and then parse our template string. We can then use the `Execute` method on it, passing in our data, in this case the `Post`. 
+ننشئ قالباً جديداً باسم، ثم نحلل سلسلة القالب. ويمكننا بعد ذلك استعمال الطريقة (method) `Execute` عليه، ممررين بياناتنا، وهي في هذه الحالة `Post`.
 
-The template will substitute things like `{{.Description}}` with the content of `p.Description`. Templates also give you some programming primitives like `range` to loop over values, and `if`. You can find more details in the [text/template documentation](https://pkg.go.dev/text/template).
+سيستبدل القالب أشياء مثل `{{.Description}}` بمحتوى `p.Description`. وتوفر القوالب أيضاً بعض الأدوات البرمجية الأساسية مثل `range` للمرور على القيم، و`if`. ويمكنك إيجاد مزيد من التفاصيل في [توثيق text/template](https://pkg.go.dev/text/template).
 
-*This should be a pure refactor.* We shouldn't need to change our tests and they should continue to pass. Importantly, our code is easier to read and has far less annoying error handling to contend with. 
+*ينبغي أن تكون هذه إعادة هيكلة خالصة.* فلا ينبغي أن نحتاج إلى تغيير اختباراتنا، وينبغي أن تظل ناجحة. والمهم أن شيفرتنا أسهل قراءة، وفيها معالجة أخطاء مزعجة أقل بكثير.
 
-Frequently people complain about the verbosity of error handling in Go, but you might find you can find better ways to write your code so it's less error-prone in the first place, like here.
+كثيراً ما يشكو الناس من إسهاب معالجة الأخطاء في غو، لكنك قد تجد طرقاً أفضل لكتابة شيفرتك بحيث تكون أقل عرضة للأخطاء أصلاً، كما هنا.
 
-### More refactoring
+### مزيد من إعادة الهيكلة
 
-Using the `html/template` has definitely been an improvement, but having it as a string constant in our code isn't great:
+استعمال `html/template` كان تحسيناً بالتأكيد، لكن وجوده كثابت نصي في شيفرتنا ليس رائعاً:
 
-- It's still quite difficult to read.
-- It's not IDE/editor friendly. No syntax highlighting, ability to reformat, refactor, e.t.c.
-- It looks like HTML, but you can't really work with it like you could a "normal" HTML file
+- ما زال صعب القراءة إلى حد ما.
+- ليس ملائماً لبيئة التطوير أو المحرر، فلا تلوين للصياغة، ولا إمكانية لإعادة التنسيق أو إعادة الهيكلة، وغير ذلك.
+- يبدو مثل HTML، لكنك لا تستطيع العمل معه كما تعمل مع ملف HTML "عادي"
 
-What we'd like to do is have our templates live in separate files so we can better organise them, and work with them as if they're HTML files.
+ما نود فعله هو أن تعيش قوالبنا في ملفات منفصلة كي ننظمها بشكل أفضل، ونعمل معها كأنها ملفات HTML عادية.
 
-Create a folder called "templates" and inside it make a file called `blog.gohtml`, paste our template into the file.
+أنشئ مجلداً باسم "templates"، وأنشئ داخله ملفاً باسم `blog.gohtml`، والصق قالبنا في الملف.
 
-Now change our code to embed the file systems using the [embedding functionality included in go 1.16](https://pkg.go.dev/embed).
+غيّر الآن شيفرتنا لتضمين أنظمة الملفات باستعمال [ميزة التضمين التي جاءت في غو 1.16](https://pkg.go.dev/embed).
 
 ```go
 package blogrenderer
@@ -326,27 +326,27 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-By embedding a "file system" into our code, we can load multiple templates and combine them freely. This will become useful when we want to share rendering logic across different templates, such as a header for the top of the HTML page and a footer.
+بتضمين "نظام ملفات" في شيفرتنا، نستطيع تحميل عدة قوالب ودمجها بحرية. وسيصبح هذا مفيداً حين نريد مشاركة منطق العرض بين قوالب مختلفة، مثل ترويسة لأعلى صفحة HTML وتذييل.
 
-### Embed?
+### التضمين؟
 
-Embed was lightly touched on in [reading files](reading-files.md). The [documentation from the standard library explains](https://pkg.go.dev/embed)
+تطرقنا إلى التضمين بشكل خفيف في فصل [قراءة الملفات](reading-files.md). ويشرح [توثيق المكتبة القياسية](https://pkg.go.dev/embed) ذلك
 
-> Package embed provides access to files embedded in the running Go program.
+> توفر الحزمة `embed` الوصول إلى الملفات المضمَّنة في برنامج غو قيد التشغيل.
 >
-> Go source files that import "embed" can use the //go:embed directive to initialize a variable of type string, []byte, or FS with the contents of files read from the package directory or subdirectories at compile time.
+> يمكن لملفات غو المصدرية التي تستورد "embed" استعمال الموجّه `//go:embed` لتهيئة متغير من النوع `string` أو `[]byte` أو `FS` بمحتويات ملفات تُقرأ من مجلد الحزمة أو مجلداتها الفرعية في وقت التصريف.
 
-Why would we want to use this? Well the alternative is that we _can_ load our templates from a "normal" file system. However this means we'd have to make sure that the templates are in the correct file path wherever we want to use this software. In your job you may have various environments like development, staging and live. For this to work, you'd need to make sure your templates are copied to the correct place. 
+لماذا نريد استعمال هذا؟ البديل هو أننا _نستطيع_ تحميل قوالبنا من نظام ملفات "عادي". لكن هذا يعني أن علينا التأكد من وجود القوالب في مسار الملف الصحيح أينما أردنا استعمال هذا البرنامج. وقد تكون لديك في عملك بيئات مختلفة مثل التطوير والتجهيز والإنتاج. ولكي يعمل هذا، عليك التأكد من نسخ قوالبك إلى المكان الصحيح.
 
-With embed, the files are included in your Go program when you build it. This means once you've built your program (which you should only do once), the files are always available to you. 
+أما مع التضمين، فتُدرج الملفات في برنامج غو حين تبنيه. وهذا يعني أنك بمجرد أن تبني برنامجك (وهو ما ينبغي أن تفعله مرة واحدة فقط)، تكون الملفات متاحة لك دائماً.
 
-What's handy is you can not only embed individual files, but also file systems; and that filesystem implements [io/fs](https://pkg.go.dev/io/fs) which means your code doesn't need to care what kind of file system it is working with.
+والجميل أنك لا تستطيع تضمين ملفات منفردة فحسب، بل أنظمة ملفات أيضاً؛ ونظام الملفات ذاك يحقق [io/fs](https://pkg.go.dev/io/fs)، مما يعني أن شيفرتك لا تحتاج إلى الاهتمام بنوع نظام الملفات الذي تعمل معه.
 
-If you wish to use different templates depending on configuration though, you may wish to stick to loading templates from disk in the more conventional way.
+لكن إن أردت استعمال قوالب مختلفة بحسب الإعدادات، فقد ترغب في الالتزام بتحميل القوالب من القرص بالطريقة التقليدية.
 
-## Next: Make the template "nice"
+## التالي: اجعل القالب "جميلاً"
 
-We don't really want our template to be defined as a one line string. We want to be able to space it out to make it easier to read and work with, something like this:
+لا نريد حقاً أن يُعرَّف قالبنا كسلسلة نصية في سطر واحد. نريد أن نستطيع توزيعه على أسطر ليسهل قراءته والعمل معه، شيء كهذا:
 
 ```handlebars
 <h1>{{.Title}}</h1>
@@ -356,19 +356,19 @@ We don't really want our template to be defined as a one line string. We want to
 Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 ```
 
-But if we do this, our test fails. This is because our test is expecting a very specific string to be returned. 
+لكن إن فعلنا هذا، فسيفشل اختبارنا. وذلك لأن اختبارنا يتوقع إعادة سلسلة نصية محددة جداً.
 
-But really, we don't actually care about whitespace. Maintaining this test will become a nightmare if we have to keep painstakingly updating the assertion string every time we make minor changes to the markup. As the template grows, these kind of edits become harder to manage and the costs of work will spiral out of control.
+لكن في الحقيقة، لا تهمنا المسافات البيضاء. وستصبح صيانة هذا الاختبار كابوساً إن اضطررنا إلى تحديث سلسلة التوكيد بعناء في كل مرة نجري فيها تغييرات طفيفة على الترميز. ومع نمو القالب، يصعب التحكم بهذا النوع من التعديلات، وتخرج تكاليف العمل عن السيطرة.
 
-## Introducing Approval Tests
+## تقديم اختبارات الموافقة
 
-[Go Approval Tests](https://github.com/approvals/go-approval-tests)
+[اختبارات الموافقة في غو](https://github.com/approvals/go-approval-tests)
 
-> ApprovalTests allows for easy testing of larger objects, strings and anything else that can be saved to a file (images, sounds, CSV, etc...)
+> تتيح `ApprovalTests` اختبار الكائنات الكبيرة والسلاسل النصية وأي شيء آخر يمكن حفظه في ملف (الصور والأصوات وملفات CSV وغيرها...) بسهولة
 
-The idea is similar to "golden" files, or snapshot testing. Rather than awkwardly maintaining strings within a test file, the approval tool can compare the output for you with an "approved" file you created. You then simply copy over the new version if you approve it. Re-run the test and you're back to green.
+الفكرة تشبه الملفات "الذهبية" أو اختبار اللقطات. فبدلاً من صيانة السلاسل النصية بعناء داخل ملف اختبار، تستطيع أداة الموافقة مقارنة المخرجات لك بملف "معتمد" أنشأته. ثم تنسخ ببساطة النسخة الجديدة إن وافقت عليها. أعد تشغيل الاختبار فتعود إلى الأخضر.
 
-Add a dependency to `"github.com/approvals/go-approval-tests"` to your project and edit the test to the following
+أضف تبعية على `"github.com/approvals/go-approval-tests"` إلى مشروعك، وعدّل الاختبار إلى ما يلي
 
 ```go
 func TestRender(t *testing.T) {
@@ -393,7 +393,7 @@ func TestRender(t *testing.T) {
 }
 ```
 
-The first time you run it, it will fail because we haven't approved anything yet
+في المرة الأولى التي تشغّله فيها سيفشل، لأننا لم نوافق على أي شيء بعد
 
 ```
 === RUN   TestRender
@@ -401,16 +401,16 @@ The first time you run it, it will fail because we haven't approved anything yet
     renderer_test.go:29: Failed Approval: received does not match approved.
 ```
 
-It will have created two files, that look like the following
+سيكون قد أنشأ ملفين يبدوان كما يلي
 
 - `renderer_test.TestRender.it_converts_a_single_post_into_HTML.received.txt`
 - `renderer_test.TestRender.it_converts_a_single_post_into_HTML.approved.txt`
 
-The received file has the new, unapproved version of the output. Copy that into the empty approved file and re-run the test.
+يحتوي الملف المستلم على النسخة الجديدة غير المعتمدة من المخرجات. انسخها إلى الملف المعتمد الفارغ وأعد تشغيل الاختبار.
 
-By copying the new version you have "approved" the change, and the test now passes.
+بنسخك النسخة الجديدة تكون قد "وافقت" على التغيير، وينجح الاختبار الآن.
 
-To see the workflow in action, edit the template to how we discussed to make it easier to read (but semantically, it's the same).
+لترى سير العمل عملياً، عدّل القالب كما ناقشنا ليصبح أسهل قراءة (لكنه من حيث المعنى هو نفسه).
 
 ```handlebars
 <h1>{{.Title}}</h1>
@@ -420,41 +420,41 @@ To see the workflow in action, edit the template to how we discussed to make it 
 Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 ```
 
-Re-run the test. A new "received" file will be generated because the output of our code differs to the approved version. Give them a look, and if you're happy with the changes, simply copy over the new version and re-run the test. Be sure to commit the approved files to source control.
+أعد تشغيل الاختبار. سيُولَّد ملف "مستلم" جديد لأن مخرجات شيفرتنا تختلف عن النسخة المعتمدة. ألقِ نظرة عليهما، وإن رضيت بالتغييرات فانسخ النسخة الجديدة ببساطة وأعد تشغيل الاختبار. وتأكد من إيداع الملفات المعتمدة في نظام التحكم بالمصدر.
 
-This approach makes managing changes to big ugly things like HTML far simpler. You can use a diff tool to view and manage the differences, and it keeps your test code cleaner.
+يجعل هذا الأسلوب إدارة التغييرات على الأشياء الكبيرة القبيحة مثل HTML أبسط بكثير. فيمكنك استعمال أداة مقارنة لعرض الفروق وإدارتها، ويُبقي شيفرة اختبارك أنظف.
 
-![Use diff tool to manage changes](https://i.imgur.com/0MoNdva.png)
+![استعمل أداة مقارنة لإدارة التغييرات](https://i.imgur.com/0MoNdva.png)
 
-This is actually a fairly minor usage of approval tests, which are an extremely useful tool in your testing arsenal. [Emily Bache](https://twitter.com/emilybache) has an [interesting video where she uses approval tests to add an incredibly extensive set of tests to a complicated codebase that has zero tests](https://www.youtube.com/watch?v=zyM2Ep28ED8). "Combinatorial Testing" is definitely something worth looking into.
+هذا في الحقيقة استعمال بسيط إلى حد ما لاختبارات الموافقة (approval tests)، وهي أداة مفيدة للغاية في ترسانة الاختبار لديك. ولـ[إميلي باش](https://twitter.com/emilybache) [فيديو مثير للاهتمام تستعمل فيه اختبارات الموافقة لإضافة مجموعة واسعة جداً من الاختبارات إلى قاعدة شيفرة معقدة ليس فيها أي اختبار](https://www.youtube.com/watch?v=zyM2Ep28ED8). و"الاختبار التوافقي" شيء يستحق البحث فيه بالتأكيد.
 
-Now that we have made this change, we still benefit from having our code well-tested, but the tests won't get in the way too much when we're tinkering with the markup.
+والآن بعد أن أجرينا هذا التغيير، ما زلنا نستفيد من كون شيفرتنا مختبَرة جيداً، لكن الاختبارات لن تعترض طريقنا كثيراً حين نعبث بالترميز.
 
-### Are we still doing TDD?
+### هل ما زلنا نمارس `TDD`؟
 
-An interesting side-effect of this approach is it takes us away from TDD. Of course you _could_ manually edit the approved files to the state you want, run your tests and then fix the templates so they output what you defined. 
+من الآثار الجانبية المثيرة للاهتمام لهذا الأسلوب أنه يبعدنا عن `TDD`. فبالطبع _يمكنك_ تعديل الملفات المعتمدة يدوياً إلى الحالة التي تريدها، وتشغيل اختباراتك، ثم إصلاح القوالب لتُخرج ما عرّفته.
 
-But that's just silly! TDD is a method for doing work, specifically designing; but that doesn't mean we have to dogmatically use it for **everything**. 
+لكن هذا سخيف! فـ`TDD` أسلوب لأداء العمل، وتحديداً للتصميم؛ لكن هذا لا يعني أن علينا استعماله بتعصب في **كل شيء**.
 
-The important thing is, we've done the right thing and used TDD as a **design tool** to design our package's API. For templates changes our process can be:
+المهم أننا فعلنا الصواب واستعملنا `TDD` كـ**أداة تصميم** لتصميم الواجهة البرمجية لحزمتنا. أما لتغييرات القوالب فيمكن أن تكون عمليتنا:
 
-- Make a small change to the template
-- Run the approval test
-- Eyeball the output to check it looks correct
-- Make the approval
-- Repeat
+- أجرِ تغييراً صغيراً على القالب
+- شغّل اختبار الموافقة
+- افحص المخرجات بعينك للتأكد من أنها تبدو صحيحة
+- اعتمدها
+- كرر
 
-We still shouldn't give up the value of working in small achievable steps. Try to find ways to make the changes small and keep re-running the tests to get real feedback on what you're doing.
+وما زال لا ينبغي أن نتخلى عن قيمة العمل بخطوات صغيرة قابلة للتحقيق. حاول إيجاد طرق لجعل التغييرات صغيرة، وواصل إعادة تشغيل الاختبارات للحصول على تغذية راجعة حقيقية عما تفعله.
 
-If we start doing things like changing the code _around_ the templates, then of course that may warrant going back to our TDD method of work. 
+وإن بدأنا بفعل أشياء مثل تغيير الشيفرة _المحيطة_ بالقوالب، فقد يستدعي ذلك بالطبع العودة إلى أسلوب `TDD` في العمل.
 
-## Expand the markup
+## توسيع الترميز
 
-Most websites have richer HTML than we have right now. For starters, a `html` element, along with a `head`, perhaps some `nav` too. Usually there's an idea of a footer too.
+لمعظم المواقع HTML أغنى مما لدينا الآن. فبدايةً، هناك عنصر `html`، ومعه `head`، وربما `nav` أيضاً. وعادةً هناك فكرة التذييل أيضاً.
 
-If our site is going to have different pages, we'd want to define these things in one place to keep our site looking consistent. Go templates support us defining sections which we can then import in to other templates.
+إن كان موقعنا سيضم صفحات مختلفة، فسنريد تعريف هذه الأشياء في مكان واحد ليبقى مظهر موقعنا متسقاً. وتدعم قوالب غو تعريف أقسام يمكننا بعد ذلك استيرادها في قوالب أخرى.
 
-Edit our existing template to import a top and bottom template
+عدّل قالبنا الحالي ليستورد قالباً علوياً وقالباً سفلياً
 
 ```handlebars
 {{template "top" .}}
@@ -466,7 +466,7 @@ Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 {{template "bottom" .}}
 ```
 
-Then create `top.gohtml` with the following
+ثم أنشئ `top.gohtml` بما يلي
 
 ```handlebars
 {{define "top"}}
@@ -492,7 +492,7 @@ Then create `top.gohtml` with the following
 {{end}}
 ```
 
-And `bottom.gohtml`
+و`bottom.gohtml`
 
 ```handlebars
 {{define "bottom"}}
@@ -508,9 +508,9 @@ And `bottom.gohtml`
 {{end}}
 ```
 
-(Obviously, feel free to put whatever markup you like!)
+(بالطبع، لك أن تضع أي ترميز تحبه!)
 
-We now need to specify a specific template to run. In the blog renderer, change the `Execute` command to `ExecuteTemplate`
+علينا الآن تحديد قالب معيّن لتشغيله. في عارض المدونة، غيّر الأمر `Execute` إلى `ExecuteTemplate`
 
 ```go
 if err := templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
@@ -518,11 +518,11 @@ if err := templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
 }
 ```
 
-Re-run your test. A new "received" file should be made and the test will fail. Check it over and if you're happy, approve it by copying it over the old version. Re-run the test again and it should pass.
+أعد تشغيل اختبارك. ينبغي أن يُنشأ ملف "مستلم" جديد وسيفشل الاختبار. راجعه، وإن رضيت به فاعتمده بنسخه فوق النسخة القديمة. أعد تشغيل الاختبار مرة أخرى وينبغي أن ينجح.
 
-## An excuse to mess around with Benchmarking
+## ذريعة للعبث بقياس الأداء
 
-Before pressing on, let's consider what our code does.
+قبل أن نمضي قدماً، لنفكر فيما تفعله شيفرتنا.
 
 ```go
 func Render(w io.Writer, p Post) error {
@@ -539,12 +539,12 @@ func Render(w io.Writer, p Post) error {
 }
 ```
 
-- Parse the templates
-- Use the template to render a post to an `io.Writer`
+- تحلل القوالب
+- تستعمل القالب لعرض تدوينة إلى `io.Writer`
 
-Whilst the performance impact of re-parsing the templates for each post in most cases will be fairly negligible, the effort to *not* do this is also pretty negligible and should tidy the code up a bit too.
+مع أن أثر إعادة تحليل القوالب لكل تدوينة على الأداء سيكون ضئيلاً في معظم الحالات، فإن الجهد اللازم لـ*عدم* فعل ذلك ضئيل أيضاً، وينبغي أن يرتب الشيفرة قليلاً.
 
-To see the impact of not doing this parsing over and over, we can use the benchmarking tool to see how fast our function is.
+لرؤية أثر عدم تكرار هذا التحليل مرة بعد مرة، يمكننا استعمال أداة قياس الأداء (benchmark) لنرى مدى سرعة دالتنا.
 
 ```go
 func BenchmarkRender(b *testing.B) {
@@ -564,13 +564,13 @@ func BenchmarkRender(b *testing.B) {
 }
 ```
 
-On my computer, here are the results
+إليك النتائج على حاسوبي
 
 ```
 BenchmarkRender-8 22124 53812 ns/op
 ```
 
-To stop us having to re-parse the templates over and over, we'll create a type that'll hold the parsed template, and that'll have a method to do the rendering
+لكي لا نضطر إلى إعادة تحليل القوالب مرة بعد مرة، سننشئ نوعاً (type) يحتفظ بالقالب المحلَّل، وتكون له طريقة تتولى العرض
 
 ```go
 type PostRenderer struct {
@@ -596,7 +596,7 @@ func (r *PostRenderer) Render(w io.Writer, p Post) error {
 }
 ```
 
-This does change the interface of our code, so we'll need to update our test
+هذا يغيّر واجهة شيفرتنا، لذا سنحتاج إلى تحديث اختبارنا
 
 ```go
 func TestRender(t *testing.T) {
@@ -627,7 +627,7 @@ func TestRender(t *testing.T) {
 }
 ```
 
-And our benchmark
+وقياس أدائنا
 
 ```go
 func BenchmarkRender(b *testing.B) {
@@ -653,33 +653,33 @@ func BenchmarkRender(b *testing.B) {
 }
 ```
 
-The test should continue to pass. How about our benchmark?
+ينبغي أن يظل الاختبار ناجحاً. فماذا عن قياس الأداء؟
 
-`BenchmarkRender-8 362124 3131 ns/op`. The old NS per op were `53812 ns/op`, so this is a decent improvement! As we add other methods to render, say an Index page, it should simplify the code as we don't need to duplicate the template parsing.
+النتيجة الآن `BenchmarkRender-8 362124 3131 ns/op`. وكانت النانوثواني لكل عملية سابقاً `53812 ns/op`، لذا فهذا تحسين جيد! ومع إضافة طرق أخرى للعرض، كصفحة فهرس مثلاً، ينبغي أن تصبح الشيفرة أبسط لأننا لا نحتاج إلى تكرار تحليل القوالب.
 
-## Back to the real work
+## العودة إلى العمل الحقيقي
 
-In terms of rendering posts, the important part left is actually rendering the `Body`. If you recall, that should be markdown that the author has written, so it'll need converting to HTML. 
+فيما يخص عرض التدوينات، الجزء المهم المتبقي هو عرض `Body` فعلياً. فإن كنت تذكر، ينبغي أن يكون markdown كتبه المؤلف، لذا سيحتاج إلى تحويله إلى صيغة HTML قبل عرضه.
 
-We'll leave this as an exercise for you, the reader. You should be able to find a Go library to do this for you. Use the approval test to validate what you're doing. 
+سنترك هذا تمريناً لك أيها القارئ. ينبغي أن تستطيع إيجاد مكتبة غو تفعل هذا لك. واستعمل اختبار الموافقة للتحقق مما تفعله.
 
-### On testing 3rd-party libraries
+### عن اختبار مكتبات الأطراف الثالثة
 
-**Note**. Be careful not to worry too much about explicitly testing how a 3rd party library behaves in unit tests. 
+**ملاحظة**. احرص على ألا تنشغل كثيراً باختبار سلوك مكتبة طرف ثالث صراحةً في اختبارات الوحدة.
 
-Writing tests against code you don't control is wasteful and adds maintenance overhead. Sometimes you may wish to use [dependency injection](./dependency-injection.md) to control a dependency and mock its behaviour for a test.
+كتابة اختبارات على شيفرة لا تتحكم بها هدر للجهد، وتضيف أعباء صيانة. وقد ترغب أحياناً في استعمال [حقن التبعية](./dependency-injection.md) للتحكم بتبعية ما ومحاكاة سلوكها في اختبار.
 
-In this case though, I view converting the markdown into HTML as implementation detail of rendering, and our approval tests should give us enough confidence.
+لكنني في هذه الحالة أرى تحويل markdown إلى HTML تفصيلاً من تفاصيل تنفيذ العرض، وينبغي أن تمنحنا اختبارات الموافقة ثقة كافية.
 
-### Render index
+### عرض الفهرس
 
-The next bit of functionality we're going to do is rendering an Index, listing the posts as a HTML ordered list. 
+الجزء التالي من الوظائف الذي سننفذه هو عرض الفهرس، أي سرد التدوينات كقائمة HTML مرقمة.
 
-We're expanding upon our API, so we'll put our TDD hat back on. 
+نحن نوسّع واجهتنا البرمجية، لذا سنعيد ارتداء قبعة `TDD`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-On the face of it an index page seems simple, but writing the test still prompts us to make some design choices
+تبدو صفحة الفهرس بسيطة للوهلة الأولى، لكن كتابة الاختبار ما زالت تدفعنا إلى اتخاذ بعض القرارات التصميمية
 
 ```go
 t.Run("it renders an index of posts", func(t *testing.T) {
@@ -699,18 +699,18 @@ t.Run("it renders an index of posts", func(t *testing.T) {
 })
 ```
 
-1. We're using the `Post`'s title field as a part of the path of the URL, but we don't really want spaces in the URL so we're replacing them with hyphens.
-2. We've added a `RenderIndex` method to our `PostRenderer` that again takes an `io.Writer` and a slice of `Post`.
+1. نستعمل حقل العنوان في `Post` كجزء من مسار عنوان URL، لكننا لا نريد مسافات في العنوان، لذا نستبدلها بشرطات.
+2. أضفنا الطريقة `RenderIndex` إلى `PostRenderer`، وهي تأخذ مرة أخرى `io.Writer` وشريحة من `Post`.
 
-If we had stuck with a test-after, approval tests approach here we would not be answering these questions in a controlled environment. **Tests give us space to think**. 
+لو التزمنا هنا بأسلوب الاختبار بعد الشيفرة مع اختبارات الموافقة، لما أجبنا عن هذه الأسئلة في بيئة متحكم بها. **الاختبارات تمنحنا مساحة للتفكير**.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./renderer_test.go:41:13: undefined: blogrenderer.RenderIndex
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -718,7 +718,7 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-The above should get the following test failure
+ينبغي أن يؤدي ما سبق إلى فشل الاختبار التالي
 
 ```
 === RUN   TestRender
@@ -727,9 +727,9 @@ The above should get the following test failure
 --- FAIL: TestRender (0.00s)
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Even though this _feels_ like it should be easy, it is a bit awkward. I did it in multiple steps
+مع أن هذا _يبدو_ سهلاً، فهو محرج بعض الشيء. فعلته على عدة خطوات
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -748,9 +748,9 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-I didn't want to bother with separate template files at first, I just wanted to get it working. I view the upfront template parsing and separation as refactoring I can do later. 
+لم أرد الانشغال بملفات قوالب منفصلة في البداية، بل أردت فقط أن يعمل. وأرى أن التحليل المسبق للقوالب وفصلها إعادة هيكلة يمكنني فعلها لاحقاً.
 
-This doesn't pass, but it's close.
+هذا لا ينجح، لكنه قريب.
 
 ```
 === RUN   TestRender
@@ -760,11 +760,11 @@ This doesn't pass, but it's close.
     --- FAIL: TestRender/it_renders_an_index_of_posts (0.00s)
 ```
 
-You can see that the templating code is escaping the spaces in the `href` attributes. We need a way to do a string replace of spaces with hyphens. We can't just loop through the `[]Post` and replace them in-memory because we still want the spaces displayed to the user in the anchors. 
+يمكنك أن ترى أن شيفرة القوالب تهرّب المسافات في سمات `href`. ونحتاج إلى طريقة لاستبدال المسافات بشرطات في السلسلة النصية. ولا نستطيع ببساطة المرور على `[]Post` واستبدالها في الذاكرة، لأننا ما زلنا نريد عرض المسافات للمستخدم في نصوص الروابط.
 
-We have a few options. The first one we'll explore is passing a function in to our template. 
+لدينا بعض الخيارات. أولها سنستكشفه هو تمرير دالة إلى قالبنا.
 
-### Passing functions into templates 
+### تمرير الدوال إلى القوالب
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -787,33 +787,33 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-_Before you parse a template_ you can add a `template.FuncMap` into your template, which allows you to define functions that can be called within your template. In this case we've made a `sanitiseTitle` function which we then call inside our template with `{{sanitiseTitle .Title}}`.
+_قبل أن تحلل قالباً_ يمكنك إضافة `template.FuncMap` إلى قالبك، وهي تتيح لك تعريف دوال يمكن استدعاؤها داخل القالب. وفي هذه الحالة أنشأنا الدالة `sanitiseTitle` التي نستدعيها بعد ذلك داخل قالبنا بكتابة `{{sanitiseTitle .Title}}`.
 
-This is a powerful feature, being able to send functions in to your template will allow you to do some very cool things, but, should you? Going back to the principles of Mustache and logic-less templates, why did they advocate for logic-less? **What is wrong with logic in templates?** 
+هذه ميزة قوية، فالقدرة على إرسال الدوال إلى قالبك ستتيح لك فعل أشياء رائعة جداً، لكن هل ينبغي لك ذلك؟ بالعودة إلى مبادئ Mustache والقوالب الخالية من المنطق، لماذا دعت إلى الخلو من المنطق؟ **ما الخطأ في وجود المنطق في القوالب؟**
 
-As we've shown, in order to test our templates, *we've had to introduce a whole different kind of testing*. 
+كما بيّنّا، لكي نختبر قوالبنا *اضطررنا إلى تقديم نوع مختلف تماماً من الاختبار*.
 
-Imagine you introduce a function into a template which has a few different permutations of behaviour and edge cases, **how will you test it**? With this current design, your only means of testing this logic is by _rendering HTML and comparing strings_. This is not an easy or sane way of testing logic, and definitely not what you'd want for _important_ business logic. 
+تخيّل أنك أدخلت إلى قالب دالة لسلوكها عدة تبديلات وحالات حدّية، **فكيف ستختبرها**؟ مع هذا التصميم الحالي، وسيلتك الوحيدة لاختبار هذا المنطق هي _عرض HTML ومقارنة السلاسل النصية_. وهذه ليست طريقة سهلة ولا عاقلة لاختبار المنطق، وبالتأكيد ليست ما تريده لمنطق الأعمال _المهم_.
 
-Even though the approval tests technique has reduced the cost of maintaining these tests, they're still more expensive to maintain than most unit tests you'll write. They're still sensitive to any minor markup changes you might make, it's just we've made it easier to manage. We should still strive to architect our code so we don't have to write many tests around our templates, and try and separate concerns so any logic that doesn't need to live inside our rendering code is properly separated.
+ومع أن أسلوب اختبارات الموافقة خفّض تكلفة صيانة هذه الاختبارات، فما زالت صيانتها أغلى من معظم اختبارات الوحدة التي ستكتبها. وما زالت حساسة لأي تغيير طفيف في الترميز، كل ما في الأمر أننا جعلنا إدارتها أسهل. وينبغي مع ذلك أن نسعى إلى هندسة شيفرتنا بحيث لا نحتاج إلى كتابة اختبارات كثيرة حول قوالبنا، وأن نحاول فصل الاهتمامات بحيث يُفصل كما ينبغي أي منطق لا حاجة إلى أن يعيش داخل شيفرة العرض.
 
-What Mustache-influenced templating engines give you is a useful constraint, don't try to circumvent it too often; **don't go against the grain**. Instead, embrace the idea of [view models](https://stackoverflow.com/a/11074506/3193), where you construct specific types that contain the data you need to render, in a way that's convenient for the templating language. 
+ما تمنحك إياه محركات القوالب المتأثرة بـMustache قيد مفيد، فلا تحاول الالتفاف عليه كثيراً؛ **لا تسبح عكس التيار**. بل تبنَّ فكرة [نماذج العرض](https://stackoverflow.com/a/11074506/3193)، حيث تبني أنواعاً مخصصة تحتوي على البيانات التي تحتاج إلى عرضها، بطريقة مريحة للغة القوالب.
 
-This way, whatever important business logic you use to generate that bag of data can be unit tested separately, away from the messy world of HTML and templating. 
+وبهذه الطريقة، أياً كان منطق الأعمال المهم الذي تستعمله لتوليد تلك الحزمة من البيانات، يمكن اختباره باختبارات الوحدة منفصلاً، بعيداً عن عالم HTML والقوالب الفوضوي.
 
-### Separating concerns
+### فصل الاهتمامات
 
-So what could we do instead?
+فماذا يمكننا أن نفعل بدلاً من ذلك؟
 
-#### Add a method to `Post` and then call that in the template
+#### أضف طريقة إلى `Post` ثم استدعها في القالب
 
-We can call methods in our templating code on the types we send, so we could add a `SanitisedTitle` method to `Post`. This would simplify the template and we could easily unit test this logic separately if we wish. This is probably the easiest solution, although not necessarily the simplest.  
+يمكننا في شيفرة القوالب استدعاء طرق على الأنواع التي نرسلها، لذا يمكننا إضافة الطريقة `SanitisedTitle` إلى `Post`. وهذا سيبسّط القالب، ويمكننا بسهولة اختبار هذا المنطق باختبارات الوحدة منفصلاً إن أردنا. وهذا على الأرجح الحل الأسهل، وإن لم يكن بالضرورة الأبسط.
 
-A downside to this approach is that this is still _view_ logic. It's not interesting to the rest of the system but it now becomes a part of the API for a core domain object. This kind of approach over time can lead to you creating [God Objects](https://en.wikipedia.org/wiki/God_object).
+ومن عيوب هذا الأسلوب أن هذا ما زال منطق _عرض_. فهو لا يهم بقية النظام، لكنه يصبح الآن جزءاً من الواجهة البرمجية لكائن أساسي في المجال. وهذا النوع من الأساليب قد يقودك مع الوقت إلى إنشاء [كائنات إلهية](https://en.wikipedia.org/wiki/God_object).
 
-#### Create a dedicated view model type, such as `PostViewModel` with exactly the data we need
+#### أنشئ نوع نموذج عرض مخصصاً، مثل `PostViewModel`، يحتوي على البيانات التي نحتاج إليها بالضبط
 
-Rather than our rendering code being coupled to the domain object, `Post`, it instead takes a view model.
+فبدلاً من أن تقترن شيفرة العرض بكائن المجال `Post`، تأخذ نموذج عرض.
 
 ```go
 type PostViewModel struct {
@@ -822,13 +822,13 @@ type PostViewModel struct {
 }
 ```
 
-Callers of our code would have to map from `[]Post` to `[]PostView`, generating the `SanitizedTitle`. A way to keep this clean would be to have a `func NewPostView(p Post) PostView` which would encapsulate the mapping.
+سيضطر مستدعو شيفرتنا إلى التحويل من `[]Post` إلى `[]PostView`، مع توليد `SanitizedTitle`. ومن طرق إبقاء ذلك نظيفاً وجود دالة `func NewPostView(p Post) PostView` تغلّف هذا التحويل.
 
-This would keep our rendering code logic-less and is probably the strictest separation of concerns we could do, but the trade-off is a slightly more convoluted process to get our posts rendered.
+سيُبقي هذا شيفرة العرض خالية من المنطق، وهو على الأرجح أشد فصل للاهتمامات يمكننا فعله، لكن المقابل هو عملية أعقد قليلاً لعرض تدويناتنا.
 
-Both options are fine, in this case I am tempted to go with the first. As you evolve the system you should be wary of adding more and more ad-hoc methods just to grease the wheels of rendering; dedicated view models become more useful when the transformation between the domain object and view becomes more involved.
+كلا الخيارين جيد، وأنا في هذه الحالة أميل إلى الأول. ومع تطوير النظام، ينبغي أن تحذر من إضافة مزيد من الطرق المرتجلة لمجرد تسهيل العرض؛ فنماذج العرض المخصصة تصبح أكثر فائدة حين يصبح التحويل بين كائن المجال والعرض أكثر تعقيداً.
 
-So we can add our method to `Post`
+لذا يمكننا إضافة طريقتنا إلى `Post`
 
 ```go
 func (p Post) SanitisedTitle() string {
@@ -836,7 +836,7 @@ func (p Post) SanitisedTitle() string {
 }
 ```
 
-And then we can go back to a simpler world in our rendering code
+ثم يمكننا العودة إلى عالم أبسط في شيفرة العرض
 
 ```go
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -855,9 +855,9 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-Finally the test should be passing. We can now move our template into a file (`templates/index.gohtml`) and load it once, when we construct our renderer.
+أخيراً ينبغي أن ينجح الاختبار. ويمكننا الآن نقل قالبنا إلى ملف (`templates/index.gohtml`) وتحميله مرة واحدة، حين نبني العارض.
 
 ```go
 package blogrenderer
@@ -895,11 +895,11 @@ func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
 }
 ```
 
-By parsing more than one template into `templ` we now have to call `ExecuteTemplate` and specify _which_ template we wish to render as appropriate, but hopefully you'll agree the code we've arrived at looks great.
+بتحليل أكثر من قالب في `templ`، صار علينا الآن استدعاء `ExecuteTemplate` وتحديد _أي_ قالب نريد عرضه بحسب الحاجة، لكن أرجو أن توافقني على أن الشيفرة التي وصلنا إليها تبدو رائعة.
 
-There is a _slight_ risk if someone renames one of the template files, it would introduce a bug, but our fast to run unit tests would catch this quickly. 
+هناك خطر _طفيف_ في أنه إن غيّر أحدهم اسم أحد ملفات القوالب فسيُدخل خطأً برمجياً، لكن اختبارات الوحدة السريعة لدينا ستكتشف ذلك بسرعة.
 
-Now we're happy with our package's API design and got some basic behaviour driven out with TDD, let's change our test to use approvals.
+والآن بعد أن رضينا بتصميم الواجهة البرمجية لحزمتنا، وصرنا نملك بعض السلوك الأساسي المبني بـ`TDD`، لنغيّر اختبارنا ليستعمل اختبارات الموافقة.
 
 ```go
 	t.Run("it renders an index of posts", func(t *testing.T) {
@@ -914,9 +914,9 @@ Now we're happy with our package's API design and got some basic behaviour drive
 	})
 ```
 
-Remember to run the test to see it fail, and then approve the change. 
+تذكّر أن تشغّل الاختبار لتراه يفشل، ثم اعتمد التغيير.
 
-Finally we can add our page furniture to our index page:
+وأخيراً يمكننا إضافة أثاث الصفحة إلى صفحة الفهرس:
 
 ```handlebars
 {{template "top" .}}
@@ -924,11 +924,11 @@ Finally we can add our page furniture to our index page:
 {{template "bottom" .}}
 ```
 
-Re-run the test, approve the change and we're done with the index!
+أعد تشغيل الاختبار، واعتمد التغيير، وننتهي من الفهرس!
 
-## Rendering the markdown body
+## عرض متن markdown
 
-I encouraged you to try it yourself, here's the approach I ended up taking.
+شجعتك على أن تجربه بنفسك، وإليك الأسلوب الذي انتهيت إليه.
 
 ```go
 package blogrenderer
@@ -983,44 +983,44 @@ func newPostVM(p Post, r *PostRenderer) postViewModel {
 }
 ```
 
-I used the excellent [gomarkdown](https://github.com/gomarkdown/markdown) library which worked exactly how I'd hope. 
+استعملت مكتبة [gomarkdown](https://github.com/gomarkdown/markdown) الممتازة التي عملت تماماً كما كنت آمل.
 
-If you tried to do this yourself you may have found that your body render had the HTML escaped. This is a security feature of Go's html/template package to stop malicious 3rd-party HTML being outputted. 
+إن حاولت فعل هذا بنفسك، فربما وجدت أن عرض المتن عندك قد هرّب HTML. وهذه ميزة أمنية في الحزمة `html/template` في غو لمنع إخراج HTML خبيث من طرف ثالث.
 
-To circumvent this, in the type you send to the render, you'll need to wrap your trusted HTML in [template.HTML](https://pkg.go.dev/html/template#HTML)
+وللالتفاف على ذلك، عليك في النوع الذي ترسله إلى العرض أن تغلّف HTML الموثوق به في [template.HTML](https://pkg.go.dev/html/template#HTML)
 
-> HTML encapsulates a known safe HTML document fragment. It should not be used for HTML from a third-party, or HTML with unclosed tags or comments. The outputs of a sound HTML sanitiser and a template escaped by this package are fine for use with HTML.
+> يغلّف النوع `HTML` جزءاً من مستند HTML معروفاً بأنه آمن. ولا ينبغي استعماله مع HTML قادم من طرف ثالث، أو HTML فيه وسوم أو تعليقات غير مغلقة. أما مخرجات أداة تعقيم HTML سليمة، وقالب هرّبته هذه الحزمة، فلا بأس باستعمالها مع `HTML`.
 >
-> Use of this type presents a security risk: the encapsulated content should come from a trusted source, as it will be included verbatim in the template output.
+> استعمال هذا النوع يمثّل خطراً أمنياً: يجب أن يأتي المحتوى المغلَّف من مصدر موثوق، لأنه سيُدرج حرفياً في مخرجات القالب.
 
-So I created an **unexported** view model (`postViewModel`), because I still viewed this as internal implementation detail to rendering. I have no need to test this separately and I don't want it polluting my API. 
+لذا أنشأت نموذج عرض **غير مُصدَّر** (`postViewModel`)، لأنني ما زلت أراه تفصيلاً داخلياً من تفاصيل تنفيذ العرض. فلا حاجة لي إلى اختباره منفصلاً، ولا أريده أن يلوّث واجهتي البرمجية.
 
-I construct one when rendering so I can parse the `Body` into `HTMLBody` and then I use that field in the template to render the HTML.
+أبني واحداً عند العرض كي أستطيع تحليل `Body` إلى `HTMLBody`، ثم أستعمل ذلك الحقل في القالب لعرض HTML الناتج.
 
-## Wrapping up
+## الخلاصة
 
-If you combine your learnings of the [reading files](reading-files.md) chapter and this one, you can comfortably make a well-tested, simple, static site generator and spin up a blog of your own. Find some CSS tutorials and you can make it look nice too. 
+إن جمعت ما تعلّمته في فصل [قراءة الملفات](reading-files.md) وهذا الفصل، فستستطيع بسهولة صنع مولّد مواقع ساكنة بسيط ومختبَر جيداً، وإطلاق مدونة خاصة بك. ابحث عن بعض دروس CSS وستستطيع جعلها تبدو جميلة أيضاً.
 
-This approach extends beyond blogs. Taking data from any source, be it a database, an API or a file-system and converting it into HTML and returning it from a server is a simple technique spanning many decades. People like to bemoan the complexity of modern web development but are you sure you're not just inflicting the complexity on yourself?
+يتجاوز هذا الأسلوب المدونات. فأخذ البيانات من أي مصدر، سواء كان قاعدة بيانات أو واجهة برمجية أو نظام ملفات، وتحويلها إلى HTML وإعادتها من خادم، أسلوب بسيط يمتد عبر عقود كثيرة. ويحب الناس التذمر من تعقيد تطوير الويب الحديث، لكن هل أنت متأكد من أنك لا تفرض التعقيد على نفسك؟
 
-Go is wonderful for web development, especially when you think clearly about what your real requirements are for the website you're making. Generating HTML on the server is often a better, simpler and more performant approach than creating a "web application" with technologies like React.
+غو رائعة لتطوير الويب، خصوصاً حين تفكر بوضوح في متطلباتك الحقيقية للموقع الذي تصنعه. ومقارنة بإنشاء "تطبيق ويب" بتقنيات مثل React، كثيراً ما يكون توليد HTML على الخادم أسلوباً أفضل وأبسط وأعلى أداءً.
 
-### What we've learned
+### ما تعلمناه
 
-- How to create and render HTML templates.
-- How to compose templates together and [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself) up related markup and help us keep a consistent look and feel.
-- How to pass functions into templates, and why you should think twice about it.
-- How to write "Approval Tests", which help us test the big ugly output of things like template renderers. 
+- كيف تنشئ قوالب HTML وتعرضها.
+- كيف تركّب القوالب معاً، وتزيل التكرار ([DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself)) من الترميز المترابط، وتحافظ على مظهر متسق.
+- كيف تمرر الدوال إلى القوالب، ولماذا ينبغي أن تفكر مرتين قبل ذلك.
+- كيف تكتب "اختبارات الموافقة"، التي تساعدنا على اختبار المخرجات الكبيرة القبيحة لأشياء مثل عارضات القوالب.
 
-### On logic-less templates
+### عن القوالب الخالية من المنطق
 
-As always, this is all about **separation of concerns**. It's important we consider what the responsibilities are of the various parts of our system. Too often people leak important business logic into templates, mixing up concerns and making systems difficult to understand, maintain and test.
+كالعادة، الأمر كله يدور حول **فصل الاهتمامات**. فمن المهم أن ننظر في مسؤوليات الأجزاء المختلفة من نظامنا. وكثيراً ما يسرّب الناس منطق الأعمال المهم إلى القوالب، فيخلطون الاهتمامات ويجعلون الأنظمة صعبة الفهم والصيانة والاختبار.
 
-### Not just for HTML
+### ليست لـHTML فقط
 
-Remember that go has `text/template` to generate other kinds of data from a template. If you find yourself needing to transform data into some kind of structured output, the techniques laid out in this chapter can be useful. 
+تذكّر أن لدى غو `text/template` لتوليد أنواع أخرى من البيانات من قالب. فإن وجدت نفسك تحتاج إلى تحويل البيانات إلى نوع من المخرجات المنظمة، فقد تفيدك الأساليب المعروضة في هذا الفصل.
 
-### References and further material 
+### مراجع ومواد إضافية
 
-- [John Calhoun's 'Learn Web Development with Go'](https://www.calhoun.io/intro-to-templates-p1-contextual-encoding/) has a number of excellent articles on templating.
-- [Hotwire](https://hotwired.dev) - You can use these techniques to create Hotwire web applications. It has been built by Basecamp who are primarily a Ruby on Rails shop, but because it is server-side, we can use it with Go. 
+- يضم موقع [John Calhoun's 'Learn Web Development with Go'](https://www.calhoun.io/intro-to-templates-p1-contextual-encoding/) عدداً من المقالات الممتازة عن القوالب.
+- مكتبة [Hotwire](https://hotwired.dev): يمكنك استعمال هذه الأساليب لإنشاء تطبيقات ويب بـHotwire. وقد بنتها Basecamp، وهي شركة تعمل أساساً بـRuby on Rails، لكن لأنها تعمل على جانب الخادم، يمكننا استعمالها مع غو.

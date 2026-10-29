@@ -282,3 +282,21 @@
 | scanner | ماسح | مقترح |  |
 | declarative | تصريحي | مقترح |  |
 | tag | وسم | مقترح | الجمع: وسوم |
+| frontend | الواجهة الأمامية | مقترح |  |
+| toolchain | سلسلة أدوات | مقترح |  |
+| SPA | تطبيق صفحة واحدة | مقترح |  |
+| client side | جانب العميل | مقترح | server side: جانب الخادم |
+| markup | الترميز | مقترح |  |
+| render | العرض | مقترح | renderer: عارض |
+| templating language | لغة القوالب | مقترح |  |
+| logic-less | خالٍ من المنطق | مقترح |  |
+| code injection | حقن الشيفرة | مقترح |  |
+| directive | موجّه | مقترح | //go:embed |
+| golden file | ملف ذهبي | مقترح | snapshot testing: اختبار اللقطات |
+| diff tool | أداة مقارنة | مقترح |  |
+| combinatorial testing | الاختبار التوافقي | مقترح |  |
+| view model | نموذج عرض | مقترح |  |
+| God object | كائن إلهي | مقترح |  |
+| escape (HTML) | التهريب | مقترح |  |
+| business logic | منطق الأعمال | مقترح |  |
+| static site generator | مولّد مواقع ساكنة | مقترح |  |
