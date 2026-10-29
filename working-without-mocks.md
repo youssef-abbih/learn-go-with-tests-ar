@@ -1,38 +1,38 @@
-# Working without mocks, stubs and spies
+# العمل دون بدائل وهمية وبدائل ثابتة وجواسيس
 
-This chapter delves into the world of test doubles and explores how they influence the testing and development process. We'll uncover the limitations of traditional mocks, stubs, and spies and introduce a more efficient and adaptable approach using fakes and contracts.
+يغوص هذا الفصل في عالم بدائل الاختبار (test doubles) ويستكشف كيف تؤثر في عملية الاختبار والتطوير. وسنكشف حدود البدائل الوهمية (mocks) والبدائل الثابتة (stubs) والجواسيس (spies) التقليدية، ونقدّم أسلوباً أكثر كفاءة وقابلية للتكيف باستعمال البدائل المزيفة (fakes) والعقود.
 
-## tl;dr
+## باختصار
 
-- Mocks, spies and stubs encourage you to encode assumptions of the behaviour of your dependencies ad-hocly in each test.
-- These assumptions are usually not validated beyond manual checking, so they threaten your test suite's usefulness.
-- Fakes and contracts give us a more sustainable method for creating test doubles with validated assumptions and better reuse than the alternatives.
+- تشجعك البدائل الوهمية والجواسيس والبدائل الثابتة على ترميز افتراضاتك عن سلوك تبعياتك بشكل مرتجل في كل اختبار.
+- لا يُتحقق عادةً من هذه الافتراضات إلا بالفحص اليدوي، لذا فهي تهدد فائدة مجموعة اختباراتك.
+- تمنحنا البدائل المزيفة والعقود طريقة أكثر استدامة لإنشاء بدائل الاختبار، بافتراضات متحقق منها وإعادة استعمال أفضل من البدائل الأخرى.
 
-This is a longer chapter than normal, so as a palette cleanser, you should explore an [example repo first](https://github.com/quii/go-fakes-and-contracts). In particular, check out the [planner test](https://github.com/quii/go-fakes-and-contracts/blob/main/domain/planner/planner_test.go).
+هذا الفصل أطول من المعتاد، لذا وكمنعش للذهن، ينبغي أن تستكشف [المستودع النموذجي أولاً](https://github.com/quii/go-fakes-and-contracts). وتحديداً، اطّلع على [اختبار المخطِّط](https://github.com/quii/go-fakes-and-contracts/blob/main/domain/planner/planner_test.go).
 
 ---
 
-In [Mocking,](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking) we learned how mocks, stubs and spies are useful tools for controlling and inspecting the behaviour of units of code in conjunction with [Dependency Injection](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
+تعلّمنا في فصل [المحاكاة](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/mocking) كيف أن البدائل الوهمية والبدائل الثابتة والجواسيس أدوات مفيدة للتحكم بسلوك وحدات الشيفرة (code) وفحصه، بالاقتران مع [حقن التبعية](https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/dependency-injection).
 
-As a project grows, though, these kinds of test doubles *can* become a maintenance burden, and we should instead look to other design ideas to keep our system easy to reason and test.
+لكن مع نمو المشروع، *قد* تصبح هذه الأنواع من بدائل الاختبار عبئاً في الصيانة، وينبغي أن نتطلع بدلاً من ذلك إلى أفكار تصميمية أخرى تُبقي نظامنا سهل الفهم والاختبار.
 
-**Fakes** and **contracts** allow developers to test their systems with more realistic scenarios, improve local development experience with faster and more accurate feedback loops, and manage the complexity of evolving dependencies.
+تتيح **البدائل المزيفة** و**العقود** للمطورين اختبار أنظمتهم بسيناريوهات أكثر واقعية، وتحسين تجربة التطوير المحلي بحلقات تغذية راجعة أسرع وأدق، وإدارة تعقيد التبعيات المتطورة.
 
-### A primer on test doubles
+### تمهيد عن بدائل الاختبار
 
-It's easy to roll your eyes when people like me are pedantic about the nomenclature of test doubles, but the distinctive kinds of test doubles help us talk about this topic and the trade-offs we're making with clarity.
+من السهل أن تتبرم حين يتحذلق أمثالي في تسميات بدائل الاختبار، لكن الأنواع المميزة من بدائل الاختبار تساعدنا على الحديث عن هذا الموضوع وعن المقايضات التي نقوم بها بوضوح.
 
-**Test doubles** is the collective noun for the different ways you can construct dependencies that you can control for a **subject under test** **(SUT)**, the thing you're testing. Test doubles are often a better alternative than using the real dependency as it can avoid issues like
+**بدائل الاختبار** هو الاسم الجامع للطرق المختلفة التي يمكنك بها بناء تبعيات تتحكم بها لـ**الشيء قيد الاختبار** **(SUT)**، أي ما تختبره. وكثيراً ما تكون بدائل الاختبار بديلاً أفضل من استعمال التبعية الحقيقية، لأنها تتجنب مشكلات مثل
 
-- Needing the internet to use an API
-- Avoid latency and other performance issues
-- Unable to exercise non-happy path cases
-- Decoupling your build from another team's.
-  - You wouldn't want to prevent deployments if an engineer in another team accidentally shipped a bug
+- الحاجة إلى الإنترنت لاستعمال واجهة برمجية
+- تجنب زمن الاستجابة ومشكلات الأداء الأخرى
+- العجز عن اختبار الحالات خارج المسار الناجح
+- فك اقتران عملية البناء لديك بعملية بناء فريق آخر.
+  - فلا تريد أن تمنع عمليات النشر إن أطلق مهندس في فريق آخر خطأً برمجياً عن غير قصد
 
-In Go, you'll typically model a dependency with an interface, then implement your version to control the behaviour in a test. **Here are the kinds of test doubles covered in this post**.
+في غو (Go)، ستنمذج التبعية عادةً بواجهة (interface)، ثم تنفّذ نسختك للتحكم بالسلوك في الاختبار. **إليك أنواع بدائل الاختبار التي يتناولها هذا الفصل**.
 
-Given this interface of a hypothetical recipe API:
+بمعلومية هذه الواجهة لواجهة برمجية افتراضية للوصفات:
 
 ```go
 type RecipeBook interface {
@@ -41,9 +41,9 @@ type RecipeBook interface {
 }
 ```
 
-We can construct test doubles in various ways, depending on how we're trying to test something that uses a `RecipeBook`.
+يمكننا بناء بدائل الاختبار بطرق مختلفة، بحسب الطريقة التي نحاول بها اختبار شيء يستعمل `RecipeBook`.
 
-**Stubs** return the same canned data every time they are called
+**البدائل الثابتة** تعيد البيانات الجاهزة نفسها في كل مرة تُستدعى
 
 ```go
 type StubRecipeStore struct {
@@ -65,7 +65,7 @@ stubStore := &StubRecipeStore{
 }
 ```
 
-**Spies** are like stubs but also record how they were called so the test can assert that the SUT calls the dependencies in specific ways.
+**الجواسيس** تشبه البدائل الثابتة، لكنها تسجّل أيضاً كيف استُدعيت، كي يستطيع الاختبار التوكيد على أن الشيء قيد الاختبار يستدعي التبعيات بطرق محددة.
 
 ```go
 type SpyRecipeStore struct {
@@ -90,7 +90,7 @@ sut.DoStuff()
 // now we can check the store had the right recipes added by inspectiong spyStore.AddCalls
 ```
 
-**Mocks** are like a superset of the above, but they only respond with specific data to specific invocations. If the SUT calls the dependencies with the wrong arguments, it'll typically panic.
+**البدائل الوهمية** أشبه بمجموعة شاملة لما سبق، لكنها لا تستجيب ببيانات محددة إلا لاستدعاءات محددة. فإن استدعى الشيء قيد الاختبار التبعيات بوسطاء خاطئة، فستُطلق الذعر عادةً.
 
 ```go
 // set up the mock with expected calls
@@ -100,7 +100,7 @@ mockStore.WhenCalledWith(someRecipes).Return(someError)
 // when the sut uses the dependency, if it doesn't call it with someRecipes, usually mocks will panic
 ```
 
-**Fakes** are like a genuine version of the dependency but implemented in a way more suited to fast running, reliable tests and local development. Often, your system will have some abstraction around persistence, which will be implemented with a database, but in your tests, you could use an in-memory fake instead.
+**البدائل المزيفة** أشبه بنسخة حقيقية من التبعية، لكنها منفذة بطريقة أنسب للاختبارات السريعة الموثوقة وللتطوير المحلي. فكثيراً ما يكون في نظامك تجريد ما حول التخزين الدائم، يُنفَّذ بقاعدة بيانات، لكن في اختباراتك يمكنك استعمال بديل مزيف في الذاكرة بدلاً منها.
 
 ```go
 type FakeRecipeStore struct {
@@ -117,81 +117,81 @@ func (f *FakeRecipeStore) AddRecipes(r ...Recipe) error {
 }
 ```
 
-Fakes are useful because:
+البدائل المزيفة مفيدة لأن:
 
-- Their statefulness is useful for tests involving multiple subjects and invocations, such as an integration test. Managing state with the other kinds of test doubles is generally discouraged.
-- If they have a sensible API, offer a more natural way of asserting state. Rather than spying on specific calls to a dependency, you can query its final state to see if the real effect you want happened.
-- You can use them to run your application locally without spinning up or depending on real dependencies. This will usually improve developer experience (DX) because the fakes will be faster and more reliable than their real counterparts.
+- احتفاظها بالحالة مفيد للاختبارات التي تشمل عدة أشياء قيد الاختبار واستدعاءات متعددة، مثل اختبار التكامل. أما إدارة الحالة مع الأنواع الأخرى من بدائل الاختبار فلا يُنصح بها عموماً.
+- إن كانت لها واجهة برمجية معقولة، فإنها توفر طريقة أكثر طبيعية للتوكيد على الحالة. فبدلاً من التجسس على استدعاءات محددة لتبعية ما، يمكنك الاستعلام عن حالتها النهائية لترى إن كان الأثر الحقيقي الذي تريده قد حدث.
+- يمكنك استعمالها لتشغيل تطبيقك محلياً دون تشغيل تبعيات حقيقية أو الاعتماد عليها. وهذا يحسّن عادةً تجربة المطورين (DX)، لأن البدائل المزيفة ستكون أسرع وأكثر موثوقية من نظيراتها الحقيقية.
 
-Spies, Mocks and Stubs can typically be autogenerated from an interface using a tool or using reflection. However, as Fakes encode the behaviour of the dependency you're trying to make a double for, you'll have to write at least most of the implementation yourself
+يمكن عادةً توليد الجواسيس والبدائل الوهمية والبدائل الثابتة تلقائياً من واجهة باستعمال أداة أو باستعمال الانعكاس. أما البدائل المزيفة، فلأنها ترمّز سلوك التبعية التي تحاول صنع بديل لها، فستضطر إلى كتابة معظم التنفيذ بنفسك على الأقل
 
-## The problem with stubs and mocks
+## المشكلة في البدائل الثابتة والبدائل الوهمية
 
-In [Anti-patterns,](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns) there are details on how using test doubles must be done carefully. Creating a messy test suite is easy if you don't use them tastefully. As a project grows though, other problems can creep in.
+في فصل [الأنماط المضادة](https://quii.gitbook.io/learn-go-with-tests/meta/anti-patterns) تفاصيل عن ضرورة استعمال بدائل الاختبار بحذر. فإنشاء مجموعة اختبارات فوضوية سهل إن لم تستعملها بذوق. لكن مع نمو المشروع، قد تتسلل مشكلات أخرى.
 
-When you encode behaviour into test doubles, you are adding your assumptions as to how the real dependency works into the test. If there is a discrepancy between the behaviour of the double and the real dependency, or if one happens over time (e.g. the real dependency changes, which *has* to be expected), **you may have passing tests but failing software**.
+حين ترمّز السلوك في بدائل الاختبار، فإنك تضيف إلى الاختبار افتراضاتك عن طريقة عمل التبعية الحقيقية. فإن كان هناك تباين بين سلوك البديل والتبعية الحقيقية، أو إن حدث تباين مع الوقت (كأن تتغير التبعية الحقيقية، وهو أمر *يجب* توقعه)، **فقد تكون لديك اختبارات ناجحة لكن برمجيات فاشلة**.
 
-Stubs, spies and mocks, in particular, represent other challenges, mainly as a project grows. To illustrate this, I will describe a project I worked on.
+وتمثّل البدائل الثابتة والجواسيس والبدائل الوهمية تحديداً تحديات أخرى، خصوصاً مع نمو المشروع. ولتوضيح ذلك، سأصف مشروعاً عملت عليه.
 
-### Example case study
+### دراسة حالة نموذجية
 
-*Some details are changed compared to what really happened, and it has been simplified greatly for brevity. **Any resemblance to actual persons, living or dead, is purely coincidental.***
+*غُيّرت بعض التفاصيل عما حدث فعلاً، وبُسّطت كثيراً اختصاراً. **وأي تشابه مع أشخاص حقيقيين، أحياء أو أموات، هو محض مصادفة.***
 
-I worked on a system that had to call **six** different APIs, written and maintained by other teams across the globe. They were _REST-ish_, and the job of our system was to create and manage resources in them all. When we called all the APIs correctly for each system, _magic_ (business value) would happen.
+عملت على نظام كان عليه أن يستدعي **ست** واجهات برمجية مختلفة، كتبتها وتصونها فرق أخرى حول العالم. كانت _أشبه بـREST_، وكانت مهمة نظامنا إنشاء الموارد فيها كلها وإدارتها. وحين نستدعي كل الواجهات البرمجية بشكل صحيح لكل نظام، كان _السحر_ (قيمة الأعمال) يحدث.
 
-Our application was structured in a hexagonal / ports & adapters architecture. Our domain code was decoupled from the mess of the outside world we had to deal with. Our "adapters" were, in effect, Go clients that encapsulated calling the various APIs.
+كان تطبيقنا مبنياً على معمارية سداسية، أي معمارية المنافذ والمحوّلات. وكانت شيفرة مجالنا منفصلة عن فوضى العالم الخارجي الذي كان علينا التعامل معه. وكانت "محوّلاتنا" في الواقع عملاء غو يغلّفون استدعاء الواجهات البرمجية المختلفة.
 
-![the system architecture](https://i.imgur.com/6bqovl8.png)
+![معمارية النظام](https://i.imgur.com/6bqovl8.png)
 
-#### Troubles
+#### المتاعب
 
-Naturally, we took a test-driven approach to building the system. We leveraged stubs to simulate the downstream API responses and had a handful of acceptance tests to reassure ourselves everything should work.
+بطبيعة الحال، اتبعنا أسلوباً مقاداً بالاختبارات في بناء النظام. فاستفدنا من البدائل الثابتة لمحاكاة استجابات الواجهات البرمجية في المراحل التالية، وكان لدينا عدد قليل من اختبارات القبول لنطمئن إلى أن كل شيء ينبغي أن يعمل.
 
-The APIs we had to call for the most part, though, were:
+لكن الواجهات البرمجية التي كان علينا استدعاؤها كانت في معظمها:
 
-- poorly documented
-- run by teams who had lots of other conflicting priorities and pressures, so it wasn't easy to get time with them
-- often lacking test coverage, so would break in fun and unexpected ways, regress, etc
-- were still being built and evolved
+- رديئة التوثيق
+- تديرها فرق لديها كثير من الأولويات والضغوط المتضاربة الأخرى، لذا لم يكن سهلاً الحصول على وقت معها
+- كثيراً ما تفتقر إلى تغطية الاختبارات، لذا كانت تتعطل بطرق مسلية وغير متوقعة، وتتراجع، وغير ذلك
+- كانت ما زالت قيد البناء والتطور
 
-This led to **a lot of flaky tests** and a lot of headaches. A _significant_ amount of our time was spent pinging lots of busy people on Slack trying to get answers as to:
+أدى هذا إلى **كثير من الاختبارات المتقلبة** وكثير من الصداع. وقضينا قدراً _كبيراً_ من وقتنا في مراسلة كثير من المشغولين على Slack محاولين الحصول على إجابات عن:
 
-- Why has the API started doing `x`?
-- Why is the API doing something different when we do `y`?
+- لماذا بدأت الواجهة البرمجية بفعل `x`؟
+- لماذا تفعل الواجهة البرمجية شيئاً مختلفاً حين نفعل `y`؟
 
-Software development is rarely as straightforward as you'd hope; it's a learning exercise. We had to continuously learn how the external APIs worked. As we learned and adapted, we had to update and add to our test suite, in particular, **changing our stubs to match the actual behaviour of the APIs.**
+نادراً ما يكون تطوير البرمجيات مباشراً كما تأمل؛ إنه تمرين في التعلم. فقد كان علينا أن نتعلم باستمرار كيف تعمل الواجهات البرمجية الخارجية. ومع تعلمنا وتكيفنا، كان علينا تحديث مجموعة اختباراتنا والإضافة إليها، وتحديداً **تغيير بدائلنا الثابتة لتطابق السلوك الفعلي للواجهات البرمجية.**
 
-The trouble is, this took up much of our time and led to more mistakes. When your knowledge of a dependency changes, you must find the **right** test to update to change the stub's behaviour, and there's a real risk of neglecting to update it in other stubs representing the same dependency.
+المشكلة أن هذا استهلك كثيراً من وقتنا وأدى إلى مزيد من الأخطاء. فحين تتغير معرفتك بتبعية ما، عليك إيجاد الاختبار **الصحيح** لتحديثه لتغيير سلوك البديل الثابت، وهناك خطر حقيقي في إهمال تحديثه في بدائل ثابتة أخرى تمثل التبعية نفسها.
 
-#### Test strategy
+#### استراتيجية الاختبار
 
-On top of this, as the system was growing and requirements were changing, we realised that our test strategy was unsuitable. We had a handful of acceptance tests that would give us confidence the system as a whole worked and then a large number of unit tests for the various packages we wrote.
+فوق ذلك، ومع نمو النظام وتغير المتطلبات، أدركنا أن استراتيجية اختبارنا غير مناسبة. فقد كان لدينا عدد قليل من اختبارات القبول التي تمنحنا الثقة بأن النظام ككل يعمل، ثم عدد كبير من اختبارات الوحدة للحزم المختلفة التي كتبناها.
 
-<u>We needed something in between</u>; we often wanted to change the behaviour of various system parts together **but not have to spin up the *entire* system for an acceptance test**. Unit tests alone did not give us confidence that the various components worked as a whole; they couldn't tell (and verify) the story of what we were trying to achieve. **We wanted integration tests**.
+<u>كنا نحتاج إلى شيء بين الاثنين</u>؛ فكثيراً ما أردنا تغيير سلوك أجزاء مختلفة من النظام معاً **دون أن نضطر إلى تشغيل النظام *كله* لاختبار قبول**. واختبارات الوحدة وحدها لم تمنحنا الثقة بأن المكونات المختلفة تعمل ككل؛ فلم تستطع أن تروي (وتتحقق من) قصة ما نحاول تحقيقه. **كنا نريد اختبارات التكامل**.
 
-#### Integration tests
+#### اختبارات التكامل
 
-Integration tests prove that two or more "units" work correctly when combined (or integrated!). These units can be the code you write or the code you write integrated with someone else's code, such as a database.
+تثبت اختبارات التكامل (integration tests) أن "وحدتين" أو أكثر تعملان بشكل صحيح حين تُجمعان (أو تتكاملان!). ويمكن أن تكون هذه الوحدات الشيفرة التي تكتبها، أو الشيفرة التي تكتبها متكاملة مع شيفرة شخص آخر، كقاعدة بيانات.
 
-As a project grows, you want to write more integration tests to prove large parts of your system "hang together" - or integrates!
+ومع نمو المشروع، ستريد كتابة مزيد من اختبارات التكامل لإثبات أن أجزاء كبيرة من نظامك "تتماسك معاً"، أي تتكامل!
 
-You may be tempted to write more black-box acceptance tests, but they quickly become costly regarding your build time and maintenance costs. It can be too expensive to spin up an entire system when you only want to check a *subset* of the system (but not just a single unit) behaves how it should. Writing expensive black-box tests for every bit of functionality you do is not sustainable for larger systems.
+قد تُغرى بكتابة مزيد من اختبارات القبول من نوع الصندوق الأسود، لكنها تصبح مكلفة بسرعة من حيث وقت البناء وتكاليف الصيانة. فقد يكون تشغيل نظام كامل مكلفاً جداً حين تريد فقط التحقق من أن *جزءاً* من النظام (لكن ليس وحدة واحدة فقط) يتصرف كما ينبغي. وكتابة اختبارات صندوق أسود مكلفة لكل جزء من الوظائف التي تكتبها ليست مستدامة للأنظمة الأكبر.
 
-#### Enter: Fakes
+#### الحل: البدائل المزيفة
 
-The problem was the way our units were tested was reliant on stubs, which are, for the most part, *stateless*. We wanted to write tests covering multiple, *stateful* API calls, where we may create a resource at the start and then edit it later.
+كانت المشكلة أن طريقة اختبار وحداتنا تعتمد على البدائل الثابتة، وهي في معظمها *لا تحتفظ بالحالة*. وكنا نريد كتابة اختبارات تغطي استدعاءات متعددة للواجهات البرمجية *تحتفظ بالحالة*، كأن ننشئ مورداً في البداية ثم نعدّله لاحقاً.
 
-The following is a cut-down version of a test we want to do.
+ما يلي نسخة مختصرة من اختبار نريد كتابته.
 
-The SUT is a "service layer" dealing with "use case" requests. We want to prove if a customer is created, when their details change, we successfully update the resources we made in the respective APIs.
+الشيء قيد الاختبار "طبقة خدمات" تتعامل مع طلبات "حالات الاستعمال". ونريد أن نثبت أنه إن أُنشئ عميل، فحين تتغير تفاصيله، نحدّث بنجاح الموارد التي أنشأناها في الواجهات البرمجية المعنية.
 
-Here are the requirements given to the team as a user story.
+إليك المتطلبات التي أُعطيت للفريق على شكل قصة مستخدم.
 
-> ***Given*** a user is registered with API 1, 2 and 3
+> ***بمعلومية*** أن المستخدم مسجّل في الواجهات البرمجية 1 و2 و3
 >
-> ***When*** the customer's social security number is changed
+> ***عندما*** يتغير رقم الضمان الاجتماعي للعميل
 >
-> ***Then**,* the change is propagated into APIs 1, 2 and 3
+> ***عندئذٍ*** ينتشر التغيير إلى الواجهات البرمجية 1 و2 و3
 
 ```mermaid
 sequenceDiagram
@@ -208,15 +208,15 @@ sequenceDiagram
 	SUT->>API2: Update resource
 ```
 
-Tests that cut across multiple units are usually incompatible with stubs **because they're not suited to maintaining state**. We _could_ write a black-box acceptance test, but the costs of these tests would quickly spiral out of control.
+الاختبارات التي تمتد عبر عدة وحدات لا تتوافق عادةً مع البدائل الثابتة، **لأنها غير مناسبة للاحتفاظ بالحالة**. كان _بإمكاننا_ كتابة اختبار قبول من نوع الصندوق الأسود، لكن تكاليف هذه الاختبارات ستخرج عن السيطرة بسرعة.
 
-In addition, it is complicated to test edge cases with a black-box test because you cannot control the dependencies. For instance, we wanted to prove that a rollback mechanism would be fired if one API call failed.
+إضافة إلى ذلك، اختبار الحالات الحدّية باختبار صندوق أسود معقد، لأنك لا تستطيع التحكم بالتبعيات. فمثلاً، أردنا أن نثبت أن آلية تراجع ستُطلق إن فشل استدعاء لإحدى الواجهات البرمجية.
 
-We needed to use **fakes**. By modelling our dependencies as stateful APIs with in-memory fakes, we were able to write integration tests with a much broader scope, **to allow us to test real use cases worked**, again *without* having to spin up the whole system, and instead have almost the same speed as unit tests.
+كنا نحتاج إلى استعمال **البدائل المزيفة**. فبنمذجة تبعياتنا كواجهات برمجية تحتفظ بالحالة ببدائل مزيفة في الذاكرة، استطعنا كتابة اختبارات تكامل بنطاق أوسع بكثير، **تتيح لنا اختبار أن حالات الاستعمال الحقيقية تعمل**، مرة أخرى *دون* الاضطرار إلى تشغيل النظام كله، وبسرعة تكاد تساوي سرعة اختبارات الوحدة.
 
-![integration tests with fakes](https://i.imgur.com/9Q6FMpw.png)
+![اختبارات التكامل مع البدائل المزيفة](https://i.imgur.com/9Q6FMpw.png)
 
-Using fakes, **we can make assertions based on the final states of the respective systems rather than relying on complicated spying**. We'd ask each fake what records it held for the customer and assert they were updated. This feels more natural; if we manually checked our system, we would query those APIs to check their state, not inspect our request logs to see if we sent particular JSON payloads.
+باستعمال البدائل المزيفة، **يمكننا إجراء توكيدات مبنية على الحالات النهائية للأنظمة المعنية بدلاً من الاعتماد على تجسس معقد**. فكنا نسأل كل بديل مزيف عن السجلات التي يحتفظ بها للعميل، ونؤكد أنها حُدّثت. وهذا يبدو أكثر طبيعية؛ فلو كنا نتحقق من نظامنا يدوياً، لاستعلمنا من تلك الواجهات البرمجية للتحقق من حالتها، لا أن نفحص سجلات طلباتنا لنرى إن كنا أرسلنا حمولات JSON معيّنة.
 
 ```go
 // take our lego-bricks and assemble the system for the test
@@ -246,33 +246,33 @@ updatedFakeAPICustomer := fakeAPI1.Get(createdCustomer.FakeAPI1Details.ID)
 assert.Equal(t, updatedFakeAPICustomer.SocialSecurityNumber, updatedCustomerRequest.SocialSecurityNumber)
 ```
 
-This is simpler to write and easier to read than checking various function call arguments made via spies.
+هذا أبسط في الكتابة وأسهل في القراءة من التحقق من وسطاء استدعاءات دوال مختلفة عبر الجواسيس.
 
-This approach lets us have tests that cut across broad parts of our system, letting us write more **meaningful** tests about the use cases we'd be discussing at stand-up whilst still executing exceptionally quickly.
+يتيح لنا هذا الأسلوب كتابة اختبارات تمتد عبر أجزاء واسعة من نظامنا، فنكتب اختبارات **ذات معنى** أكبر عن حالات الاستعمال التي كنا نناقشها في الاجتماع اليومي، مع بقائها سريعة التنفيذ للغاية.
 
-#### Fakes bring more of the benefits of encapsulation
+#### البدائل المزيفة تجلب مزيداً من فوائد التغليف
 
-In the example above, the tests were not concerned with how the dependencies behaved beyond verifying their end state. We created the fake versions of the dependencies and injected them into the part of the system we're testing.
+في المثال أعلاه، لم تكن الاختبارات تهتم بكيفية تصرف التبعيات أبعد من التحقق من حالتها النهائية. فقد أنشأنا النسخ المزيفة من التبعيات وحقنّاها في جزء النظام الذي نختبره.
 
-With mocks/stubs, we'd have to set up each dependency to handle certain scenarios, return certain data, etc. This brings behaviour and implementation detail into your tests, weakening the benefits of encapsulation. 
+أما مع البدائل الوهمية أو الثابتة، فسيكون علينا إعداد كل تبعية لمعالجة سيناريوهات معيّنة، وإعادة بيانات معيّنة، وغير ذلك. وهذا يُدخل السلوك وتفاصيل التنفيذ إلى اختباراتك، فيضعف فوائد التغليف (encapsulation).
 
-We model dependencies behind interfaces so that, as clients, _we don't have to care how it works_, but with a "mockist" approach, _we do have to care **in every test**_. 
+نحن ننمذج التبعيات خلف واجهات كي لا _نضطر كعملاء إلى الاهتمام بطريقة عملها_، لكن مع أسلوب "أنصار البدائل الوهمية" _علينا أن نهتم **في كل اختبار**_.
 
-#### The maintenance costs of fakes
+#### تكاليف صيانة البدائل المزيفة
 
-Fakes are costlier than other test doubles, at least in terms of code written; they must carry state and simulate the behaviour of whatever they're faking. Any discrepancies in behaviour between your fake and the real thing **carry a risk** that your tests aren't in line with reality. This leads to the scenario where you have passing tests but broken software.
+البدائل المزيفة أكثر كلفة من بدائل الاختبار الأخرى، على الأقل من حيث الشيفرة المكتوبة؛ فعليها أن تحتفظ بالحالة وتحاكي سلوك أي شيء تزيّفه. وأي تباين في السلوك بين بديلك المزيف والشيء الحقيقي **يحمل خطر** أن اختباراتك لا تتماشى مع الواقع. وهذا يقود إلى سيناريو تكون فيه لديك اختبارات ناجحة لكن برمجيات معطلة.
 
-Whenever you integrate with another system, be it another team's API or a database, you'll make assumptions based on its behaviour. These could be captured from API docs, in-person conversations, emails, Slack threads, etc.
+كلما تكاملت مع نظام آخر، سواء كان واجهة برمجية لفريق آخر أو قاعدة بيانات، ستضع افتراضات مبنية على سلوكه. وقد تأتي هذه من توثيق الواجهة البرمجية، أو محادثات مباشرة، أو رسائل بريد إلكتروني، أو سلاسل نقاش على Slack، وغير ذلك.
 
-Wouldn't it be helpful if we could **codify our assumptions** to run them against both our fake *and* the actual system to see if our knowledge is correct in a repeatable and documented way?
+ألن يكون مفيداً لو استطعنا **ترميز افتراضاتنا** وتشغيلها على بديلنا المزيف *وعلى* النظام الفعلي معاً، لنرى إن كانت معرفتنا صحيحة، بطريقة قابلة للتكرار وموثّقة؟
 
-**Contracts** are the means to this end. They helped us manage the assumptions we made on the other team's systems and make them explicit. Way more explicit and useful than email exchanges or endless Slack threads!
+**العقود** هي الوسيلة إلى هذه الغاية. فقد ساعدتنا على إدارة الافتراضات التي وضعناها عن أنظمة الفريق الآخر وجعلها صريحة. أكثر صراحة وفائدة بكثير من تبادل رسائل البريد الإلكتروني أو سلاسل Slack التي لا تنتهي!
 
-![fakes and contracts illustrated](https://i.imgur.com/l9aTe2x.png)
+![توضيح البدائل المزيفة والعقود](https://i.imgur.com/l9aTe2x.png)
 
-By having a contract, we can assume that we can use a fake and an actual dependency interchangeably. This is not only useful for constructing tests but also for local development.
+بوجود عقد، يمكننا افتراض أننا نستطيع استعمال البديل المزيف والتبعية الفعلية بالتبادل. وهذا ليس مفيداً لبناء الاختبارات فحسب، بل للتطوير المحلي أيضاً.
 
-Here is an example of a contract for one of the APIs the system depends on
+إليك مثالاً على عقد لإحدى الواجهات البرمجية التي يعتمد عليها النظام
 
 ```go
 type API1Customer struct {
@@ -327,14 +327,14 @@ func (c API1Contract) Test(t *testing.T) {
 }
 ```
 
-As discussed in [Scaling Acceptance Tests](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests), by testing against an interface rather than a concrete type, the test becomes:
+كما ناقشنا في فصل [توسيع اختبارات القبول](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests)، بالاختبار على واجهة بدلاً من نوع ملموس، يصبح الاختبار:
 
-- Decoupled from implementation detail
-- Can be re-used in different contexts.
+- منفصلاً عن تفاصيل التنفيذ
+- قابلاً لإعادة الاستعمال في سياقات مختلفة.
 
-Which are the requirements for a contract. It allows us to verify and develop our fake _and_ test it against the actual implementation.
+وهذان هما متطلبا العقد. فهو يتيح لنا التحقق من بديلنا المزيف وتطويره، _و_ اختباره على التنفيذ الفعلي.
 
-To create our in-memory fake, we can use the contract in a test.
+لإنشاء بديلنا المزيف في الذاكرة، يمكننا استعمال العقد في اختبار.
 
 ```go
 func TestInMemoryAPI1(t *testing.T) {
@@ -344,7 +344,7 @@ func TestInMemoryAPI1(t *testing.T) {
 }
 ```
 
-And here is the fake's code
+وإليك شيفرة البديل المزيف
 
 ```go
 func NewAPI1() *API1 {
@@ -382,44 +382,44 @@ func (a *API1) UpdateCustomer(ctx context.Context, id string, name string) error
 }
 ```
 
-### Evolving software
+### البرمجيات المتطورة
 
-Most software is not built and "finished" forever, in one release.
+معظم البرمجيات لا تُبنى و"تُنجز" إلى الأبد في إصدار واحد.
 
-It's an incremental learning exercise, adapting to customer demands and other external changes. In the example, the APIs we were calling were also evolving and changing; plus, as we developed _our_ software, we learned more about what system we _really_ needed to make. Assumptions we made in our contracts turned out to be wrong or _became_ wrong.
+إنها تمرين تدريجي في التعلم، يتكيف مع مطالب العملاء والتغييرات الخارجية الأخرى. ففي المثال، كانت الواجهات البرمجية التي نستدعيها تتطور وتتغير أيضاً؛ وفوق ذلك، ومع تطويرنا لبرمجياتـ_نا_، تعلّمنا المزيد عن النظام الذي نحتاج _حقاً_ إلى صنعه. فتبيّن أن افتراضات وضعناها في عقودنا خاطئة، أو _أصبحت_ خاطئة.
 
-Thankfully, once the setup for the contracts was made, we had a simple way to deal with change. Once we learned something new, as a result of a bug being fixed or a colleague informing us that the API was changing, we'd:
+لحسن الحظ، بمجرد أن أُعدّت العقود، صارت لدينا طريقة بسيطة للتعامل مع التغيير. فبمجرد أن نتعلم شيئاً جديداً، نتيجة إصلاح خطأ برمجي أو إبلاغ زميل لنا بأن الواجهة البرمجية تتغير، كنا:
 
-1. Write a test to exercise the new scenario. A part of this will involve changing the contract to **drive** you to simulate the behaviour in the fake
-2. Running the test should fail, but before anything else, run the contract against the real dependency to ensure the change to the contract is valid.
-3. Update the fake so it conforms to the contract.
-4. Make the test pass.
-5. Refactor.
-6. Run all the tests and ship.
+1. نكتب اختباراً للسيناريو الجديد. وجزء من هذا سيتضمن تغيير العقد لـ**يقودك** إلى محاكاة السلوك في البديل المزيف
+2. ينبغي أن يفشل تشغيل الاختبار، لكن قبل أي شيء آخر، شغّل العقد على التبعية الحقيقية للتأكد من أن التغيير في العقد صحيح.
+3. حدّث البديل المزيف ليتوافق مع العقد.
+4. اجعل الاختبار ينجح.
+5. أعد الهيكلة.
+6. شغّل كل الاختبارات وأطلق.
 
-Running the _full_ test suite before checking in _may_ result in other tests failing due to the fake having a different behaviour. This is a **good thing**!  You can now fix all the other areas of the system depending on the changed system; confident they will also handle this scenario in production. Without this approach, you'd have to *remember* to find all the relevant tests and update the stubs. Error-prone, labourious and boring.
+تشغيل مجموعة الاختبارات _كاملة_ قبل الإيداع _قد_ يؤدي إلى فشل اختبارات أخرى بسبب اختلاف سلوك البديل المزيف. وهذا **أمر جيد**!  فيمكنك الآن إصلاح كل المناطق الأخرى من النظام التي تعتمد على النظام الذي تغيّر، واثقاً من أنها ستتعامل أيضاً مع هذا السيناريو في بيئة الإنتاج. ودون هذا الأسلوب، كان عليك أن *تتذكر* إيجاد كل الاختبارات ذات الصلة وتحديث البدائل الثابتة. وهذا عرضة للأخطاء، ومجهد، وممل.
 
-### Superior developer experience
+### تجربة مطورين متفوقة
 
-Having the suite of fakes with corresponding contracts felt like a superpower. We could finally tame the complexity of the APIs we had to deal with.
+امتلاك مجموعة البدائل المزيفة مع العقود المقابلة لها بدا كقوة خارقة. فقد استطعنا أخيراً ترويض تعقيد الواجهات البرمجية التي كان علينا التعامل معها.
 
-Writing tests for various scenarios became much simpler. We no longer had to assemble a series of stubs and spies for every test; we could take our set of units or modules (the fakes, our own "services") and assemble them very easily to exercise the various weird and wonderful scenarios we needed.
+صارت كتابة الاختبارات لسيناريوهات مختلفة أبسط بكثير. فلم نعد مضطرين إلى تجميع سلسلة من البدائل الثابتة والجواسيس لكل اختبار؛ بل صار بإمكاننا أخذ مجموعة وحداتنا أو وحداتنا النمطية (البدائل المزيفة، و"خدماتنا" الخاصة) وتجميعها بسهولة كبيرة لاختبار السيناريوهات الغريبة والعجيبة المختلفة التي نحتاج إليها.
 
-Every test with a stub, spy or mock has to _care_ about how the external system behaves, due to the ad-hoc setup. On the other hand, fakes can be treated like any other well-encapsulated unit of code, where the details are hidden away from you, and you can just use them.
+كل اختبار فيه بديل ثابت أو جاسوس أو بديل وهمي عليه أن _يهتم_ بكيفية تصرف النظام الخارجي، بسبب الإعداد المرتجل. أما البدائل المزيفة فيمكن معاملتها كأي وحدة شيفرة أخرى جيدة التغليف، تُخفى عنك تفاصيلها، وتستطيع استعمالها فحسب.
 
-We could run a very realistic version of the system locally, and as it was all in memory, it would start and run extremely quickly. This meant our test times were extremely fast, which felt very impressive, given how comprehensive the suite was.
+كنا نستطيع تشغيل نسخة واقعية جداً من النظام محلياً، ولأن كل شيء كان في الذاكرة، كان يبدأ ويعمل بسرعة كبيرة جداً. وهذا يعني أن أزمنة اختباراتنا كانت سريعة للغاية، وهذا بدا مذهلاً جداً بالنظر إلى مدى شمول مجموعة الاختبارات.
 
-If our acceptance tests failed in our staging environment, our first step was to run our contracts against the APIs we depended on. We often identified issues **before the other systems' developers did**.
+وإن فشلت اختبارات القبول في بيئة التجهيز، كانت خطوتنا الأولى تشغيل عقودنا على الواجهات البرمجية التي نعتمد عليها. وكثيراً ما حددنا المشكلات **قبل أن يحددها مطورو الأنظمة الأخرى**.
 
-### Off the happy path with decorators
+### خارج المسار الناجح باستعمال المزخرِفات
 
-For error scenarios, stubs are more convenient because you have direct access to *how* it behaves in the test, whereas fakes tend to be fairly black-box. This is a deliberate design choice, as we want the users of them (e.g. tests) not to be concerned with how they work; they should trust they do the right thing due to the backing of the contract.
+في سيناريوهات الأخطاء، البدائل الثابتة أكثر ملاءمة لأن لديك وصولاً مباشراً إلى *كيفية* تصرفها في الاختبار، بينما تميل البدائل المزيفة إلى أن تكون صندوقاً أسود إلى حد ما. وهذا قرار تصميمي مقصود، لأننا نريد ألا يهتم مستعملوها (كالاختبارات) بطريقة عملها؛ بل ينبغي أن يثقوا بأنها تفعل الصواب بفضل دعم العقد.
 
-How do we make the fakes fail, to exercise non-happy path concerns?
+كيف نجعل البدائل المزيفة تفشل، لاختبار الاهتمامات خارج المسار الناجح؟
 
-There are plenty of scenarios where, as a developer, you need to modify the behaviour of some code without changing its source. The **decorator pattern** is often a way to take a unit of code and add things like logging, telemetry, retries and more. We can use it to wrap our fakes to override behaviours when necessary.
+هناك سيناريوهات كثيرة تحتاج فيها كمطور إلى تعديل سلوك شيفرة ما دون تغيير مصدرها. و**نمط المزخرِف** كثيراً ما يكون وسيلة لأخذ وحدة شيفرة وإضافة أشياء مثل التسجيل والقياس عن بعد وإعادة المحاولة وغير ذلك. ويمكننا استعماله لتغليف بدائلنا المزيفة لتجاوز سلوكها عند الحاجة.
 
-Returning to the `API1` example, we can create a type that implements the needed interface and wraps around the fake.
+بالعودة إلى مثال `API1`، يمكننا إنشاء نوع (type) يحقق الواجهة المطلوبة ويغلّف البديل المزيف.
 
 ```go
 type API1Decorator struct {
@@ -458,7 +458,7 @@ func (a *API1Decorator) UpdateCustomer(ctx context.Context, id string, name stri
 }
 ```
 
-In our tests, we can then use the `XXXFunc` field to modify the behaviour of the test-double, just like you would with stubs, spies or mocks.
+يمكننا بعد ذلك في اختباراتنا استعمال الحقل `XXXFunc` لتعديل سلوك بديل الاختبار، تماماً كما تفعل مع البدائل الثابتة أو الجواسيس أو البدائل الوهمية.
 
 ```go
 failingAPI1 = NewAPI1Decorator(inmemory.NewAPI1())
@@ -467,48 +467,48 @@ failingAPI1.UpdateCustomerFunc = func(ctx context.Context, id string, name strin
 }
 ```
 
-However, this _is_ awkward and requires you to exercise some judgement. With this approach, you are losing the guarantees from your contract as you are introducing ad-hoc behaviour to your fake in tests.
+لكن هذا _محرج_ فعلاً، ويتطلب منك بعض التقدير. فبهذا الأسلوب تفقد الضمانات التي يوفرها العقد، لأنك تُدخل سلوكاً مرتجلاً إلى بديلك المزيف في الاختبارات.
 
-It would be best to examine your context, you may conclude it would be simpler to test specific unhappy paths at the unit test level using a stub.
+من الأفضل أن تفحص سياقك، فقد تستنتج أن من الأبسط اختبار مسارات فشل محددة على مستوى اختبار الوحدة باستعمال بديل ثابت.
 
-### Isn't this extra code waste?
+### أليست هذه الشيفرة الإضافية هدراً؟
 
-It is wishful thinking to believe we should only ever write code that serves customers and expect a system we can build on efficiently. People have a very warped opinion of what waste is (see my post: [The ghost of Henry Ford is ruining your development team](https://quii.dev/The_ghost_of_Henry_Ford_is_ruining_your_development_team)).
+من التمني الاعتقاد بأن علينا ألا نكتب إلا شيفرة تخدم العملاء، وأن نتوقع مع ذلك نظاماً نستطيع البناء عليه بكفاءة. فلدى الناس رأي مشوّه جداً عما يُعدّ هدراً (انظر تدوينتي: [شبح هنري فورد يدمّر فريق التطوير لديك](https://quii.dev/The_ghost_of_Henry_Ford_is_ruining_your_development_team)).
 
-Automated tests do not directly benefit customers, but we write them to make ourselves more efficient with our work (you don't write tests to chase coverage scores, right?).
+الاختبارات الآلية لا تفيد العملاء مباشرة، لكننا نكتبها لنجعل أنفسنا أكثر كفاءة في عملنا (فأنت لا تكتب الاختبارات لمطاردة نسب التغطية، أليس كذلك؟).
 
-Engineers must easily simulate scenarios (in a repeatable fashion, not ad-hocly) to debug, test, and fix issues. **In-memory fakes and good modular design allow us to isolate the relevant actors for a scenario to write fast, appropriate tests extremely cheaply**. This flexibility enables developers to iterate on a system far more manageably than a tangled mess, tested via expensive to-write and run black-box tests or, worse, manual testing on a shared environment.
+يجب أن يستطيع المهندسون محاكاة السيناريوهات بسهولة (بطريقة قابلة للتكرار، لا مرتجلة) لتنقيح المشكلات واختبارها وإصلاحها. **فالبدائل المزيفة في الذاكرة والتصميم المعياري الجيد يتيحان لنا عزل الأطراف ذات الصلة بسيناريو ما لكتابة اختبارات سريعة ومناسبة بتكلفة زهيدة للغاية**. وهذه المرونة تمكّن المطورين من التقدم في النظام بطريقة أسهل إدارة بكثير من فوضى متشابكة تُختبر عبر اختبارات صندوق أسود مكلفة الكتابة والتشغيل، أو ما هو أسوأ، عبر الاختبار اليدوي في بيئة مشتركة.
 
-This is an example of [simple vs. easy](https://www.youtube.com/watch?v=SxdOUGdseq4). Of course, fakes and contracts will result in more code being written than stubs and spies in the short term, but the result is a more straightforward and cheaper-to-maintain system in the longer run. Updating spies, stubs and mocks piecemeal is labour-intensive and error-prone, as you won't have corresponding contracts to check your test doubles behave correctly.
+هذا مثال على [البسيط مقابل السهل](https://www.youtube.com/watch?v=SxdOUGdseq4). فبالطبع ستؤدي البدائل المزيفة والعقود إلى كتابة شيفرة أكثر من البدائل الثابتة والجواسيس على المدى القصير، لكن النتيجة نظام أكثر وضوحاً وأرخص صيانة على المدى الطويل. فتحديث الجواسيس والبدائل الثابتة والبدائل الوهمية قطعة قطعة مجهد وعرضة للأخطاء، لأنه لن تكون لديك عقود مقابلة للتحقق من أن بدائل اختبارك تتصرف بشكل صحيح.
 
-This approach represents a _slightly_ increased upfront cost but with far lower costs once the contracts and fakes are set up. Fakes are more reusable and reliable than ad-hoc test doubles like stubs.
+يمثّل هذا الأسلوب تكلفة مبدئية أعلى _قليلاً_، لكن بتكاليف أقل بكثير بمجرد إعداد العقود والبدائل المزيفة. والبدائل المزيفة أكثر قابلية لإعادة الاستعمال وأكثر موثوقية من بدائل الاختبار المرتجلة مثل البدائل الثابتة.
 
-It feels *very* liberating and gives you **confidence** when using an existing, battle-tested fake rather than setting up a stub when writing a new test.
+يشعرك الأمر بتحرر *كبير* ويمنحك **الثقة** حين تستعمل بديلاً مزيفاً موجوداً ومجرّباً في المعارك، بدلاً من إعداد بديل ثابت عند كتابة اختبار جديد.
 
-### How does this fit into TDD?
+### كيف يتلاءم هذا مع `TDD`؟
 
-I wouldn't recommend _starting_ with a contract; that's bottom-up design, which, in general, I find I need to be more clever for, and there's a danger I'll overthink hypothetical requirements.
+لا أنصح بـ_البدء_ بعقد؛ فهذا تصميم من الأسفل إلى الأعلى، وأجد عموماً أنه يتطلب مني ذكاءً أكبر، وهناك خطر أن أُفرط في التفكير في متطلبات افتراضية.
 
-This technique is compatible with the "acceptance test driven approach" as discussed in earlier chapters, [The Why of TDD](https://quii.dev/The_Why_of_TDD) and in [GOOS](http://www.growing-object-oriented-software.com)
+يتوافق هذا الأسلوب مع "الأسلوب المقاد باختبارات القبول" كما نوقش في فصول سابقة، وفي [لماذا TDD](https://quii.dev/The_Why_of_TDD)، وفي كتاب [GOOS](http://www.growing-object-oriented-software.com)
 
-- Write a failing [acceptance test](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests).
-- Drive out enough code to make it pass, which usually will result in some "service layer" that'll depend on an API, a database, or whatever. Usually, you will have business logic code decoupled from external concerns (such as persistence, calling a database, etc.) via an interface.
-- Implement the interface with an in-memory fake at first to make all the tests pass locally and validate the initial design.
-- To push to production, you can't use in-memory! Encode the assumptions you made against the fake into a contract.
-- Use the contract to create the actual dependency, such as a MySQL version of a store.
-- Ship.
+- اكتب [اختبار قبول](https://quii.gitbook.io/learn-go-with-tests/testing-fundamentals/scaling-acceptance-tests) فاشلاً.
+- استخلص ما يكفي من الشيفرة لجعله ينجح، وهذا يؤدي عادةً إلى "طبقة خدمات" ما تعتمد على واجهة برمجية أو قاعدة بيانات أو أي شيء آخر. وعادةً ستكون لديك شيفرة منطق أعمال منفصلة عن الاهتمامات الخارجية (كالتخزين الدائم، واستدعاء قاعدة بيانات، وغير ذلك) عبر واجهة.
+- نفّذ الواجهة ببديل مزيف في الذاكرة أولاً لتجعل كل الاختبارات تنجح محلياً وتتحقق من التصميم الأولي.
+- للدفع إلى بيئة الإنتاج، لا يمكنك استعمال الذاكرة! رمّز الافتراضات التي وضعتها على البديل المزيف في عقد.
+- استعمل العقد لإنشاء التبعية الفعلية، كنسخة MySQL من مخزن ما.
+- أطلق.
 
-##  Where's the chapter on testing databases?
+##  أين الفصل الخاص باختبار قواعد البيانات؟
 
-This has been a common request that I have put off for over five years. The reason is this chapter will always be my answer.
+هذا طلب شائع أجّلته لأكثر من خمس سنوات. والسبب أن هذا الفصل سيكون دائماً جوابي.
 
-<u>Don't mock the database driver and spy on calls</u>. These tests are difficult to write and potentially bring very little value. You shouldn't assert whether a particular `SQL` statement was sent to the database, that is, implementation detail; **your tests should only care about behaviour**. Proving a specific SQL statement was compiled _does not_ prove your code _behaves_ how you need it to.
+<u>لا تحاكِ مشغّل قاعدة البيانات ولا تتجسس على الاستدعاءات</u>. فهذه الاختبارات صعبة الكتابة، وقد تجلب قيمة ضئيلة جداً. ولا ينبغي أن تؤكد ما إذا كانت تعليمة `SQL` معيّنة قد أُرسلت إلى قاعدة البيانات، فهذا تفصيل من تفاصيل التنفيذ؛ **ينبغي ألا تهتم اختباراتك إلا بالسلوك**. فإثبات أن تعليمة SQL معيّنة قد صُرّفت _لا_ يثبت أن شيفرتك _تتصرف_ كما تحتاج إليها.
 
-**Contracts** force you to decouple your tests from implementation details and focus on behaviour.
+**العقود** تجبرك على فصل اختباراتك عن تفاصيل التنفيذ والتركيز على السلوك.
 
-Follow the TDD approach described above to drive out your persistence needs.
+اتبع أسلوب `TDD` الموصوف أعلاه لاستخلاص احتياجاتك من التخزين الدائم.
 
-[The example repository](https://github.com/quii/go-fakes-and-contracts) has some examples of contracts, and how they're used to test in-memory and SQLite implementations of some persistence needs.
+في [المستودع النموذجي](https://github.com/quii/go-fakes-and-contracts) بعض الأمثلة على العقود، وكيف تُستعمل لاختبار تنفيذات في الذاكرة وبـSQLite لبعض احتياجات التخزين الدائم.
 
 ```go
 package inmemory_test
@@ -553,47 +553,47 @@ func TestSQLitePantry(t *testing.T) {
 }
 ```
 
-Whilst Docker et al. _do_ make running databases locally easier, they can still carry a significant performance overhead. Fakes with contracts allow you to use restrict the need to use the "heavier" dependency to only when you're validating the contract, and not needed for other kinds of tests.
+مع أن Docker وأمثاله _تجعل_ تشغيل قواعد البيانات محلياً أسهل، فما زالت قد تحمل عبئاً كبيراً على الأداء. والبدائل المزيفة مع العقود تتيح لك قصر الحاجة إلى استعمال التبعية "الأثقل" على وقت التحقق من العقد فقط، دون الحاجة إليها في الأنواع الأخرى من الاختبارات.
 
-Using in-memory fakes for acceptance and integration tests for *the rest* of the system provides a much faster and simpler developer experience.
+استعمال البدائل المزيفة في الذاكرة لاختبارات القبول والتكامل في *بقية* النظام يوفر تجربة مطورين أسرع وأبسط بكثير.
 
-## Wrapping up
+## الخلاصة
 
-It’s common for software projects to be organised with various teams building systems concurrently to try to reach a common goal.
+من الشائع أن تُنظَّم مشاريع البرمجيات بفرق مختلفة تبني أنظمة في الوقت نفسه محاولةً الوصول إلى هدف مشترك.
 
-This method of work requires a high degree of collaboration and communication. Many feel with an "API first" approach, we can define some API contracts (often on a wiki page!) and then work independently for six months and stick it all together. This rarely works well in practice because as we start writing code, we understand the domain and the problem better, which challenges our assumptions. We have to react to these changes in knowledge, which often require cross-team changes.
+تتطلب طريقة العمل هذه درجة عالية من التعاون والتواصل. ويرى كثيرون أننا بأسلوب "الواجهة البرمجية أولاً" نستطيع تعريف بعض عقود الواجهات البرمجية (كثيراً ما تكون في صفحة ويكي!) ثم نعمل باستقلالية لستة أشهر ونجمع كل شيء معاً. ونادراً ما ينجح هذا عملياً، لأننا حين نبدأ بكتابة الشيفرة نفهم المجال والمشكلة بشكل أفضل، وهذا يتحدى افتراضاتنا. وعلينا أن نتفاعل مع هذه التغيرات في المعرفة، وهي كثيراً ما تتطلب تغييرات عبر الفرق.
 
-So, if you're in this situation, you need to structure and test your system optimally to deal with unpredictable changes, both inside and outside of the system you're working on.
+لذا إن كنت في هذا الموقف، فعليك بناء نظامك واختباره بالطريقة المثلى للتعامل مع التغييرات غير المتوقعة، داخل النظام الذي تعمل عليه وخارجه.
 
-> “One of the defining characteristics of high-performing teams in software development is their ability to make progress and to change their minds, without asking for permission from any person or group outside of their small team.”
+> "من السمات المميزة للفرق عالية الأداء في تطوير البرمجيات قدرتها على التقدم وتغيير رأيها، دون طلب إذن من أي شخص أو مجموعة خارج فريقها الصغير."
 >
-> Modern Software Engineering
-> David Farley
+> كتاب Modern Software Engineering
+> ديفيد فارلي
 
-Don't rely on weekly meetings or Slack threads to flesh out changes. **Codify your assumptions in contracts**. Run those contracts against the systems in your build pipelines so you get fast feedback if new information comes to light. These contracts, in conjunction with **fakes,** mean you can work independently and manage external changes sustainably.
+لا تعتمد على الاجتماعات الأسبوعية أو سلاسل Slack لبلورة التغييرات. **رمّز افتراضاتك في عقود**. وشغّل تلك العقود على الأنظمة في خطوط البناء لديك، كي تحصل على تغذية راجعة سريعة إن ظهرت معلومات جديدة. وهذه العقود، بالاقتران مع **البدائل المزيفة**، تعني أنك تستطيع العمل باستقلالية وإدارة التغييرات الخارجية بشكل مستدام.
 
-### Your system as a collection of modules
+### نظامك كمجموعة من الوحدات النمطية
 
-Referring back to Farley's book, I'm describing the idea of **incrementalism**. Building software is a *constant learning exercise*. Understanding the requirements we must solve for a given system to deliver value up-front is unrealistic. So, we have to optimise our systems and ways of work to **gather feedback quickly and experiment**.
+بالعودة إلى كتاب فارلي، فأنا أصف فكرة **التدرجية**. فبناء البرمجيات *تمرين مستمر في التعلم*. وفهم المتطلبات التي علينا حلها لنظام معيّن لتقديم القيمة مسبقاً أمر غير واقعي. لذا علينا تحسين أنظمتنا وطرق عملنا لـ**جمع التغذية الراجعة بسرعة والتجريب**.
 
-You need a **modular system** to take advantage of the ideas discussed in this chapter. If you have modular code with reliable fakes, it allows you to experiment with your system via automated tests cheaply.
+تحتاج إلى **نظام معياري** للاستفادة من الأفكار التي نوقشت في هذا الفصل. فإن كانت لديك شيفرة معيارية مع بدائل مزيفة موثوقة، فهذا يتيح لك تجربة نظامك عبر الاختبارات الآلية بتكلفة زهيدة.
 
-We found it extremely easy to translate weird, hypothetical (but possible) scenarios into self-contained tests to help us understand the problem and drive out more robust software by composing our modules together and trying out different data in different order, with some APIs failing, etc.
+وجدنا أن من السهل للغاية ترجمة السيناريوهات الغريبة والافتراضية (لكن الممكنة) إلى اختبارات مكتفية بذاتها، تساعدنا على فهم المشكلة واستخلاص برمجيات أكثر متانة، بتركيب وحداتنا النمطية معاً وتجربة بيانات مختلفة بترتيب مختلف، مع فشل بعض الواجهات البرمجية، وغير ذلك.
 
-Well-defined, well-tested modules allow you to increment your system without changing and understanding _everything_ at once.
+الوحدات النمطية جيدة التعريف وجيدة الاختبار تتيح لك تطوير نظامك تدريجياً دون تغيير _كل شيء_ وفهمه دفعة واحدة.
 
-### But I'm working on something small with stable APIs
+### لكنني أعمل على شيء صغير بواجهات برمجية مستقرة
 
-Even with stable APIs, you do not want your developer experience, builds and so on to be tightly coupled to other people’s code. When you get this approach right, you end up with a composable set of modules to piece together your system for production, running locally and writing different kinds of tests with doubles you trust.
+حتى مع الواجهات البرمجية المستقرة، لا تريد أن تكون تجربة المطورين وعمليات البناء وما إلى ذلك مقترنة بشدة بشيفرة الآخرين. وحين تتقن هذا الأسلوب، ينتهي بك الأمر إلى مجموعة من الوحدات النمطية القابلة للتركيب لتجميع نظامك للإنتاج، والتشغيل المحلي، وكتابة أنواع مختلفة من الاختبارات ببدائل تثق بها.
 
-It allows you to isolate the parts of your system you're concerned about and write meaningful tests about the real problem you're trying to solve.
+وهذا يتيح لك عزل أجزاء النظام التي تهمك، وكتابة اختبارات ذات معنى عن المشكلة الحقيقية التي تحاول حلها.
 
-### Make your dependencies first-class citizens.
+### اجعل تبعياتك مواطنين من الدرجة الأولى.
 
-Of course, stubs and spies have their place. Simulating different behaviours of your dependencies ad-hocly in tests will always have its use, but be careful not to let the costs go out of control.
+بالطبع للبدائل الثابتة والجواسيس مكانها. فمحاكاة السلوكيات المختلفة لتبعياتك بشكل مرتجل في الاختبارات سيكون لها دائماً استعمالها، لكن احرص على ألا تخرج التكاليف عن السيطرة.
 
-So many times in my career, I have seen carefully written software written by talented devs fall apart due to integration problems. Integration is challenging for engineers _because_ it's hard to reproduce the exact behaviours of a system written by other engineers, who also change it simultaneously.
+رأيت مرات كثيرة في مسيرتي برمجيات مكتوبة بعناية من مطورين موهوبين تنهار بسبب مشكلات التكامل. فالتكامل صعب على المهندسين _لأن_ من الصعب إعادة إنتاج السلوك الدقيق لنظام كتبه مهندسون آخرون، يغيّرونه هم أيضاً في الوقت نفسه.
 
-Some teams rely on everyone deploying to a shared environment and testing there. The problem is this doesn't give you **isolated** feedback, and the **feedback is slow**. You still won't be able to construct different experiments with how your system works with other dependencies, at least not efficiently.
+تعتمد بعض الفرق على أن ينشر الجميع إلى بيئة مشتركة ويختبروا هناك. والمشكلة أن هذا لا يعطيك تغذية راجعة **معزولة**، و**التغذية الراجعة بطيئة**. ولن تستطيع مع ذلك بناء تجارب مختلفة لطريقة عمل نظامك مع التبعيات الأخرى، على الأقل ليس بكفاءة.
 
-**We have to tame this complexity by adopting more sophisticated ways of modelling our dependencies** to quickly test/experiment on our dev machines before it gets to production. Create realistic and manageable fakes of your dependencies, verified by contracts. Then, you can start writing more meaningful tests and experimenting with your system, making you more likely to succeed.
+**علينا ترويض هذا التعقيد بتبني طرق أكثر تطوراً لنمذجة تبعياتنا**، لنختبر ونجرّب بسرعة على أجهزة التطوير قبل أن يصل الأمر إلى الإنتاج. أنشئ بدائل مزيفة واقعية وسهلة الإدارة لتبعياتك، متحققاً منها بالعقود. وعندها يمكنك البدء بكتابة اختبارات أكثر معنى وتجربة نظامك، مما يجعلك أرجح نجاحاً.

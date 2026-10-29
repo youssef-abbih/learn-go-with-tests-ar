@@ -346,3 +346,15 @@
 | stakeholder | صاحب مصلحة | مقترح |  |
 | BDD | BDD | مقترح | التطوير المقاد بالسلوك |
 | collaborator | متعاون | مقترح |  |
+| contract | عقد | مقترح | الجمع: عقود |
+| subject under test | الشيء قيد الاختبار | مقترح | SUT |
+| persistence | التخزين الدائم | مقترح |  |
+| stateful | يحتفظ بالحالة | مقترح | stateless: لا يحتفظ بالحالة |
+| user story | قصة مستخدم | مقترح |  |
+| hexagonal architecture | المعمارية السداسية | مقترح |  |
+| rollback | التراجع | مقترح | آلية التراجع |
+| use case | حالة استعمال | مقترح |  |
+| telemetry | القياس عن بعد | مقترح |  |
+| developer experience | تجربة المطورين | مقترح | DX |
+| incrementalism | التدرجية | مقترح |  |
+| modular | معياري | مقترح | modular design: تصميم معياري |
