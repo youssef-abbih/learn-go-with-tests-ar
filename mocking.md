@@ -1,8 +1,8 @@
-# Mocking
+# المحاكاة
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/mocking)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/mocking)**
 
-You have been asked to write a program which counts down from 3, printing each number on a new line (with a 1-second pause) and when it reaches zero it will print "Go!" and exit.
+طُلب منك أن تكتب برنامجاً يعدّ تنازلياً من 3، ويطبع كل عدد في سطر جديد (مع توقف لمدة ثانية)، وحين يصل إلى الصفر يطبع "Go!" ثم ينتهي.
 
 ```
 3
@@ -11,7 +11,7 @@ You have been asked to write a program which counts down from 3, printing each n
 Go!
 ```
 
-We'll tackle this by writing a function called `Countdown` which we will then put inside a `main` program so it looks something like this:
+سنعالج هذا بكتابة دالة (function) باسم `Countdown` نضعها بعد ذلك داخل برنامج `main` بحيث يبدو شيئاً كهذا:
 
 ```go
 package main
@@ -21,21 +21,21 @@ func main() {
 }
 ```
 
-While this is a pretty trivial program, to test it fully we will need as always to take an _iterative_, _test-driven_ approach.
+مع أن هذا برنامج بسيط جداً، فإن اختباره بالكامل يتطلب منا كالعادة أن نتبع أسلوباً _تكرارياً_ _مقاداً بالاختبارات_.
 
-What do I mean by iterative? We make sure we take the smallest steps we can to have _useful software_.
+ماذا أعني بالتكراري؟ أعني أن نحرص على اتخاذ أصغر الخطوات الممكنة لنحصل على _برمجيات مفيدة_.
 
-We don't want to spend a long time with code that will theoretically work after some hacking because that's often how developers fall down rabbit holes. **It's an important skill to be able to slice up requirements as small as you can so you can have _working software_.**
+لا نريد أن نقضي وقتاً طويلاً مع شيفرة (code) ستعمل نظرياً بعد بعض العبث، لأن هذا كثيراً ما يجعل المطورين يقعون في متاهات لا نهاية لها. **من المهارات المهمة أن تستطيع تقطيع المتطلبات إلى أصغر أجزاء ممكنة كي تحصل على _برمجيات تعمل_.**
 
-Here's how we can divide our work up and iterate on it:
+إليك كيف يمكننا تقسيم عملنا والتقدم فيه خطوة خطوة:
 
-- Print 3
-- Print 3, 2, 1 and Go!
-- Wait a second between each line
+- اطبع 3
+- اطبع 3، 2، 1 ثم Go!
+- انتظر ثانية بين كل سطر والذي يليه
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Our software needs to print to stdout and we saw how we could use Dependency Injection (DI) to facilitate testing this in the DI section.
+يحتاج برنامجنا إلى الطباعة إلى `stdout`، وقد رأينا في قسم حقن التبعية كيف يمكننا استعمال حقن التبعية (dependency injection) لتسهيل اختبار ذلك.
 
 ```go
 func TestCountdown(t *testing.T) {
@@ -52,26 +52,26 @@ func TestCountdown(t *testing.T) {
 }
 ```
 
-If anything like `buffer` is unfamiliar to you, re-read [the previous section](dependency-injection.md).
+إن كان شيء مثل `buffer` غير مألوف لك، فأعد قراءة [القسم السابق](dependency-injection.md).
 
-We know we want our `Countdown` function to write data somewhere and `io.Writer` is the de-facto way of capturing that as an interface in Go.
+نعرف أننا نريد أن تكتب الدالة `Countdown` البيانات إلى مكان ما، و`io.Writer` هي الطريقة المعتمدة فعلياً للتعبير عن ذلك كواجهة (interface) في غو (Go).
 
-- In `main` we will send to `os.Stdout` so our users see the countdown printed to the terminal.
-- In test we will send to `bytes.Buffer` so our tests can capture what data is being generated.
+- في `main` سنرسل إلى `os.Stdout` كي يرى مستخدمونا العد التنازلي مطبوعاً في الطرفية.
+- وفي الاختبار سنرسل إلى `bytes.Buffer` كي تلتقط اختباراتنا البيانات التي تُولَّد.
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 `./countdown_test.go:11:2: undefined: Countdown`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Define `Countdown`
+عرّف `Countdown`
 
 ```go
 func Countdown() {}
 ```
 
-Try again
+حاول مجدداً
 
 ```
 ./countdown_test.go:11:11: too many arguments in call to Countdown
@@ -79,7 +79,7 @@ Try again
     want ()
 ```
 
-The compiler is telling you what your function signature could be, so update it.
+يخبرك المصرِّف (compiler) بما يمكن أن يكون عليه توقيع دالتك، فحدّثه.
 
 ```go
 func Countdown(out *bytes.Buffer) {}
@@ -87,9 +87,9 @@ func Countdown(out *bytes.Buffer) {}
 
 `countdown_test.go:17: got '' want '3'`
 
-Perfect!
+ممتاز!
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Countdown(out *bytes.Buffer) {
@@ -97,11 +97,11 @@ func Countdown(out *bytes.Buffer) {
 }
 ```
 
-We're using `fmt.Fprint` which takes an `io.Writer` (like `*bytes.Buffer`) and sends a `string` to it. The test should pass.
+نستعمل `fmt.Fprint` التي تأخذ `io.Writer` (مثل `*bytes.Buffer`) وترسل إليه قيمة `string`. ينبغي أن ينجح الاختبار (test).
 
-## Refactor
+## أعد الهيكلة
 
-We know that while `*bytes.Buffer` works, it would be better to use a general purpose interface instead.
+نعرف أنه مع أن `*bytes.Buffer` يعمل، فمن الأفضل استعمال واجهة متعددة الأغراض بدلاً منه.
 
 ```go
 func Countdown(out io.Writer) {
@@ -109,9 +109,9 @@ func Countdown(out io.Writer) {
 }
 ```
 
-Re-run the tests and they should be passing.
+أعد تشغيل الاختبارات، وينبغي أن تنجح.
 
-To complete matters, let's now wire up our function into a `main` so we have some working software to reassure ourselves we're making progress.
+ولإتمام الأمر، لنربط الآن دالتنا ببرنامج `main` كي يكون لدينا برنامج يعمل يطمئننا إلى أننا نحرز تقدماً.
 
 ```go
 package main
@@ -131,15 +131,15 @@ func main() {
 }
 ```
 
-Try and run the program and be amazed at your handywork.
+حاول تشغيل البرنامج واندهش من صنيع يديك.
 
-Yes this seems trivial but this approach is what I would recommend for any project. **Take a thin slice of functionality and make it work end-to-end, backed by tests.**
+نعم، يبدو هذا بسيطاً جداً، لكنه الأسلوب الذي أوصي به لأي مشروع. **خذ شريحة رقيقة من الوظائف واجعلها تعمل من البداية إلى النهاية، مدعومة بالاختبارات.**
 
-Next we can make it print 2,1 and then "Go!".
+بعد ذلك يمكننا أن نجعله يطبع 2، 1 ثم "Go!".
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-By investing in getting the overall plumbing working right, we can iterate on our solution safely and easily. We will no longer need to stop and re-run the program to be confident of it working as all the logic is tested.
+باستثمارنا في جعل التوصيلات الأساسية تعمل كما يجب، نستطيع تطوير حلنا خطوة خطوة بأمان وسهولة. ولن نحتاج بعد الآن إلى التوقف وإعادة تشغيل البرنامج لنثق بأنه يعمل، لأن كل المنطق مختبَر.
 
 ```go
 func TestCountdown(t *testing.T) {
@@ -159,9 +159,9 @@ Go!`
 }
 ```
 
-The backtick syntax is another way of creating a `string` but lets you include things like newlines, which is perfect for our test.
+صياغة العلامة المائلة الخلفية (backtick) طريقة أخرى لإنشاء قيمة `string`، لكنها تتيح لك تضمين أشياء مثل الأسطر الجديدة، وهذا مثالي لاختبارنا.
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 ```
 countdown_test.go:21: got '3' want '3
@@ -169,7 +169,7 @@ countdown_test.go:21: got '3' want '3
         1
         Go!'
 ```
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Countdown(out io.Writer) {
@@ -180,11 +180,11 @@ func Countdown(out io.Writer) {
 }
 ```
 
-Use a `for` loop counting backwards with `i--` and use `fmt.Fprintln` to print to `out` with our number followed by a newline character. Finally use `fmt.Fprint` to send "Go!" aftward.
+استعمل حلقة (loop) `for` تعدّ تنازلياً بـ`i--`، واستعمل `fmt.Fprintln` للطباعة إلى `out` بعددنا متبوعاً بمحرف سطر جديد. وأخيراً استعمل `fmt.Fprint` لإرسال "Go!" بعد ذلك.
 
-## Refactor
+## أعد الهيكلة
 
-There's not much to refactor other than refactoring some magic values into named constants.
+ليس هناك الكثير مما يمكن إعادة هيكلته، باستثناء تحويل بعض القيم السحرية إلى ثوابت مسماة.
 
 ```go
 const finalWord = "Go!"
@@ -198,9 +198,9 @@ func Countdown(out io.Writer) {
 }
 ```
 
-If you run the program now, you should get the desired output but we don't have it as a dramatic countdown with the 1-second pauses.
+إن شغّلت البرنامج الآن، فينبغي أن تحصل على المخرجات المطلوبة، لكنها ليست عداً تنازلياً مثيراً بتوقفات مدتها ثانية واحدة.
 
-Go lets you achieve this with `time.Sleep`. Try adding it in to our code.
+تتيح لك غو تحقيق ذلك بـ`time.Sleep`. جرّب إضافتها إلى شيفرتنا.
 
 ```go
 func Countdown(out io.Writer) {
@@ -213,24 +213,24 @@ func Countdown(out io.Writer) {
 }
 ```
 
-If you run the program it works as we want it to.
+إن شغّلت البرنامج، فإنه يعمل كما نريد.
 
-## Mocking
+## المحاكاة
 
-The tests still pass and the software works as intended but we have some problems:
-- Our tests take 3 seconds to run.
-    - Every forward-thinking post about software development emphasises the importance of quick feedback loops.
-    - **Slow tests ruin developer productivity**.
-    - Imagine if the requirements get more sophisticated warranting more tests. Are we happy with 3s added to the test run for every new test of `Countdown`?
-- We have not tested an important property of our function.
+ما زالت الاختبارات تنجح، والبرنامج يعمل كما هو مقصود، لكن لدينا بعض المشكلات:
+- تستغرق اختباراتنا 3 ثوانٍ لتعمل.
+    - كل مقال استشرافي عن تطوير البرمجيات يشدد على أهمية حلقات التغذية الراجعة السريعة.
+    - **الاختبارات البطيئة تدمّر إنتاجية المطورين**.
+    - تخيّل لو صارت المتطلبات أكثر تعقيداً واستدعت مزيداً من الاختبارات. هل نرضى بإضافة 3 ثوانٍ إلى تشغيل الاختبارات مع كل اختبار جديد لـ`Countdown`؟
+- لم نختبر خاصية مهمة في دالتنا.
 
-We have a dependency on `Sleep`ing which we need to extract so we can then control it in our tests.
+لدينا تبعية على النوم بـ`Sleep`، وعلينا استخراجها كي نتحكم بها في اختباراتنا.
 
-If we can _mock_ `time.Sleep` we can use _dependency injection_ to use it instead of a "real" `time.Sleep` and then we can **spy on the calls** to make assertions on them.
+إن استطعنا _محاكاة_ `time.Sleep` فيمكننا استعمال _حقن التبعية_ لاستعمال البديل بدلاً من `time.Sleep` "الحقيقية"، ثم نستطيع **التجسس على الاستدعاءات** لإجراء توكيدات (assertions) عليها.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Let's define our dependency as an interface. This lets us then use a _real_ Sleeper in `main` and a _spy sleeper_ in our tests. By using an interface our `Countdown` function is oblivious to this and adds some flexibility for the caller.
+لنعرّف تبعيتنا كواجهة. فهذا يتيح لنا استعمال `Sleeper` _حقيقي_ في `main`، و_جاسوس نوم_ في اختباراتنا. وباستعمال واجهة، لا تدري الدالة `Countdown` بأي من هذا، ويضيف ذلك بعض المرونة للمستدعي.
 
 ```go
 type Sleeper interface {
@@ -238,9 +238,9 @@ type Sleeper interface {
 }
 ```
 
-I made a design decision that our `Countdown` function would not be responsible for how long the sleep is. This simplifies our code a little for now at least and means a user of our function can configure that sleepiness however they like.
+اتخذت قراراً تصميمياً بألا تكون الدالة `Countdown` مسؤولة عن مدة النوم. وهذا يبسّط شيفرتنا قليلاً على الأقل في الوقت الحالي، ويعني أن مستخدم دالتنا يستطيع ضبط مدة النوم كما يشاء.
 
-Now we need to make a _mock_ of it for our tests to use.
+علينا الآن صنع _بديل وهمي_ (mock) منها لتستعمله اختباراتنا.
 
 ```go
 type SpySleeper struct {
@@ -252,9 +252,9 @@ func (s *SpySleeper) Sleep() {
 }
 ```
 
-_Spies_ are a kind of _mock_ which can record how a dependency is used. They can record the arguments sent in, how many times it has been called, etc. In our case, we're keeping track of how many times `Sleep()` is called so we can check it in our test.
+_الجواسيس_ (spies) نوع من _البدائل الوهمية_ يمكنه تسجيل طريقة استعمال التبعية. فيمكنها تسجيل الوسطاء الممررة، وعدد مرات الاستدعاء، وما إلى ذلك. وفي حالتنا نتتبّع عدد مرات استدعاء `Sleep()` كي نتحقق منه في اختبارنا.
 
-Update the tests to inject a dependency on our Spy and assert that the sleep has been called 3 times.
+حدّث الاختبارات لتحقن تبعية على الجاسوس، وتؤكد أن النوم قد استُدعي 3 مرات.
 
 ```go
 func TestCountdown(t *testing.T) {
@@ -279,7 +279,7 @@ Go!`
 }
 ```
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 ```
 too many arguments in call to Countdown
@@ -287,9 +287,9 @@ too many arguments in call to Countdown
     want (io.Writer)
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We need to update `Countdown` to accept our `Sleeper`
+علينا تحديث `Countdown` لتقبل `Sleeper`
 
 ```go
 func Countdown(out io.Writer, sleeper Sleeper) {
@@ -302,7 +302,7 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 }
 ```
 
-If you try again, your `main` will no longer compile for the same reason
+إن حاولت مجدداً، فلن يُصرَّف `main` للسبب نفسه
 
 ```
 ./main.go:26:11: not enough arguments in call to Countdown
@@ -310,7 +310,7 @@ If you try again, your `main` will no longer compile for the same reason
     want (io.Writer, Sleeper)
 ```
 
-Let's create a _real_ sleeper which implements the interface we need
+لننشئ نائماً _حقيقياً_ يحقق الواجهة التي نحتاج إليها
 
 ```go
 type DefaultSleeper struct{}
@@ -320,7 +320,7 @@ func (d *DefaultSleeper) Sleep() {
 }
 ```
 
-We can then use it in our real application like so
+ثم يمكننا استعماله في تطبيقنا الحقيقي هكذا
 
 ```go
 func main() {
@@ -329,9 +329,9 @@ func main() {
 }
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-The test is now compiling but not passing because we're still calling the `time.Sleep` rather than the injected in dependency. Let's fix that.
+صار الاختبار يُصرَّف الآن لكنه لا ينجح، لأننا ما زلنا نستدعي `time.Sleep` بدلاً من التبعية المحقونة. فلنصلح ذلك.
 
 ```go
 func Countdown(out io.Writer, sleeper Sleeper) {
@@ -344,24 +344,24 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 }
 ```
 
-The test should pass and no longer take 3 seconds.
+ينبغي أن ينجح الاختبار، ولن يستغرق 3 ثوانٍ بعد الآن.
 
-### Still some problems
+### ما زالت هناك بعض المشكلات
 
-There's still another important property we haven't tested.
+ما زالت هناك خاصية مهمة أخرى لم نختبرها.
 
-`Countdown` should sleep before each next print, e.g:
+ينبغي أن تنام `Countdown` قبل كل طباعة تالية، مثلاً:
 
 - `Print N`
 - `Sleep`
 - `Print N-1`
 - `Sleep`
 - `Print Go!`
-- etc
+- وهكذا
 
-Our latest change only asserts that it has slept 3 times, but those sleeps could occur out of sequence.
+تغييرنا الأخير لا يؤكد إلا أنها نامت 3 مرات، لكن هذه المرات قد تحدث بترتيب خاطئ.
 
-When writing tests if you're not confident that your tests are giving you sufficient confidence, just break it! (make sure you have committed your changes to source control first though). Change the code to the following
+عند كتابة الاختبارات، إن لم تكن واثقاً من أن اختباراتك تمنحك ثقة كافية، فأفسد الشيفرة فحسب! (لكن تأكد أولاً من أنك أودعت تغييراتك في نظام التحكم بالمصدر). غيّر الشيفرة إلى ما يلي
 
 ```go
 func Countdown(out io.Writer, sleeper Sleeper) {
@@ -377,11 +377,11 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 }
 ```
 
-If you run your tests they should still be passing even though the implementation is wrong.
+إن شغّلت اختباراتك، فينبغي أن تظل ناجحة مع أن التنفيذ خاطئ.
 
-Let's use spying again with a new test to check the order of operations is correct.
+لنستعمل التجسس مرة أخرى في اختبار جديد يتحقق من أن ترتيب العمليات صحيح.
 
-We have two different dependencies and we want to record all of their operations into one list. So we'll create _one spy for them both_.
+لدينا تبعيتان مختلفتان، ونريد تسجيل كل عملياتهما في قائمة واحدة. لذا سننشئ _جاسوساً واحداً لكلتيهما_.
 
 ```go
 type SpyCountdownOperations struct {
@@ -401,9 +401,9 @@ const write = "write"
 const sleep = "sleep"
 ```
 
-Our `SpyCountdownOperations` implements both `io.Writer` and `Sleeper`, recording every call into one slice. In this test we're only concerned about the order of operations, so just recording them as list of named operations is sufficient.
+يحقق `SpyCountdownOperations` كلاً من `io.Writer` و`Sleeper`، ويسجّل كل استدعاء في شريحة (slice) واحدة. ولا يهمنا في هذا الاختبار إلا ترتيب العمليات، لذا يكفي تسجيلها كقائمة من العمليات المسماة.
 
-We can now add a sub-test into our test suite which verifies our sleeps and prints operate in the order we hope
+يمكننا الآن إضافة اختبار فرعي (sub-test) إلى مجموعة اختباراتنا يتحقق من أن عمليات النوم والطباعة تجري بالترتيب الذي نرجوه
 
 ```go
 t.Run("sleep before every print", func(t *testing.T) {
@@ -426,9 +426,9 @@ t.Run("sleep before every print", func(t *testing.T) {
 })
 ```
 
-This test should now fail. Revert `Countdown` back to how it was to fix the test.
+ينبغي أن يفشل هذا الاختبار الآن. أعد `Countdown` إلى ما كانت عليه لإصلاح الاختبار.
 
-We now have two tests spying on the `Sleeper` so we can now refactor our test so one is testing what is being printed and the other one is ensuring we're sleeping between the prints. Finally, we can delete our first spy as it's not used anymore.
+لدينا الآن اختباران يتجسسان على `Sleeper`، لذا يمكننا إعادة هيكلة اختبارنا بحيث يختبر أحدهما ما يُطبع، ويضمن الآخر أننا ننام بين عمليات الطباعة. وأخيراً، يمكننا حذف جاسوسنا الأول لأنه لم يعد مستعملاً.
 
 ```go
 func TestCountdown(t *testing.T) {
@@ -469,15 +469,15 @@ Go!`
 }
 ```
 
-We now have our function and its 2 important properties properly tested.
+صارت دالتنا الآن وخاصيتاها المهمتان مختبَرة كما ينبغي.
 
-## Extending Sleeper to be configurable
+## توسيع `Sleeper` ليكون قابلاً للضبط
 
-A nice feature would be for the `Sleeper` to be configurable. This means that we can adjust the sleep time in our main program.
+من الميزات الجميلة أن يكون `Sleeper` قابلاً للضبط، أي أن نستطيع تعديل مدة النوم في برنامجنا الرئيسي.
 
-### Write the test first
+### اكتب الاختبار أولاً
 
-Let's first create a new type for `ConfigurableSleeper` that accepts what we need for configuration and testing.
+لننشئ أولاً نوعاً (type) جديداً هو `ConfigurableSleeper` يقبل ما نحتاج إليه للضبط والاختبار.
 
 ```go
 type ConfigurableSleeper struct {
@@ -486,7 +486,7 @@ type ConfigurableSleeper struct {
 }
 ```
 
-We are using `duration` to configure the time slept and `sleep` as a way to pass in a sleep function. The signature of `sleep` is the same as for `time.Sleep` allowing us to use `time.Sleep` in our real implementation and the following spy in our tests:
+نستعمل `duration` لضبط مدة النوم، و`sleep` كوسيلة لتمرير دالة نوم. وتوقيع `sleep` هو نفسه توقيع `time.Sleep`، مما يتيح لنا استعمال `time.Sleep` في تنفيذنا الحقيقي، والجاسوس التالي في اختباراتنا:
 
 ```go
 type SpyTime struct {
@@ -498,7 +498,7 @@ func (s *SpyTime) Sleep(duration time.Duration) {
 }
 ```
 
-With our spy in place, we can create a new test for the configurable sleeper.
+وبعد أن صار الجاسوس جاهزاً، يمكننا إنشاء اختبار جديد للنائم القابل للضبط.
 
 ```go
 func TestConfigurableSleeper(t *testing.T) {
@@ -514,31 +514,31 @@ func TestConfigurableSleeper(t *testing.T) {
 }
 ```
 
-There should be nothing new in this test and it is set up very similar to the previous mock tests.
+لا ينبغي أن يكون في هذا الاختبار أي جديد، فهو مُعدّ بطريقة تشبه كثيراً اختبارات البدائل الوهمية السابقة.
 
-### Try and run the test
+### حاول تشغيل الاختبار
 ```
 sleeper.Sleep undefined (type ConfigurableSleeper has no field or method Sleep, but does have sleep)
 
 ```
 
-You should see a very clear error message indicating that we do not have a `Sleep` method created on our `ConfigurableSleeper`.
+ينبغي أن ترى رسالة خطأ واضحة جداً تشير إلى أننا لم ننشئ الطريقة `Sleep` على `ConfigurableSleeper`.
 
-### Write the minimal amount of code for the test to run and check failing test output
+### اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 ```go
 func (c *ConfigurableSleeper) Sleep() {
 }
 ```
 
-With our new `Sleep` function implemented we have a failing test.
+بعد تنفيذ الدالة `Sleep` الجديدة، لدينا اختبار فاشل.
 
 ```
 countdown_test.go:56: should have slept for 5s but slept for 0s
 ```
 
-### Write enough code to make it pass
+### اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-All we need to do now is implement the `Sleep` function for `ConfigurableSleeper`.
+كل ما علينا فعله الآن هو تنفيذ الدالة `Sleep` للنوع `ConfigurableSleeper`.
 
 ```go
 func (c *ConfigurableSleeper) Sleep() {
@@ -546,11 +546,11 @@ func (c *ConfigurableSleeper) Sleep() {
 }
 ```
 
-With this change all of the tests should be passing again and you might wonder why all the hassle as the main program didn't change at all. Hopefully it becomes clear after the following section.
+بهذا التغيير ينبغي أن تنجح كل الاختبارات مجدداً، ولعلك تتساءل لماذا كل هذا العناء والبرنامج الرئيسي لم يتغير إطلاقاً. أرجو أن يتضح ذلك بعد القسم التالي.
 
-### Cleanup and refactor
+### التنظيف وإعادة الهيكلة
 
-The last thing we need to do is to actually use our `ConfigurableSleeper` in the main function.
+آخر ما علينا فعله هو استعمال `ConfigurableSleeper` فعلاً في الدالة الرئيسية.
 
 ```go
 func main() {
@@ -559,80 +559,80 @@ func main() {
 }
 ```
 
-If we run the tests and the program manually, we can see that all the behavior remains the same.
+إن شغّلنا الاختبارات والبرنامج يدوياً، فسنرى أن السلوك كله بقي كما هو.
 
-Since we are using the `ConfigurableSleeper`, it is now safe to delete the `DefaultSleeper` implementation. Wrapping up our program and having a more [generic](https://stackoverflow.com/questions/19291776/whats-the-difference-between-abstraction-and-generalization) Sleeper with arbitrary long countdowns.
+وبما أننا نستعمل `ConfigurableSleeper`، صار حذف التنفيذ `DefaultSleeper` آمناً الآن. وبهذا نختم برنامجنا وقد صار لدينا `Sleeper` [أعم](https://stackoverflow.com/questions/19291776/whats-the-difference-between-abstraction-and-generalization) يدعم عدّاً تنازلياً بأي طول.
 
-## But isn't mocking evil?
+## لكن أليست المحاكاة شريرة؟
 
-You may have heard mocking is evil. Just like anything in software development it can be used for evil, just like [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
+لعلك سمعت أن المحاكاة شريرة. وكأي شيء في تطوير البرمجيات، يمكن استعمالها للشر، تماماً مثل مبدأ [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 
-People normally get in to a bad state when they don't _listen to their tests_ and are _not respecting the refactoring stage_.
+يصل الناس عادةً إلى وضع سيئ حين لا _يصغون إلى اختباراتهم_ و_لا يحترمون مرحلة إعادة الهيكلة_.
 
-If your mocking code is becoming complicated or you are having to mock out lots of things to test something, you should _listen_ to that bad feeling and think about your code. Usually it is a sign of
+إن صارت شيفرة المحاكاة لديك معقدة، أو صرت مضطراً إلى محاكاة أشياء كثيرة لاختبار شيء ما، فعليك أن _تصغي_ إلى ذلك الشعور السيئ وتفكر في شيفرتك. فهو عادةً علامة على أن
 
-- The thing you are testing is having to do too many things (because it has too many dependencies to mock)
-  - Break the module apart so it does less
-- Its dependencies are too fine-grained
-  - Think about how you can consolidate some of these dependencies into one meaningful module
-- Your test is too concerned with implementation details
-  - Favour testing expected behaviour rather than the implementation
+- الشيء الذي تختبره مضطر إلى فعل أشياء كثيرة جداً (لأن لديه تبعيات كثيرة جداً تحتاج إلى محاكاة)
+  - قسّم الوحدة إلى أجزاء كي تفعل أقل
+- تبعياته مفرطة في الدقة
+  - فكّر في كيفية دمج بعض هذه التبعيات في وحدة واحدة ذات معنى
+- اختبارك مهتم أكثر من اللازم بتفاصيل التنفيذ
+  - فضّل اختبار السلوك المتوقع على اختبار التنفيذ
 
-Normally a lot of mocking points to _bad abstraction_ in your code.
+كثرة المحاكاة تشير عادةً إلى _تجريد سيئ_ في شيفرتك.
 
-**What people see here is a weakness in TDD but it is actually a strength**, more often than not poor test code is a result of bad design or put more nicely, well-designed code is easy to test.
+**ما يراه الناس هنا نقطة ضعف في `TDD` هو في الحقيقة نقطة قوة**، فشيفرة الاختبار الرديئة تنتج في أغلب الأحيان عن تصميم سيئ، أو بعبارة ألطف: الشيفرة جيدة التصميم سهلة الاختبار.
 
-### But mocks and tests are still making my life hard!
+### لكن البدائل الوهمية والاختبارات ما زالت تصعّب حياتي!
 
-Ever run into this situation?
+هل مررت بهذا الموقف من قبل؟
 
-- You want to do some refactoring
-- To do this you end up changing lots of tests
-- You question TDD and make a post on Medium titled "Mocking considered harmful"
+- تريد إجراء بعض إعادة الهيكلة (refactoring)
+- فينتهي بك الأمر إلى تغيير اختبارات كثيرة
+- فتشكك في `TDD` وتنشر مقالاً على Medium بعنوان "المحاكاة تُعدّ ضارة"
 
-This is usually a sign of you testing too much _implementation detail_. Try to make it so your tests are testing _useful behaviour_ unless the implementation is really important to how the system runs.
+هذا عادةً علامة على أنك تختبر كثيراً من _تفاصيل التنفيذ_. حاول أن تجعل اختباراتك تختبر _سلوكاً مفيداً_، ما لم يكن التنفيذ مهماً حقاً لطريقة عمل النظام.
 
-It is sometimes hard to know _what level_ to test exactly but here are some thought processes and rules I try to follow:
+من الصعب أحياناً أن تعرف _على أي مستوى_ تختبر بالضبط، لكن إليك بعض طرق التفكير والقواعد التي أحاول اتباعها:
 
-- **The definition of refactoring is that the code changes but the behaviour stays the same**. If you have decided to do some refactoring in theory you should be able to make the commit without any test changes. So when writing a test ask yourself
-  - Am I testing the behaviour I want, or the implementation details?
-  - If I were to refactor this code, would I have to make lots of changes to the tests?
-- Although Go lets you test private functions, I would avoid it as private functions are implementation detail to support public behaviour. Test the public behaviour. Sandi Metz describes private functions as being "less stable" and you don't want to couple your tests to them.
-- I feel like if a test is working with **more than 3 mocks then it is a red flag** - time for a rethink on the design
-- Use spies with caution. Spies let you see the insides of the algorithm you are writing which can be very useful but that means a tighter coupling between your test code and the implementation. **Be sure you actually care about these details if you're going to spy on them**
+- **تعريف إعادة الهيكلة أن الشيفرة تتغير لكن السلوك يبقى كما هو**. فإن قررت إجراء بعض إعادة الهيكلة، فينبغي نظرياً أن تستطيع إيداع التغييرات دون أي تغيير في الاختبارات. لذا حين تكتب اختباراً اسأل نفسك
+  - هل أختبر السلوك الذي أريده، أم تفاصيل التنفيذ؟
+  - لو أعدت هيكلة هذه الشيفرة، هل سأضطر إلى تغييرات كثيرة في الاختبارات؟
+- مع أن غو تتيح لك اختبار الدوال الخاصة، فإنني أتجنب ذلك، لأن الدوال الخاصة تفاصيل تنفيذ تدعم السلوك العام. اختبر السلوك العام. تصف ساندي ميتز الدوال الخاصة بأنها "أقل استقراراً"، ولا تريد أن تربط اختباراتك بها.
+- أشعر أنه إن كان اختبار ما يعمل مع **أكثر من 3 بدائل وهمية فهذه إشارة تحذير**، وقد حان وقت إعادة التفكير في التصميم
+- استعمل الجواسيس بحذر. فالجواسيس تتيح لك رؤية دواخل الخوارزمية التي تكتبها، وقد يكون هذا مفيداً جداً، لكنه يعني اقتراناً أشد بين شيفرة اختبارك والتنفيذ. **تأكد من أنك تهتم فعلاً بهذه التفاصيل إن كنت ستتجسس عليها**
 
-#### Can't I just use a mocking framework?
+#### ألا يمكنني استعمال إطار عمل للمحاكاة فحسب؟
 
-Mocking requires no magic and is relatively simple; using a framework can make mocking seem more complicated than it is. We don't use automocking in this chapter so that we get:
+المحاكاة لا تحتاج إلى سحر، وهي بسيطة نسبياً؛ أما استعمال إطار عمل فقد يجعلها تبدو أعقد مما هي عليه. لا نستعمل المحاكاة التلقائية في هذا الفصل كي نحصل على:
 
-- a better understanding of how to mock
-- practice implementing interfaces
+- فهم أفضل لكيفية المحاكاة
+- تمرّن على تحقيق الواجهات
 
-In collaborative projects there is value in auto-generating mocks. In a team, a mock generation tool codifies consistency around the test doubles. This will avoid inconsistently written test doubles which can translate to inconsistently written tests.
+في المشاريع التشاركية، لتوليد البدائل الوهمية تلقائياً قيمة. ففي الفريق، تفرض أداة توليد البدائل الوهمية الاتساق في بدائل الاختبار (test doubles)، وهذا يتجنب بدائل اختبار مكتوبة بشكل غير متسق، قد تتحول إلى اختبارات مكتوبة بشكل غير متسق.
 
-You should only use a mock generator that generates test doubles against an interface. Any tool that overly dictates how tests are written, or that use lots of 'magic', can get in the sea.
+ينبغي ألا تستعمل إلا مولّد بدائل وهمية يولّد بدائل الاختبار انطلاقاً من واجهة. وأي أداة تفرض كثيراً طريقة كتابة الاختبارات، أو تستعمل كثيراً من "السحر"، فلتذهب إلى الجحيم.
 
-## Wrapping up
+## الخلاصة
 
-### More on TDD approach
+### المزيد عن أسلوب `TDD`
 
-- When faced with less trivial examples, break the problem down into "thin vertical slices". Try to get to a point where you have _working software backed by tests_ as soon as you can, to avoid getting in rabbit holes and taking a "big bang" approach.
-- Once you have some working software it should be easier to _iterate with small steps_ until you arrive at the software you need.
+- حين تواجه أمثلة أقل بساطة، قسّم المشكلة إلى "شرائح عمودية رقيقة". وحاول أن تصل بأسرع ما يمكن إلى مرحلة يكون لديك فيها _برنامج يعمل مدعوم بالاختبارات_، لتتجنب المتاهات ونهج "الانفجار الكبير".
+- بمجرد أن يكون لديك برنامج يعمل، ينبغي أن يسهل _التقدم بخطوات صغيرة_ حتى تصل إلى البرنامج الذي تحتاج إليه.
 
-> "When to use iterative development? You should use iterative development only on projects that you want to succeed."
+> "متى تستعمل التطوير التكراري؟ ينبغي ألا تستعمل التطوير التكراري إلا في المشاريع التي تريد لها النجاح."
 
-Martin Fowler.
+مارتن فاولر.
 
-### Mocking
+### المحاكاة
 
-- **Without mocking important areas of your code will be untested**. In our case we would not be able to test that our code paused between each print but there are countless other examples. Calling a service that _can_ fail? Wanting to test your system in a particular state? It is very hard to test these scenarios without mocking.
-- Without mocks you may have to set up databases and other third parties things just to test simple business rules. You're likely to have slow tests, resulting in **slow feedback loops**.
-- By having to spin up a database or a webservice to test something you're likely to have **fragile tests** due to the unreliability of such services.
+- **دون المحاكاة ستبقى أجزاء مهمة من شيفرتك غير مختبَرة**. ففي حالتنا لم نكن لنستطيع اختبار أن شيفرتنا تتوقف بين كل طباعة والتي تليها، وهناك أمثلة أخرى لا تحصى. هل تستدعي خدمة _يمكن_ أن تفشل؟ هل تريد اختبار نظامك في حالة معيّنة؟ من الصعب جداً اختبار هذه السيناريوهات دون محاكاة.
+- دون البدائل الوهمية قد تضطر إلى إعداد قواعد بيانات وأشياء أخرى من أطراف ثالثة لمجرد اختبار قواعد عمل بسيطة. والأرجح أن تكون لديك اختبارات بطيئة، تؤدي إلى **حلقات تغذية راجعة بطيئة**.
+- وباضطرارك إلى تشغيل قاعدة بيانات أو خدمة ويب لاختبار شيء ما، فالأرجح أن تكون لديك **اختبارات هشة** بسبب عدم موثوقية مثل هذه الخدمات.
 
-Once a developer learns about mocking it becomes very easy to over-test every single facet of a system in terms of the _way it works_ rather than _what it does_. Always be mindful about **the value of your tests** and what impact they would have in future refactoring.
+بمجرد أن يتعلّم المطور المحاكاة، يصبح من السهل جداً أن يُفرط في اختبار كل جانب من جوانب النظام من حيث _طريقة عمله_ لا _ما يفعله_. كن دائماً منتبهاً لـ**قيمة اختباراتك** وللأثر الذي ستتركه في إعادة الهيكلة مستقبلاً.
 
-In this post about mocking we have only covered **Spies**, which are a kind of mock. Mocks are a type of "test double."
+لم نتناول في هذا المقال عن المحاكاة إلا **الجواسيس**، وهي نوع من البدائل الوهمية. والبدائل الوهمية نوع من "بدائل الاختبار".
 
-> [Test Double is a generic term for any case where you replace a production object for testing purposes.](https://martinfowler.com/bliki/TestDouble.html)
+> [بديل الاختبار مصطلح عام لأي حالة تستبدل فيها كائناً من شيفرة الإنتاج لأغراض الاختبار.](https://martinfowler.com/bliki/TestDouble.html)
 
-Under test doubles, there are various types like stubs, spies and indeed mocks! Check out [Martin Fowler's post](https://martinfowler.com/bliki/TestDouble.html) for more detail.
+وتحت بدائل الاختبار هناك أنواع مختلفة مثل البدائل الثابتة (stubs) والجواسيس، والبدائل الوهمية بالطبع! اطّلع على [مقال مارتن فاولر](https://martinfowler.com/bliki/TestDouble.html) لمزيد من التفاصيل.

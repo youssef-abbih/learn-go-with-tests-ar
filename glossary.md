@@ -188,3 +188,13 @@
 | connection pool | مجمّع اتصالات | مقترح |  |
 | service layer | طبقة خدمات | مقترح |  |
 | HTTP server | خادم HTTP | مقترح |  |
+| mocking | المحاكاة | مقترح | الفعل: حاكى؛ والبديل نفسه: بديل وهمي (انظر mock) |
+| end-to-end | من البداية إلى النهاية | مقترح |  |
+| vertical slice | شريحة عمودية | مقترح |  |
+| behaviour | سلوك | مقترح |  |
+| implementation detail | تفاصيل التنفيذ | مقترح |  |
+| coupling | اقتران | مقترح |  |
+| fragile test | اختبار هش | مقترح |  |
+| iterative development | التطوير التكراري | مقترح |  |
+| mock generator | مولّد بدائل وهمية | مقترح |  |
+| DRY | DRY | مقترح | مبدأ لا تكرر نفسك؛ يبقى بالإنجليزية |
