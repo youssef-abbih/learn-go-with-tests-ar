@@ -1,12 +1,12 @@
-# Integers
+# الأعداد الصحيحة
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/integers)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/integers)**
 
-Integers work as you would expect. Let's write an `Add` function to try things out. Create a test file called `adder_test.go` and write this code.
+تعمل الأعداد الصحيحة كما تتوقع. لنكتب دالة (function) باسم `Add` لنجرّب الأمور. أنشئ ملف اختبار باسم `adder_test.go` واكتب فيه هذه الشيفرة (code).
 
-**Note:** Go source files can only have one `package` per directory. Make sure that your files are organised into their own packages. [Here is a good explanation on this.](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
+**ملاحظة:** لا يمكن أن تحتوي ملفات غو (Go) المصدرية إلا على حزمة `package` واحدة في كل مجلد. تأكد من أن ملفاتك منظّمة في حزمها الخاصة. [إليك شرحاً جيداً لهذا.](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
 
-Your project directory might look something like this:
+قد يبدو مجلد مشروعك شيئاً كهذا:
 
 ```
 learnGoWithTests
@@ -22,7 +22,7 @@ learnGoWithTests
     |- README.md
 ```
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 package integers
@@ -39,21 +39,21 @@ func TestAdder(t *testing.T) {
 }
 ```
 
-You will notice that we're using `%d` as our format strings rather than `%q`. That's because we want it to print an integer rather than a string.
+ستلاحظ أننا نستعمل `%d` في سلاسل التنسيق بدلاً من `%q`، وذلك لأننا نريد طباعة عدد صحيح لا سلسلة نصية.
 
-Also note that we are no longer using the main package, instead we've defined a package named `integers`, as the name suggests this will group functions for working with integers such as `Add`.
+ولاحظ أيضاً أننا لم نعد نستعمل الحزمة (package) `main`، بل عرّفنا حزمة اسمها `integers`. وكما يوحي الاسم، ستجمع هذه الحزمة دوالاً للتعامل مع الأعداد الصحيحة مثل `Add`.
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
-Run the test `go test`
+شغّل الاختبار (test) بالأمر `go test`
 
-Inspect the compilation error
+وافحص خطأ التصريف (compilation)
 
 `./adder_test.go:6:9: undefined: Add`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Write enough code to satisfy the compiler _and that's all_ - remember we want to check that our tests fail for the correct reason.
+اكتب ما يكفي من الشيفرة لإرضاء المصرِّف (compiler) _ولا شيء أكثر_. تذكّر أننا نريد التحقق من أن اختباراتنا تفشل للسبب الصحيح.
 
 ```go
 package integers
@@ -63,17 +63,17 @@ func Add(x, y int) int {
 }
 ```
 
-Remember, when you have more than one argument of the same type \(in our case two integers\) rather than having `(x int, y int)` you can shorten it to `(x, y int)`.
+تذكّر أنه حين يكون لديك أكثر من وسيط (argument) من النوع نفسه (في حالتنا عددان صحيحان)، فبدلاً من كتابة `(x int, y int)` يمكنك اختصارها إلى `(x, y int)`.
 
-Now run the tests, and we should be happy that the test is correctly reporting what is wrong.
+شغّل الاختبارات الآن، وينبغي أن نرضى بأن الاختبار يبلّغ بشكل صحيح عن الخطأ.
 
 `adder_test.go:10: expected '4' but got '0'`
 
-If you have noticed we learnt about _named return value_ in the [last](hello-world.md#one...last...refactor?) section but aren't using the same here. It should generally be used when the meaning of the result isn't clear from context, in our case it's pretty much clear that `Add` function will add the parameters. You can refer [this](https://go.dev/wiki/CodeReviewComments#named-result-parameters) wiki for more details.
+لعلك لاحظت أننا تعلّمنا عن _القيمة المعادة المسماة_ في [القسم السابق](hello-world.md#one...last...refactor?) لكننا لا نستعملها هنا. ينبغي عموماً استعمالها حين لا يكون معنى النتيجة واضحاً من السياق، وفي حالتنا من الواضح تماماً أن الدالة `Add` ستجمع المعاملات (parameters). يمكنك الرجوع إلى [صفحة الويكي هذه](https://go.dev/wiki/CodeReviewComments#named-result-parameters) لمزيد من التفاصيل.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-In the strictest sense of TDD we should now write the _minimal amount of code to make the test pass_. A pedantic programmer may do this
+بأشد معاني التطوير المقاد بالاختبارات (test-driven development) صرامةً، ينبغي أن نكتب الآن _أقل قدر من الشيفرة لينجح الاختبار_. وقد يفعل مبرمج متحذلق هذا
 
 ```go
 func Add(x, y int) int {
@@ -81,13 +81,13 @@ func Add(x, y int) int {
 }
 ```
 
-Ah hah! Foiled again, TDD is a sham right?
+ها! أُحبطنا مجدداً، `TDD` خدعة، أليس كذلك؟
 
-We could write another test, with some different numbers to force that test to fail but that feels like [a game of cat and mouse](https://en.m.wikipedia.org/wiki/Cat_and_mouse).
+يمكننا أن نكتب اختباراً آخر بأعداد مختلفة لإجبار ذلك الاختبار على الفشل، لكن هذا يبدو مثل [لعبة القط والفأر](https://en.m.wikipedia.org/wiki/Cat_and_mouse).
 
-Once we're more familiar with Go's syntax I will introduce a technique called _"Property Based Testing"_, which would stop annoying developers and help you find bugs.
+حين نألف صياغة غو أكثر، سأقدّم أسلوباً يسمى _"الاختبارات القائمة على الخصائص (Property Based Testing)"_، وهو يوقف إزعاج المطورين ويساعدك على إيجاد الأخطاء البرمجية.
 
-For now, let's fix it properly
+أما الآن، فلنصلحها كما يجب
 
 ```go
 func Add(x, y int) int {
@@ -95,17 +95,17 @@ func Add(x, y int) int {
 }
 ```
 
-If you re-run the tests they should pass.
+إن أعدت تشغيل الاختبارات، فينبغي أن تنجح.
 
-## Refactor
+## أعد الهيكلة
 
-There's not a lot in the _actual_ code we can really improve on here.
+ليس في الشيفرة _الفعلية_ الكثير مما يمكننا تحسينه هنا.
 
-We explored earlier how by naming the return argument it appears in the documentation but also in most developer's text editors.
+رأينا سابقاً كيف أن تسمية القيمة المعادة تجعلها تظهر في التوثيق، وكذلك في محررات النصوص (text editors) لدى معظم المطورين.
 
-This is great because it aids the usability of code you are writing. It is preferable that a user can understand the usage of your code by just looking at the type signature and documentation.
+وهذا رائع لأنه يحسّن قابلية استعمال الشيفرة التي تكتبها. فالأفضل أن يستطيع المستخدم فهم طريقة استعمال شيفرتك بمجرد النظر إلى توقيع النوع والتوثيق.
 
-You can add documentation to functions with comments, and these will appear in Go Doc just like when you look at the standard library's documentation.
+يمكنك إضافة توثيق إلى الدوال بالتعليقات، وسيظهر في توثيق غو تماماً كما يظهر حين تطّلع على توثيق المكتبة القياسية.
 
 ```go
 // Add takes two integers and returns the sum of them.
@@ -114,15 +114,15 @@ func Add(x, y int) int {
 }
 ```
 
-### Testable Examples
+### أمثلة قابلة للاختبار
 
-If you really want to go the extra mile you can make [Testable Examples](https://blog.golang.org/examples). You will find many examples in the standard library documentation.
+إن أردت فعلاً أن تبذل جهداً إضافياً، فيمكنك كتابة [أمثلة قابلة للاختبار (Testable Examples)](https://blog.golang.org/examples). وستجد أمثلة كثيرة منها في توثيق المكتبة القياسية.
 
-Often code examples that can be found outside the codebase, such as a readme file, become out of date and incorrect compared to the actual code because they don't get checked.
+كثيراً ما تصبح أمثلة الشيفرة الموجودة خارج قاعدة الشيفرة، كتلك التي في ملف readme، قديمةً وغير صحيحة مقارنة بالشيفرة الفعلية، لأن أحداً لا يتحقق منها.
 
-Example functions are compiled whenever tests are executed. Because such examples are validated by the Go compiler, you can be confident your documentation's examples always reflect current code behavior.
+تُصرَّف دوال الأمثلة كلما نُفّذت الاختبارات. ولأن المصرِّف في غو يتحقق من هذه الأمثلة، يمكنك أن تثق بأن أمثلة توثيقك تعكس دائماً سلوك الشيفرة الحالي.
 
-Example functions begin with `Example` (much like test functions begin with `Test`), and reside in a package's `_test.go` files. Add the following `ExampleAdd` function to the `adder_test.go` file.
+تبدأ أسماء دوال الأمثلة بالكلمة `Example` (كما تبدأ دوال الاختبار بالكلمة `Test`)، وتوضع في ملفات `_test.go` الخاصة بالحزمة. أضف الدالة `ExampleAdd` التالية إلى الملف `adder_test.go`.
 
 ```go
 func ExampleAdd() {
@@ -132,11 +132,11 @@ func ExampleAdd() {
 }
 ```
 
-(If your editor doesn't automatically import packages for you, the compilation step will fail because you will be missing `import "fmt"` in `adder_test.go`. It is strongly recommended you research how to have these kind of errors fixed for you automatically in whatever editor you are using.)
+(إن لم يكن محررك يستورد الحزم تلقائياً، فستفشل خطوة التصريف لأن السطر `import "fmt"` سيكون ناقصاً في `adder_test.go`. ويُنصح بشدة أن تبحث عن كيفية جعل محررك، أياً كان، يصلح هذا النوع من الأخطاء تلقائياً.)
 
-Adding this code will cause the example to appear in your documentation, making your code even more accessible. If ever your code changes so that the example is no longer valid, your build will fail.
+إضافة هذه الشيفرة ستجعل المثال يظهر في توثيقك، فتصبح شيفرتك أسهل وصولاً. وإن تغيّرت شيفرتك يوماً بحيث لم يعد المثال صحيحاً، فسيفشل البناء.
 
-Running the package's test suite, we can see the example `ExampleAdd` function is executed with no further arrangement from us:
+عند تشغيل مجموعة اختبارات الحزمة، نرى أن دالة المثال `ExampleAdd` تُنفَّذ دون أي ترتيب إضافي منا:
 
 ```bash
 $ go test -v
@@ -146,17 +146,17 @@ $ go test -v
 --- PASS: ExampleAdd (0.00s)
 ```
 
-Notice the special format of the comment, `// Output: 6`. While the example will always be compiled, adding this comment means the example will also be executed. Go ahead and temporarily remove the comment `// Output: 6`, then run `go test`, and you will see `ExampleAdd` is no longer executed.
+لاحظ الصيغة الخاصة للتعليق `// Output: 6`. فمع أن المثال سيُصرَّف دائماً، فإن إضافة هذا التعليق تعني أن المثال سيُنفَّذ أيضاً. جرّب أن تحذف التعليق `// Output: 6` مؤقتاً، ثم شغّل `go test`، وسترى أن `ExampleAdd` لم تعد تُنفَّذ.
 
-To view example documentation, let's take a quick look at `pkgsite`. Navigate to your project's directory, then run `pkgsite -open .`, which should open a web browser for you, pointing to `http://localhost:8080`. Inside here you'll see a list of all of Go's Standard Library packages, plus Third Party packages you have installed, under which you should see your example documentation for `github.com/quii/learn-go-with-tests`. Follow that link, and then look under `Integers`, then under `func Add`, then expand `Example` and you should see the example you added for `sum := Add(1, 5)`.
+لعرض توثيق الأمثلة، لنلقِ نظرة سريعة على `pkgsite`. انتقل إلى مجلد مشروعك، ثم شغّل `pkgsite -open .`، وينبغي أن يفتح لك متصفح ويب يشير إلى `http://localhost:8080`. ستجد فيه قائمة بكل حزم المكتبة القياسية في غو، إضافة إلى حزم الأطراف الثالثة التي ثبّتّها، وتحتها ينبغي أن ترى توثيق مثالك ضمن `github.com/quii/learn-go-with-tests`. اتبع ذلك الرابط، ثم انظر تحت `Integers`، ثم تحت `func Add`، ثم وسّع `Example`، وينبغي أن ترى المثال الذي أضفته لـ`sum := Add(1, 5)`.
 
-If you publish your code with examples to a public URL, you can share the documentation of your code at [pkg.go.dev](https://pkg.go.dev/). For example, [here](https://pkg.go.dev/github.com/quii/learn-go-with-tests/integers/v2) is the finalised API for this chapter. This web interface allows you to search for documentation of standard library packages and third-party packages.
+إن نشرت شيفرتك مع أمثلتها على عنوان URL عام، فيمكنك مشاركة توثيق شيفرتك على [pkg.go.dev](https://pkg.go.dev/). فمثلاً، [هنا](https://pkg.go.dev/github.com/quii/learn-go-with-tests/integers/v2) تجد الواجهة البرمجية النهائية لهذا الفصل. وتتيح لك واجهة الويب هذه البحث في توثيق حزم المكتبة القياسية وحزم الأطراف الثالثة.
 
-## Wrapping up
+## الخلاصة
 
-What we have covered:
+ما تناولناه:
 
-*   More practice of the TDD workflow
-*   Integers, addition
-*   Writing better documentation so users of our code can understand its usage quickly
-*   Examples of how to use our code, which are checked as part of our tests
+*   مزيد من التمرّن على سير عمل `TDD`
+*   الأعداد الصحيحة، والجمع
+*   كتابة توثيق أفضل كي يفهم مستخدمو شيفرتنا طريقة استعمالها بسرعة
+*   أمثلة على كيفية استعمال شيفرتنا، يُتحقق منها كجزء من اختباراتنا
