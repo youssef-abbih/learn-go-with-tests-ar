@@ -1,34 +1,34 @@
-# Contributing
+# المساهمة
 
-Contributions are very welcome. I hope for this to become a great home for guides of how to learn Go by writing tests. Consider submitting a PR or creating an issue which you can do [here](https://github.com/quii/learn-go-with-tests/issues).
+المساهمات مرحب بها جداً. وآمل أن يصبح هذا المشروع موطناً رائعاً لأدلة تعلّم غو (Go) بكتابة الاختبارات. ففكّر في إرسال طلب سحب (pull request) أو فتح `issue`، ويمكنك فعل ذلك [هنا](https://github.com/quii/learn-go-with-tests/issues).
 
-## What we're looking for
+## ما نبحث عنه
 
-* Teaching Go features \(e.g things like `if`, `select`, structs, methods, etc\).
-* Showcase interesting functionality within the standard library. Show off how easy it is to TDD a HTTP server for instance.
-* Show how Go's tooling, like benchmarking, race detectors, etc can help you arrive at great software.
+* تعليم ميزات غو (مثل أشياء كـ`if` و`select` والبنى والطرق، وغيرها).
+* عرض وظائف مثيرة للاهتمام في المكتبة القياسية. كأن تبيّن مثلاً مدى سهولة بناء خادم HTTP بأسلوب `TDD`.
+* بيان كيف يمكن لأدوات غو، مثل قياس الأداء وكواشف التسابق وغيرها، أن تساعدك على الوصول إلى برمجيات رائعة.
 
-If you don't feel confident to submit your own guide, submitting an issue for something you want to learn is still a valuable contribution.
+وإن لم تشعر بالثقة لإرسال دليلك الخاص، فإن فتح `issue` لشيء تريد تعلّمه يظل مساهمة قيّمة.
 
-### ⚠️ Get feedback quickly for new content ⚠️
+### ⚠️ احصل على تغذية راجعة سريعة للمحتوى الجديد ⚠️
 
-- TDD teaches us to work iteratively and get feedback and I strongly suggest you do the same if you wish to contribute
-    - Open a PR with your first test and implementation, discuss your approach so I can offer feedback and course correct
-- This is of course open-source but I do have strong opinions on the content. The sooner you talk to me the better.
+- يعلّمنا `TDD` أن نعمل تكرارياً ونحصل على تغذية راجعة (feedback)، وأنصحك بشدة أن تفعل الشيء نفسه إن أردت المساهمة
+    - افتح طلب سحب فيه اختبارك الأول وتنفيذك، وناقش أسلوبك كي أستطيع تقديم ملاحظاتي وتصحيح المسار
+- هذا المشروع مفتوح المصدر بالطبع، لكن لدي آراء قوية بشأن المحتوى. وكلما تحدثت معي أبكر كان أفضل.
 
-## Style guide
+## دليل الأسلوب
 
-* Always be reinforcing the TDD cycle. Take a look at the [Chapter Template](template.md).
-* Emphasis on iterating over functionality driven by tests. The Hello, world example works well because we gradually make it more sophisticated and learning new techniques _driven_ by the tests. For example:
-  * `Hello()` &lt;- how to write functions, return types.
-  * `Hello(name string)` &lt;- arguments, constants.
-  * `Hello(name string)` &lt;- default to "world" using `if`.
-  * `Hello(name, language string)` &lt;- `switch`.
-* Try and minimise the surface area of required knowledge.
-  * Thinking of examples that showcase what you're trying to teach without confusing the reader with other features is important.
-  * For example you can learn about `struct`s without understanding pointers.
-  * Brevity is king.
-* Follow the [Code Review Comments style guide](https://go.dev/wiki/CodeReviewComments). It's important for a consistent style across all the sections.
-* Your section should have a runnable application at the end \(e.g `package main` with a `main` func\) so users can see it in action and play with it.
-* All tests should pass.
-* Run `./build.sh` before raising PR.
+* عزّز دائماً دورة `TDD`. وألقِ نظرة على [قالب الفصل](template.md).
+* التركيز على التقدم في الوظائف بقيادة الاختبارات. يعمل مثال "مرحباً يا عالم" جيداً لأننا نجعله أكثر تطوراً تدريجياً، ونتعلم أساليب جديدة _تقودها_ الاختبارات. على سبيل المثال:
+  * الدالة `Hello()` &lt;- كيفية كتابة الدوال وأنواع القيم المعادة.
+  * الدالة `Hello(name string)` &lt;- الوسطاء والثوابت.
+  * الدالة `Hello(name string)` &lt;- القيمة الافتراضية "world" باستعمال `if`.
+  * الدالة `Hello(name, language string)` &lt;- التعليمة `switch`.
+* حاول تقليل مساحة المعرفة المطلوبة إلى أدنى حد.
+  * التفكير في أمثلة تعرض ما تحاول تعليمه دون إرباك القارئ بميزات أخرى أمر مهم.
+  * فمثلاً يمكنك أن تتعلم البنى `struct` دون فهم المؤشرات.
+  * الإيجاز سيد الموقف.
+* اتبع [دليل أسلوب Code Review Comments](https://go.dev/wiki/CodeReviewComments). فمن المهم وجود أسلوب متسق في كل الأقسام.
+* ينبغي أن يحتوي قسمك على تطبيق قابل للتشغيل في نهايته (مثل `package main` مع دالة `main`)، كي يستطيع المستخدمون رؤيته عملياً والتجربة به.
+* يجب أن تنجح كل الاختبارات.
+* شغّل `./build.sh` قبل فتح طلب سحب.
