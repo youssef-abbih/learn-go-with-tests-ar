@@ -1,0 +1,23 @@
+---
+title: "تعلّم غو بالاختبارات"
+subtitle: "ترجمة عربية لكتاب Learn Go with Tests المفتوح المصدر"
+author:
+  - "Chris James"
+  - "الترجمة العربية: اسم المترجم"
+lang: ar
+dir: rtl
+page-progression-direction: rtl
+rights: "MIT License"
+
+# PDF (LuaLaTeX + babel)
+mainfont: Amiri
+monofont: DejaVu Sans Mono
+monofontoptions:
+  - Scale=0.85
+fontsize: 12pt
+geometry:
+  - margin=2.2cm
+linestretch: 1.4
+toc-title: "المحتويات"
+colorlinks: true
+---

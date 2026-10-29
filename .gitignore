@@ -13,4 +13,4 @@ game.db.json
 .DS_Store
 
 # vscode
-.vscode/
+.vscode/build/out/
