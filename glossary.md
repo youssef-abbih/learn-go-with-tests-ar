@@ -220,3 +220,10 @@
 | allocation | تخصيص الذاكرة | مقترح |  |
 | happy path | المسار الناجح | مقترح | sad path: المسار الفاشل |
 | resource | مورد | مقترح | الجمع: موارد |
+| recursion | العَوْدية | مقترح | recursively: بشكل عَوْدي |
+| metaprogramming | البرمجة الوصفية | مقترح |  |
+| alias | اسم بديل | مقترح |  |
+| polymorphic | متعدد الأشكال | مقترح |  |
+| nested | متداخل | مقترح |  |
+| indirection | عدم المباشرة | مقترح |  |
+| close over | يُغلِّف | مقترح | من closure: الدالة تغلّف المتغير |

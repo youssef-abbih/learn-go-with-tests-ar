@@ -1,43 +1,43 @@
-# Reflection
+# الانعكاس
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/reflection)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/reflection)**
 
-[From Twitter](https://twitter.com/peterbourgon/status/1011403901419937792?s=09)
+[من تويتر](https://twitter.com/peterbourgon/status/1011403901419937792?s=09)
 
-> golang challenge: write a function `walk(x interface{}, fn func(string))` which takes a struct `x` and calls `fn` for all strings fields found inside. difficulty level: recursively.
+> تحدٍّ في غو: اكتب دالة `walk(x interface{}, fn func(string))` تأخذ بنية `x` وتستدعي `fn` لكل حقول السلاسل النصية الموجودة فيها. مستوى الصعوبة: بشكل عَوْدي.
 
-To do this we will need to use _reflection_.
+لفعل هذا سنحتاج إلى استعمال _الانعكاس_ (reflection).
 
-> Reflection in computing is the ability of a program to examine its own structure, particularly through types; it's a form of metaprogramming. It's also a great source of confusion.
+> الانعكاس في الحوسبة هو قدرة البرنامج على فحص بنيته الذاتية، وخصوصاً عبر الأنواع؛ وهو شكل من أشكال البرمجة الوصفية. وهو أيضاً مصدر كبير للحيرة.
 
-From [The Go Blog: Reflection](https://blog.golang.org/laws-of-reflection)
+من [مدونة غو: الانعكاس](https://blog.golang.org/laws-of-reflection)
 
-## What is `interface{}`?
+## ما هو `interface{}`؟
 
-We have enjoyed the type-safety that Go has offered us in terms of functions that work with known types, such as `string`, `int` and our own types like `BankAccount`.
+استمتعنا بأمان الأنواع الذي توفره لنا غو (Go) فيما يخص الدوال (functions) التي تعمل مع أنواع معروفة، مثل `string` و`int` وأنواعنا الخاصة مثل `BankAccount`.
 
-This means that we get some documentation for free and the compiler will complain if you try and pass the wrong type to a function.
+وهذا يعني أننا نحصل على شيء من التوثيق مجاناً، وأن المصرِّف (compiler) سيعترض إن حاولت تمرير نوع خاطئ إلى دالة.
 
-You may come across scenarios though where you want to write a function where you don't know the type at compile time.
+لكنك قد تصادف سيناريوهات تريد فيها كتابة دالة لا تعرف فيها النوع (type) في وقت التصريف.
 
-Go lets us get around this with the type `interface{}` which you can think of as just _any_ type (in fact, in Go `any` is an [alias](https://cs.opensource.google/go/go/+/master:src/builtin/builtin.go;drc=master;l=95) for `interface{}`).
+تتيح لنا غو تجاوز ذلك بالنوع `interface{}`، الذي يمكنك أن تعدّه _أي_ نوع (في الحقيقة، `any` في غو [اسم بديل](https://cs.opensource.google/go/go/+/master:src/builtin/builtin.go;drc=master;l=95) لـ`interface{}`).
 
-So `walk(x interface{}, fn func(string))` will accept any value for `x`.
+لذا فإن `walk(x interface{}, fn func(string))` ستقبل أي قيمة للمعامل `x`.
 
-### So why not use `interface{}` for everything and have really flexible functions?
+### فلماذا لا نستعمل `interface{}` لكل شيء ونحصل على دوال مرنة جداً؟
 
-- As a user of a function that takes `interface{}` you lose type safety. What if you meant to pass `Herd.species` of type `string` into a function but instead did `Herd.count` which is an `int`? The compiler won't be able to inform you of your mistake. You also have no idea _what_ you're allowed to pass to a function. Knowing that a function takes a `UserService` for instance is very useful.
-- As a writer of such a function, you have to be able to inspect _anything_ that has been passed to you and try and figure out what the type is and what you can do with it. This is done using _reflection_. This can be quite clumsy and difficult to read and is generally less performant (as you have to do checks at runtime).
+- بصفتك مستخدماً لدالة تأخذ `interface{}`، فإنك تفقد أمان الأنواع. ماذا لو كنت تقصد تمرير `Herd.species` من النوع `string` إلى دالة، لكنك مررت `Herd.count` وهو `int`؟ لن يستطيع المصرِّف إبلاغك بخطئك. كما أنك لا تعرف _ما_ يُسمح لك بتمريره إلى الدالة. فمعرفة أن دالة ما تأخذ `UserService` مثلاً أمر مفيد جداً.
+- وبصفتك كاتباً لدالة كهذه، فعليك أن تستطيع فحص _أي شيء_ يُمرَّر إليك، ومحاولة معرفة نوعه وما يمكنك فعله به. ويتم ذلك باستعمال _الانعكاس_. وقد يكون هذا مرتبكاً وصعب القراءة، وهو عموماً أقل كفاءة في الأداء (لأن عليك إجراء الفحوص في وقت التشغيل).
 
-In short only use reflection if you really need to.
+باختصار، لا تستعمل الانعكاس إلا إن كنت تحتاج إليه حقاً.
 
-If you want polymorphic functions, consider if you could design it around an interface (not `interface{}`, confusingly) so that users can use your function with multiple types if they implement whatever methods you need for your function to work.
+إن أردت دوال متعددة الأشكال، ففكّر فيما إذا كان بإمكانك تصميمها حول واجهة (interface) (لا `interface{}`، وهذا محيّر)، كي يستطيع المستخدمون استعمال دالتك مع أنواع متعددة إن حققت الطرق (methods) التي تحتاج إليها دالتك لتعمل.
 
-Our function will need to be able to work with lots of different things. As always we'll take an iterative approach, writing tests for each new thing we want to support and refactoring along the way until we're done.
+ستحتاج دالتنا إلى أن تعمل مع أشياء كثيرة مختلفة. وكالعادة سنتبع أسلوباً تكرارياً، فنكتب اختبارات لكل شيء جديد نريد دعمه، ونعيد الهيكلة على طول الطريق حتى ننتهي.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We'll want to call our function with a struct that has a string field in it (`x`). Then we can spy on the function (`fn`) passed in to see if it is called.
+سنريد استدعاء دالتنا ببنية (struct) فيها حقل من نوع السلسلة النصية (`x`). ثم يمكننا التجسس على الدالة الممررة (`fn`) لنرى إن كانت تُستدعى.
 
 ```go
 func TestWalk(t *testing.T) {
@@ -59,19 +59,19 @@ func TestWalk(t *testing.T) {
 }
 ```
 
-- We want to store a slice of strings (`got`) which stores which strings were passed into `fn` by `walk`. Often in previous chapters, we have made dedicated types for this to spy on function/method invocations but in this case, we can just pass in an anonymous function for `fn` that closes over `got`.
-- We use an anonymous `struct` with a `Name` field of type string to go for the simplest "happy" path.
-- Finally, call `walk` with `x` and the spy and for now just check the length of `got`, we'll be more specific with our assertions once we've got something very basic working.
+- نريد تخزين شريحة (slice) من السلاسل النصية (`got`) تحفظ السلاسل التي مررتها `walk` إلى `fn`. كثيراً ما أنشأنا في الفصول السابقة أنواعاً مخصصة لهذا الغرض للتجسس على استدعاءات الدوال والطرق، لكننا في هذه الحالة نستطيع ببساطة تمرير دالة مجهولة للمعامل `fn` تُغلِّف `got`.
+- نستعمل `struct` مجهولة فيها حقل `Name` من نوع السلسلة النصية لنسلك أبسط مسار "ناجح".
+- وأخيراً، نستدعي `walk` مع `x` والجاسوس، ونكتفي الآن بالتحقق من طول `got`. وسنجعل توكيداتنا أكثر تحديداً بعد أن نجعل شيئاً بسيطاً جداً يعمل.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./reflection_test.go:21:2: undefined: walk
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We need to define `walk`
+علينا تعريف `walk`
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -79,7 +79,7 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-Try and run the test again
+حاول تشغيل الاختبار مجدداً
 
 ```
 === RUN   TestWalk
@@ -88,9 +88,9 @@ Try and run the test again
 FAIL
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We can call the spy with any string to make this pass.
+يمكننا استدعاء الجاسوس بأي سلسلة نصية لجعل هذا ينجح.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -98,11 +98,11 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-The test should now be passing. The next thing we'll need to do is make a more specific assertion on what our `fn` is being called with.
+ينبغي أن ينجح الاختبار (test) الآن. والخطوة التالية هي إجراء توكيد (assertion) أكثر تحديداً على ما تُستدعى به `fn`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add the following to the existing test to check the string passed to `fn` is correct
+أضف ما يلي إلى الاختبار الحالي للتحقق من أن السلسلة النصية الممررة إلى `fn` صحيحة
 
 ```go
 if got[0] != expected {
@@ -110,7 +110,7 @@ if got[0] != expected {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk
@@ -119,7 +119,7 @@ if got[0] != expected {
 FAIL
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -129,24 +129,24 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-This code is _very unsafe and very naive_, but remember: our goal when we are in "red" (the tests failing) is to write the smallest amount of code possible. We then write more tests to address our concerns.
+هذه الشيفرة (code) _غير آمنة إطلاقاً وساذجة جداً_، لكن تذكّر أن هدفنا حين نكون في مرحلة "الأحمر" (حين تفشل الاختبارات) هو كتابة أقل قدر ممكن من الشيفرة. ثم نكتب مزيداً من الاختبارات لمعالجة مخاوفنا.
 
-We need to use reflection to have a look at `x` and try and look at its properties.
+علينا استعمال الانعكاس لإلقاء نظرة على `x` ومحاولة فحص خصائصه.
 
-The [reflect package](https://pkg.go.dev/reflect) has a function `ValueOf` which returns us a `Value` of a given variable. This has ways for us to inspect a value, including its fields which we use on the next line.
+في [الحزمة reflect](https://pkg.go.dev/reflect) دالة اسمها `ValueOf` تعيد لنا قيمة `Value` لمتغير معيّن. ولهذه القيمة طرق تتيح لنا فحصها، بما في ذلك حقولها التي نستعملها في السطر التالي.
 
-We then make some very optimistic assumptions about the value passed in:
+ثم نضع بعض الافتراضات المتفائلة جداً حول القيمة الممررة:
 
-- We look at the first and only field. However, there may be no fields at all, which would cause a panic.
-- We then call `String()`, which returns the underlying value as a string. However, this would be wrong if the field was something other than a string.
+- ننظر إلى الحقل الأول والوحيد. لكن قد لا تكون هناك حقول إطلاقاً، وهذا سيُطلق الذعر.
+- ثم نستدعي `String()` التي تعيد القيمة الأساسية كسلسلة نصية. لكن هذا سيكون خاطئاً إن كان الحقل شيئاً آخر غير السلسلة النصية.
 
-## Refactor
+## أعد الهيكلة
 
-Our code is passing for the simple case but we know our code has a lot of shortcomings.
+تنجح شيفرتنا في الحالة البسيطة، لكننا نعرف أن فيها كثيراً من أوجه القصور.
 
-We're going to be writing a number of tests where we pass in different values and checking the array of strings that `fn` was called with.
+سنكتب عدداً من الاختبارات نمرر فيها قيماً مختلفة، ونتحقق من مصفوفة السلاسل النصية التي استُدعيت بها `fn`.
 
-We should refactor our test into a table based test to make this easier to continue testing new scenarios.
+ينبغي أن نعيد هيكلة اختبارنا إلى اختبار جدولي، ليسهل مواصلة اختبار سيناريوهات جديدة.
 
 ```go
 func TestWalk(t *testing.T) {
@@ -180,11 +180,11 @@ func TestWalk(t *testing.T) {
 }
 ```
 
-Now we can easily add a scenario to see what happens if we have more than one string field.
+يمكننا الآن بسهولة إضافة سيناريو لنرى ما يحدث إن كان لدينا أكثر من حقل من نوع السلسلة النصية.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add the following scenario to the `cases`.
+أضف السيناريو التالي إلى `cases`.
 
 ```
 {
@@ -197,7 +197,7 @@ Add the following scenario to the `cases`.
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/struct_with_two_string_fields
@@ -205,7 +205,7 @@ Add the following scenario to the `cases`.
         reflection_test.go:40: got [Chris], want [Chris London]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -218,17 +218,17 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-`val` has a method `NumField` which returns the number of fields in the value. This lets us iterate over the fields and call `fn` which passes our test.
+للقيمة `val` طريقة اسمها `NumField` تعيد عدد الحقول في القيمة. وهذا يتيح لنا المرور على الحقول واستدعاء `fn`، فينجح اختبارنا.
 
-## Refactor
+## أعد الهيكلة
 
-It doesn't look like there's any obvious refactors here that would improve the code so let's press on.
+لا يبدو أن هناك إعادة هيكلة واضحة هنا تحسّن الشيفرة، فلنمضِ قدماً.
 
-The next shortcoming in `walk` is that it assumes every field is a `string`. Let's write a test for this scenario.
+القصور التالي في `walk` أنها تفترض أن كل حقل من النوع `string`. لنكتب اختباراً لهذا السيناريو.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add the following case
+أضف الحالة التالية
 
 ```
 {
@@ -241,7 +241,7 @@ Add the following case
 },
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/struct_with_non_string_field
@@ -249,9 +249,9 @@ Add the following case
         reflection_test.go:46: got [Chris <int Value>], want [Chris]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We need to check that the type of the field is a `string`.
+علينا التحقق من أن نوع الحقل هو `string`.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -267,17 +267,17 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-We can do that by checking its [`Kind`](https://pkg.go.dev/reflect#Kind).
+ويمكننا فعل ذلك بالتحقق من [`Kind`](https://pkg.go.dev/reflect#Kind) الخاص به.
 
-## Refactor
+## أعد الهيكلة
 
-Again it looks like the code is reasonable enough for now.
+مرة أخرى، تبدو الشيفرة معقولة بما يكفي في الوقت الحالي.
 
-The next scenario is what if it isn't a "flat" `struct`? In other words, what happens if we have a `struct` with some nested fields?
+السيناريو التالي: ماذا لو لم تكن `struct` "مسطحة"؟ بعبارة أخرى، ماذا يحدث إن كانت لدينا `struct` فيها حقول متداخلة؟
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We have been using the anonymous struct syntax to declare types ad-hocly for our tests so we could continue to do that like so
+كنا نستعمل صياغة البنى المجهولة للتصريح عن أنواع مرتجلة لاختباراتنا، لذا يمكننا مواصلة ذلك هكذا
 
 ```
 {
@@ -296,11 +296,11 @@ We have been using the anonymous struct syntax to declare types ad-hocly for our
 },
 ```
 
-But we can see that when you get inner anonymous structs the syntax gets a little messy. [There is a proposal to make it so the syntax would be nicer](https://github.com/golang/go/issues/12854).
+لكن يمكننا أن نرى أن الصياغة تصبح فوضوية قليلاً حين تكون هناك بنى مجهولة داخلية. [وهناك اقتراح لجعل الصياغة أجمل](https://github.com/golang/go/issues/12854).
 
-Let's just refactor this by making a known type for this scenario and reference it in the test. There is a little indirection in that some of the code for our test is outside the test but readers should be able to infer the structure of the `struct` by looking at the initialisation.
+لنُعِد هيكلة هذا ببساطة بإنشاء نوع معروف لهذا السيناريو والإشارة إليه في الاختبار. في هذا شيء من عدم المباشرة، إذ إن بعض شيفرة اختبارنا خارج الاختبار، لكن ينبغي أن يستطيع القراء استنتاج شكل `struct` بالنظر إلى تهيئتها.
 
-Add the following type declarations somewhere in your test file
+أضف تصريحات الأنواع التالية في مكان ما من ملف اختبارك
 
 ```go
 type Person struct {
@@ -314,7 +314,7 @@ type Profile struct {
 }
 ```
 
-Now we can add this to our cases which reads a lot clearer than before
+يمكننا الآن إضافة هذا إلى حالاتنا، وهو أوضح بكثير من قبل
 
 ```
 {
@@ -327,7 +327,7 @@ Now we can add this to our cases which reads a lot clearer than before
 },
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/Nested_fields
@@ -335,9 +335,9 @@ Now we can add this to our cases which reads a lot clearer than before
         reflection_test.go:54: got [Chris], want [Chris London]
 ```
 
-The problem is we're only iterating on the fields on the first level of the type's hierarchy.
+المشكلة أننا لا نمر إلا على حقول المستوى الأول من تسلسل النوع الهرمي.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -357,9 +357,9 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-The solution is quite simple, we again inspect its `Kind` and if it happens to be a `struct` we just call `walk` again on that inner `struct`.
+الحل بسيط جداً: نفحص `Kind` مرة أخرى، وإن كانت `struct` فإننا نستدعي `walk` مجدداً على تلك `struct` الداخلية.
 
-## Refactor
+## أعد الهيكلة
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -378,13 +378,13 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-When you're doing a comparison on the same value more than once _generally_ refactoring into a `switch` will improve readability and make your code easier to extend.
+حين تجري مقارنة على القيمة نفسها أكثر من مرة، فإن إعادة الهيكلة إلى `switch` تحسّن _عموماً_ قابلية القراءة وتجعل شيفرتك أسهل في التوسيع.
 
-What if the value of the struct passed in is a pointer?
+ماذا لو كانت قيمة البنية الممررة مؤشراً (pointer)؟
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add this case
+أضف هذه الحالة
 
 ```
 {
@@ -397,7 +397,7 @@ Add this case
 },
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/pointers_to_things
@@ -405,7 +405,7 @@ panic: reflect: call of reflect.Value.NumField on ptr Value [recovered]
     panic: reflect: call of reflect.Value.NumField on ptr Value
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -428,11 +428,11 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-You can't use `NumField` on a pointer `Value`, we need to extract the underlying value before we can do that by using `Elem()`.
+لا يمكنك استعمال `NumField` على قيمة `Value` هي مؤشر، بل علينا أولاً استخراج القيمة الأساسية باستعمال `Elem()`.
 
-## Refactor
+## أعد الهيكلة
 
-Let's encapsulate the responsibility of extracting the `reflect.Value` from a given `interface{}` into a function.
+لنغلّف مسؤولية استخراج `reflect.Value` من قيمة `interface{}` معيّنة في دالة.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -461,14 +461,14 @@ func getValue(x interface{}) reflect.Value {
 }
 ```
 
-This actually adds _more_ code but I feel the abstraction level is right.
+هذا يضيف في الحقيقة شيفرة _أكثر_، لكنني أشعر أن مستوى التجريد صحيح.
 
-- Get the `reflect.Value` of `x` so I can inspect it, I don't care how.
-- Iterate over the fields, doing whatever needs to be done depending on its type.
+- احصل على `reflect.Value` للقيمة `x` كي أستطيع فحصها، ولا يهمني كيف.
+- مُرّ على الحقول، وافعل ما يلزم بحسب نوع كل منها.
 
-Next, we need to cover slices.
+بعد ذلك علينا تغطية الشرائح.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```
 {
@@ -481,7 +481,7 @@ Next, we need to cover slices.
 },
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/slices
@@ -489,11 +489,11 @@ panic: reflect: call of reflect.Value.NumField on slice Value [recovered]
     panic: reflect: call of reflect.Value.NumField on slice Value
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-This is similar to the pointer scenario before, we are trying to call `NumField` on our `reflect.Value` but it doesn't have one as it's not a struct.
+هذا يشبه سيناريو المؤشر السابق، فنحن نحاول استدعاء `NumField` على `reflect.Value` لكنها لا تملكها لأنها ليست بنية.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -519,18 +519,18 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-This works but it's yucky. No worries, we have working code backed by tests so we are free to tinker all we like.
+هذا يعمل لكنه مقزز. لا بأس، فلدينا شيفرة تعمل ومدعومة بالاختبارات، لذا نحن أحرار في العبث بها كما نشاء.
 
-If you think a little abstractly, we want to call `walk` on either
+إن فكرت بشيء من التجريد، فإننا نريد استدعاء `walk` إما على
 
-- Each field in a struct
-- Each _thing_ in a slice
+- كل حقل في بنية
+- كل _شيء_ في شريحة
 
-Our code at the moment does this but doesn't reflect it very well. We just have a check at the start to see if it's a slice (with a `return` to stop the rest of the code executing) and if it's not we just assume it's a struct.
+شيفرتنا حالياً تفعل هذا، لكنها لا تعكسه جيداً. فلدينا فقط فحص في البداية لنرى إن كانت شريحة (مع `return` لإيقاف تنفيذ بقية الشيفرة)، وإن لم تكن نفترض أنها بنية.
 
-Let's rework the code so instead we check the type _first_ and then do our work.
+لنُعِد صياغة الشيفرة بحيث نتحقق من النوع _أولاً_ ثم نؤدي عملنا.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -551,9 +551,9 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-Looking much better! If it's a struct or a slice we iterate over its values calling `walk` on each one. Otherwise, if it's a `reflect.String` we can call `fn`.
+تبدو أفضل بكثير! إن كانت بنية أو شريحة فإننا نمر على قيمها ونستدعي `walk` على كل منها. وإلا، فإن كانت `reflect.String` يمكننا استدعاء `fn`.
 
-Still, to me it feels like it could be better. There's repetition of the operation of iterating over fields/values and then calling `walk` but conceptually they're the same.
+ومع ذلك، أشعر أنها يمكن أن تكون أفضل. فهناك تكرار لعملية المرور على الحقول أو القيم ثم استدعاء `walk`، مع أنهما من الناحية المفاهيمية الشيء نفسه.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -579,20 +579,20 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-If the `value` is a `reflect.String` then we just call `fn` like normal.
+إن كانت `value` من النوع `reflect.String` فإننا نستدعي `fn` كالمعتاد.
 
-Otherwise, our `switch` will extract out two things depending on the type
+وإلا، فستستخرج تعليمة `switch` شيئين بحسب النوع
 
-- How many fields there are
-- How to extract the `Value` (`Field` or `Index`)
+- عدد الحقول
+- طريقة استخراج `Value` (بـ`Field` أو `Index`)
 
-Once we've determined those things we can iterate through `numberOfValues` calling `walk` with the result of the `getField` function.
+وبعد أن نحدد هذين الأمرين، يمكننا المرور على `numberOfValues` واستدعاء `walk` بنتيجة الدالة `getField`.
 
-Now we've done this, handling arrays should be trivial.
+والآن بعد أن فعلنا هذا، ينبغي أن تكون معالجة المصفوفات (arrays) أمراً بسيطاً.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add to the cases
+أضف إلى الحالات
 
 ```
 {
@@ -605,7 +605,7 @@ Add to the cases
 },
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/arrays
@@ -613,9 +613,9 @@ Add to the cases
         reflection_test.go:78: got [], want [London Reykjavík]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Arrays can be handled the same way as slices, so just add it to the case with a comma
+يمكن معالجة المصفوفات بالطريقة نفسها التي تُعالج بها الشرائح، لذا أضفها إلى الحالة نفسها بفاصلة فحسب
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -641,9 +641,9 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-The next type we want to handle is `map`.
+النوع التالي الذي نريد معالجته هو `map`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```
 {
@@ -656,7 +656,7 @@ The next type we want to handle is `map`.
 },
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestWalk/maps
@@ -664,9 +664,9 @@ The next type we want to handle is `map`.
         reflection_test.go:86: got [], want [Moo Baa]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Again if you think a little abstractly you can see that `map` is very similar to `struct`, it's just the keys are unknown at compile time.
+مرة أخرى، إن فكرت بشيء من التجريد فسترى أن `map` تشبه كثيراً `struct`، إلا أن المفاتيح غير معروفة في وقت التصريف.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -696,15 +696,15 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-However, by design you cannot get values out of a map by index. It's only done by _key_, so that breaks our abstraction, darn.
+لكن بحكم التصميم لا يمكنك استخراج القيم من خريطة (map) بالفهرس، بل بـ_المفتاح_ فقط، وهذا يكسر تجريدنا، يا للأسف.
 
-## Refactor
+## أعد الهيكلة
 
-How do you feel right now? It felt like maybe a nice abstraction at the time but now the code feels a little wonky.
+كيف تشعر الآن؟ بدا الأمر في حينه تجريداً جميلاً ربما، لكن الشيفرة تبدو الآن معوجّة بعض الشيء.
 
-_This is OK!_ Refactoring is a journey and sometimes we will make mistakes. A major point of TDD is it gives us the freedom to try these things out.
+_لا بأس بذلك!_ إعادة الهيكلة (refactoring) رحلة، وسنرتكب أحياناً أخطاء. ومن أهم مزايا `TDD` أنه يمنحنا حرية تجربة هذه الأشياء.
 
-By taking small steps backed by tests this is in no way an irreversible situation. Let's just put it back to how it was before the refactor.
+وباتخاذ خطوات صغيرة مدعومة بالاختبارات، فإن هذا ليس وضعاً لا رجعة فيه بأي حال. فلنُعِد الشيفرة ببساطة إلى ما كانت عليه قبل إعادة الهيكلة.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -733,13 +733,13 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-We've introduced `walkValue` which DRYs up the calls to `walk` inside our `switch` so that they only have to extract out the `reflect.Value`s from `val`.
+قدّمنا `walkValue` التي تزيل التكرار في استدعاءات `walk` داخل `switch`، بحيث لا يبقى على كل حالة إلا استخراج قيم `reflect.Value` من `val`.
 
-### One final problem
+### مشكلة أخيرة
 
-Remember that maps in Go do not guarantee order. So your tests will sometimes fail because we assert that the calls to `fn` are done in a particular order.
+تذكّر أن الخرائط في غو لا تضمن الترتيب، لذا ستفشل اختباراتك أحياناً لأننا نؤكد أن استدعاءات `fn` تتم بترتيب معيّن.
 
-To fix this, we'll need to move our assertion with the maps to a new test where we do not care about the order.
+لإصلاح ذلك، علينا نقل توكيدنا الخاص بالخرائط إلى اختبار جديد لا يهمنا فيه الترتيب.
 
 ```go
 t.Run("with maps", func(t *testing.T) {
@@ -758,7 +758,7 @@ t.Run("with maps", func(t *testing.T) {
 })
 ```
 
-Here is how `assertContains` is defined
+إليك كيف عُرّفت `assertContains`
 
 ```go
 func assertContains(t testing.TB, haystack []string, needle string) {
@@ -775,11 +775,11 @@ func assertContains(t testing.TB, haystack []string, needle string) {
 }
 ```
 
-Since we have extracted maps into a new test, we haven't seen the failure message. Intentionally break the `with maps` test here so that you can check the error message, then fix it again so all tests are passing.
+بما أننا نقلنا الخرائط إلى اختبار جديد، فلم نرَ رسالة الفشل. أفشل الاختبار `with maps` هنا عمداً كي تتحقق من رسالة الخطأ، ثم أصلحه مجدداً لتنجح كل الاختبارات.
 
-The next type we want to handle is `chan`.
+النوع التالي الذي نريد معالجته هو `chan`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 t.Run("with channels", func(t *testing.T) {
@@ -804,7 +804,7 @@ t.Run("with channels", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 --- FAIL: TestWalk (0.00s)
@@ -812,9 +812,9 @@ t.Run("with channels", func(t *testing.T) {
         reflection_test.go:115: got [], want [Berlin Katowice]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We can iterate through all values sent through channel until it was closed with Recv()
+يمكننا المرور على كل القيم المرسلة عبر القناة (channel) حتى تُغلق، باستعمال `Recv()`
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -850,9 +850,9 @@ func walk(x interface{}, fn func(input string)) {
 	}
 }
 ```
-The next type we want to handle is `func`.
+النوع التالي الذي نريد معالجته هو `func`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 t.Run("with function", func(t *testing.T) {
@@ -873,7 +873,7 @@ t.Run("with function", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 --- FAIL: TestWalk (0.00s)
@@ -881,9 +881,9 @@ t.Run("with function", func(t *testing.T) {
         reflection_test.go:132: got [], want [Berlin Katowice]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Non zero-argument functions do not seem to make a lot of sense in this scenario. But we should allow for arbitrary return values.
+لا يبدو أن للدوال التي تأخذ وسطاء معنى كبيراً في هذا السيناريو، لكن ينبغي أن نسمح بقيم معادة اعتباطية.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
@@ -921,10 +921,10 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-## Wrapping up
+## الخلاصة
 
-- Introduced some concepts from the `reflect` package.
-- Used recursion to traverse arbitrary data structures.
-- Did an in retrospect bad refactor but didn't get too upset about it. By working iteratively with tests it's not such a big deal.
-- This only covered a small aspect of reflection. [The Go blog has an excellent post covering more details](https://blog.golang.org/laws-of-reflection).
-- Now that you know about reflection, do your best to avoid using it.
+- قدّمنا بعض المفاهيم من الحزمة `reflect`.
+- استعملنا العَوْدية للمرور على هياكل بيانات اعتباطية.
+- أجرينا إعادة هيكلة تبيّن بأثر رجعي أنها سيئة، لكننا لم ننزعج منها كثيراً. فبالعمل التكراري مع الاختبارات لا يكون الأمر بتلك الخطورة.
+- لم نتناول هنا إلا جانباً صغيراً من الانعكاس. [وفي مدونة غو مقال ممتاز يتناول مزيداً من التفاصيل](https://blog.golang.org/laws-of-reflection).
+- والآن بعد أن عرفت الانعكاس، ابذل قصارى جهدك لتجنب استعماله.
