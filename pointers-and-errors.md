@@ -1,16 +1,16 @@
-# Pointers & errors
+# المؤشرات والأخطاء
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/pointers)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/pointers)**
 
-We learned about structs in the last section which let us capture a number of values related around a concept.
+تعلّمنا في القسم السابق عن البنى (structs)، التي تتيح لنا جمع عدد من القيم المترابطة حول مفهوم واحد.
 
-At some point you may wish to use structs to manage state, exposing methods to let users change the state in a way that you can control.
+قد ترغب في مرحلة ما في استعمال البنى لإدارة الحالة، مع إتاحة طرق (methods) تسمح للمستخدمين بتغيير الحالة بطريقة يمكنك التحكم بها.
 
-**Fintech loves Go** and uhhh bitcoins? So let's show what an amazing banking system we can make.
+**قطاع التقنية المالية يحب غو (Go)**، و... أممم، عملات البيتكوين؟ لذا لنُرِ مدى روعة النظام المصرفي الذي يمكننا صنعه.
 
-Let's make a `Wallet` struct which lets us deposit `Bitcoin`.
+لننشئ بنية باسم `Wallet` تتيح لنا إيداع `Bitcoin`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestWallet(t *testing.T) {
@@ -28,30 +28,30 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-In the [previous example](./structs-methods-and-interfaces.md) we accessed fields directly with the field name, however in our _very secure wallet_ we don't want to expose our inner state to the rest of the world. We want to control access via methods.
+في [المثال السابق](./structs-methods-and-interfaces.md) وصلنا إلى الحقول مباشرة باسم الحقل، لكننا في _محفظتنا الآمنة جداً_ لا نريد أن نكشف حالتنا الداخلية لبقية العالم، بل نريد التحكم بالوصول عبر الطرق.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./wallet_test.go:7:12: undefined: Wallet`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-The compiler doesn't know what a `Wallet` is so let's tell it.
+لا يعرف المصرِّف (compiler) ما هي `Wallet`، فلنخبره.
 
 ```go
 type Wallet struct{}
 ```
 
-Now we've made our wallet, try and run the test again
+والآن بعد أن أنشأنا محفظتنا، حاول تشغيل الاختبار (test) مجدداً
 
 ```
 ./wallet_test.go:9:8: wallet.Deposit undefined (type Wallet has no field or method Deposit)
 ./wallet_test.go:11:15: wallet.Balance undefined (type Wallet has no field or method Balance)
 ```
 
-We need to define these methods.
+علينا تعريف هذه الطرق.
 
-Remember to only do enough to make the tests run. We need to make sure our test fails correctly with a clear error message.
+تذكّر ألا تفعل إلا ما يكفي لتشغيل الاختبارات. فعلينا التأكد من أن اختبارنا يفشل بشكل صحيح مع رسالة خطأ (error) واضحة.
 
 ```go
 func (w Wallet) Deposit(amount int) {
@@ -63,15 +63,15 @@ func (w Wallet) Balance() int {
 }
 ```
 
-If this syntax is unfamiliar go back and read the structs section.
+إن لم تكن هذه الصياغة مألوفة لك، فارجع واقرأ قسم البنى.
 
-The tests should now compile and run
+ينبغي أن تُصرَّف الاختبارات الآن وتعمل
 
 `wallet_test.go:15: got 0 want 10`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We will need some kind of _balance_ variable in our struct to store the state
+سنحتاج إلى متغير (variable) ما لـ_الرصيد_ في بنيتنا (struct) لتخزين الحالة
 
 ```go
 type Wallet struct {
@@ -79,11 +79,11 @@ type Wallet struct {
 }
 ```
 
-In Go if a symbol (variables, types, functions et al) starts with a lowercase symbol then it is private _outside the package it's defined in_.
+في غو، إن بدأ اسم رمز ما (متغيرات، أنواع، دوال وغيرها) بحرف صغير، فإنه يكون خاصاً _خارج الحزمة التي عُرّف فيها_.
 
-In our case we want our methods to be able to manipulate this value, but no one else.
+وفي حالتنا نريد أن تستطيع طرقنا التعامل مع هذه القيمة، دون أي أحد آخر.
 
-Remember we can access the internal `balance` field in the struct using the "receiver" variable.
+تذكّر أننا نستطيع الوصول إلى الحقل الداخلي `balance` في البنية باستعمال متغير "المستقبِل".
 
 ```go
 func (w Wallet) Deposit(amount int) {
@@ -95,22 +95,22 @@ func (w Wallet) Balance() int {
 }
 ```
 
-With our career in fintech secured, run the test suite and bask in the passing test
+وبعد أن ضمنّا مسيرتنا المهنية في التقنية المالية، شغّل مجموعة الاختبارات واستمتع بالاختبار الناجح
 
 `wallet_test.go:15: got 0 want 10`
 
-### That's not quite right
+### هذا ليس صحيحاً تماماً
 
-Well this is confusing, our code looks like it should work.
-We add the new amount onto our balance and then the balance method should return the current state of it.
+حسناً، هذا محيّر، فشيفرتنا (code) تبدو وكأنها يجب أن تعمل.
+نضيف المبلغ الجديد إلى رصيدنا، ثم ينبغي أن تعيد طريقة الرصيد حالته الحالية.
 
-In Go, **when you call a function or a method the arguments are** _**copied**_.
+في غو، **حين تستدعي دالة أو طريقة فإن الوسطاء** _**تُنسخ**_.
 
-When calling `func (w Wallet) Deposit(amount int)` the `w` is a copy of whatever we called the method from.
+عند استدعاء `func (w Wallet) Deposit(amount int)` يكون `w` نسخة من القيمة التي استدعينا عليها الطريقة.
 
-Without getting too computer-sciency, when you create a value - like a wallet, it is stored somewhere in memory. You can find out what the _address_ of that bit of memory with `&myVal`.
+ودون الخوض كثيراً في علوم الحاسوب، حين تنشئ قيمة، كمحفظة مثلاً، فإنها تُخزَّن في مكان ما في الذاكرة. ويمكنك معرفة _عنوان_ ذلك الجزء من الذاكرة بكتابة `&myVal`.
 
-Experiment by adding some prints to your code
+جرّب بإضافة بعض أوامر الطباعة إلى شيفرتك
 
 ```go
 func TestWallet(t *testing.T) {
@@ -138,20 +138,20 @@ func (w Wallet) Deposit(amount int) {
 }
 ```
 
-The `%p` placeholder prints memory addresses in base 16 notation with leading `0x`s and the `\n` escape character prints a new line.
-Note that we get the pointer (memory address) of something by placing an `&` character at the beginning of the symbol.
+يطبع العنصر النائب `%p` عناوين الذاكرة بالنظام الست عشري مع البادئة `0x`، ويطبع محرف الهروب `\n` سطراً جديداً.
+لاحظ أننا نحصل على المؤشر (pointer)، أي عنوان الذاكرة، لشيء ما بوضع المحرف `&` في بداية اسم الرمز.
 
-Now re-run the test
+أعد الآن تشغيل الاختبار
 
 ```text
 address of balance in Deposit is 0xc420012268
 address of balance in test is 0xc420012260
 ```
 
-You can see that the addresses of the two balances are different. So when we change the value of the balance inside the code, we are working on a copy of what came from the test. Therefore the balance in the test is unchanged.
+يمكنك أن ترى أن عنواني الرصيدين مختلفان. فحين نغيّر قيمة الرصيد داخل الشيفرة، فإننا نعمل على نسخة مما جاء من الاختبار، ولذلك يبقى الرصيد في الاختبار دون تغيير.
 
-We can fix this with _pointers_. [Pointers](https://gobyexample.com/pointers) let us _point_ to some values and then let us change them.
-So rather than taking a copy of the whole Wallet, we instead take a pointer to that wallet so that we can change the original values within it.
+يمكننا إصلاح ذلك بـ_المؤشرات_. [فالمؤشرات](https://gobyexample.com/pointers) تتيح لنا أن _نشير_ إلى قيم ما ثم نغيّرها.
+لذا بدلاً من أخذ نسخة من المحفظة كلها، نأخذ مؤشراً إلى تلك المحفظة كي نستطيع تغيير القيم الأصلية داخلها.
 
 ```go
 func (w *Wallet) Deposit(amount int) {
@@ -163,11 +163,11 @@ func (w *Wallet) Balance() int {
 }
 ```
 
-The difference is the receiver type is `*Wallet` rather than `Wallet` which you can read as "a pointer to a wallet".
+الفرق أن نوع المستقبِل صار `*Wallet` بدلاً من `Wallet`، ويمكنك قراءته "مؤشر إلى محفظة".
 
-Try and re-run the tests and they should pass.
+حاول إعادة تشغيل الاختبارات، وينبغي أن تنجح.
 
-Now you might wonder, why did they pass? We didn't dereference the pointer in the function, like so:
+قد تتساءل الآن: لماذا نجحت؟ فنحن لم نُلغِ الإشارة في الدالة، أي لم نكتب:
 
 ```go
 func (w *Wallet) Balance() int {
@@ -175,20 +175,20 @@ func (w *Wallet) Balance() int {
 }
 ```
 
-and seemingly addressed the object directly. In fact, the code above using `(*w)` is absolutely valid. However, the makers of Go deemed this notation cumbersome, so the language permits us to write `w.balance`, without an explicit dereference.
-These pointers to structs even have their own name: _struct pointers_ and they are [automatically dereferenced](https://golang.org/ref/spec#Method_values).
+بل بدا أننا نتعامل مع الكائن مباشرة. والحقيقة أن الشيفرة أعلاه التي تستعمل `(*w)` صحيحة تماماً. لكن صانعي غو رأوا أن هذه الكتابة مرهقة، لذا تسمح لنا اللغة بكتابة `w.balance` دون إلغاء إشارة صريح.
+بل إن لهذه المؤشرات إلى البنى اسماً خاصاً بها: _مؤشرات البنى_، وهي [تُلغى إشارتها تلقائياً](https://golang.org/ref/spec#Method_values).
 
-Technically you do not need to change `Balance` to use a pointer receiver as taking a copy of the balance is fine. However, by convention you should keep your method receiver types the same for consistency.
+من الناحية التقنية لا تحتاج إلى تغيير `Balance` لتستعمل مستقبِلاً مؤشراً، فأخذ نسخة من الرصيد لا بأس به. لكن العرف يقضي بأن تُبقي أنواع مستقبِلات طرقك متماثلة حفاظاً على الاتساق.
 
-## Refactor
+## أعد الهيكلة
 
-We said we were making a Bitcoin wallet but we have not mentioned them so far. We've been using `int` because they're a good type for counting things!
+قلنا إننا نصنع محفظة بيتكوين، لكننا لم نذكرها حتى الآن. كنا نستعمل `int` لأنه نوع (type) جيد لعدّ الأشياء!
 
-It seems a bit overkill to create a `struct` for this. `int` is fine in terms of the way it works but it's not descriptive.
+يبدو إنشاء `struct` لهذا الغرض مبالغة بعض الشيء. فالنوع `int` جيد من حيث طريقة عمله، لكنه ليس وصفياً.
 
-Go lets you create new types from existing ones.
+تتيح لك غو إنشاء أنواع جديدة من أنواع موجودة.
 
-The syntax is `type MyName OriginalType`
+والصياغة هي `type MyName OriginalType`
 
 ```go
 type Bitcoin int
@@ -223,11 +223,11 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-To make `Bitcoin` you just use the syntax `Bitcoin(999)`.
+لإنشاء قيمة من النوع `Bitcoin` استعمل الصياغة `Bitcoin(999)` فحسب.
 
-By doing this we're making a new type and we can declare _methods_ on them. This can be very useful when you want to add some domain specific functionality on top of existing types.
+بفعلنا هذا ننشئ نوعاً جديداً، ويمكننا التصريح عن _طرق_ عليه. وقد يكون هذا مفيداً جداً حين تريد إضافة وظائف خاصة بالمجال فوق أنواع موجودة.
 
-Let's implement [Stringer](https://golang.org/pkg/fmt/#Stringer) on Bitcoin
+لنحقق الواجهة [Stringer](https://golang.org/pkg/fmt/#Stringer) على النوع `Bitcoin`
 
 ```go
 type Stringer interface {
@@ -235,7 +235,7 @@ type Stringer interface {
 }
 ```
 
-This interface is defined in the `fmt` package and lets you define how your type is printed when used with the `%s` format string in prints.
+هذه الواجهة (interface) معرّفة في الحزمة (package) `fmt`، وتتيح لك تحديد طريقة طباعة نوعك حين يُستعمل مع سلسلة التنسيق `%s` في أوامر الطباعة.
 
 ```go
 func (b Bitcoin) String() string {
@@ -243,9 +243,9 @@ func (b Bitcoin) String() string {
 }
 ```
 
-As you can see, the syntax for creating a method on a type declaration is the same as it is on a struct.
+كما ترى، صياغة إنشاء طريقة على نوع مصرّح عنه هي نفسها صياغة إنشائها على بنية.
 
-Next we need to update our test format strings so they will use `String()` instead.
+بعد ذلك علينا تحديث سلاسل التنسيق في اختبارنا لتستعمل `String()` بدلاً من ذلك.
 
 ```go
 	if got != want {
@@ -253,17 +253,17 @@ Next we need to update our test format strings so they will use `String()` inste
 	}
 ```
 
-To see this in action, deliberately break the test so we can see it
+لترى هذا عملياً، أفشل الاختبار عمداً كي نراه
 
 `wallet_test.go:18: got 10 BTC want 20 BTC`
 
-This makes it clearer what's going on in our test.
+وهذا يوضح ما يجري في اختبارنا.
 
-The next requirement is for a `Withdraw` function.
+المتطلب التالي هو دالة `Withdraw`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Pretty much the opposite of `Deposit()`
+إنها تقريباً عكس `Deposit()`
 
 ```go
 func TestWallet(t *testing.T) {
@@ -298,11 +298,11 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./wallet_test.go:26:9: wallet.Withdraw undefined (type Wallet has no field or method Withdraw)`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) {
@@ -312,7 +312,7 @@ func (w *Wallet) Withdraw(amount Bitcoin) {
 
 `wallet_test.go:33: got 20 BTC want 10 BTC`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) {
@@ -320,9 +320,9 @@ func (w *Wallet) Withdraw(amount Bitcoin) {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-There's some duplication in our tests, lets refactor that out.
+في اختباراتنا شيء من الازدواجية، فلنُزِلها بإعادة الهيكلة.
 
 ```go
 func TestWallet(t *testing.T) {
@@ -351,15 +351,15 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-What should happen if you try to `Withdraw` more than is left in the account? For now, our requirement is to assume there is not an overdraft facility.
+ماذا ينبغي أن يحدث إن حاولت سحب مبلغ بالطريقة `Withdraw` أكبر مما بقي في الحساب؟ متطلبنا الآن هو أن نفترض عدم وجود تسهيلات للسحب على المكشوف.
 
-How do we signal a problem when using `Withdraw`?
+كيف نشير إلى وجود مشكلة عند استعمال `Withdraw`؟
 
-In Go, if you want to indicate an error it is idiomatic for your function to return an `err` for the caller to check and act on.
+في غو، إن أردت الإشارة إلى خطأ، فالأسلوب المعتاد في اللغة أن تعيد دالتك قيمة `err` كي يتحقق منها المستدعي ويتصرف بناءً عليها.
 
-Let's try this out in a test.
+لنجرّب هذا في اختبار.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 t.Run("withdraw insufficient funds", func(t *testing.T) {
@@ -375,21 +375,21 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 })
 ```
 
-We want `Withdraw` to return an error _if_ you try to take out more than you have and the balance should stay the same.
+نريد أن تعيد `Withdraw` خطأً _إن_ حاولت سحب أكثر مما لديك، وأن يبقى الرصيد كما هو.
 
-We then check an error has returned by failing the test if it is `nil`.
+ثم نتحقق من أن خطأً قد أُعيد بإفشال الاختبار إن كان `nil`.
 
-`nil` is synonymous with `null` from other programming languages. Errors can be `nil` because the return type of `Withdraw` will be `error`, which is an interface. If you see a function that takes arguments or returns values that are interfaces, they can be nillable.
+القيمة `nil` مرادفة لـ`null` في لغات البرمجة الأخرى. ويمكن أن تكون الأخطاء `nil` لأن نوع القيمة المعادة من `Withdraw` سيكون `error`، وهو واجهة. فإن رأيت دالة تأخذ وسطاء أو تعيد قيماً من أنواع واجهات، فيمكن أن تكون قيمها `nil`.
 
-Like `null` if you try to access a value that is `nil` it will throw a **runtime panic**. This is bad! You should make sure that you check for nils.
+وكما في `null`، إن حاولت الوصول إلى قيمة هي `nil` فسيُطلَق **ذعر في وقت التشغيل** (runtime panic). وهذا سيئ! ينبغي أن تتأكد من التحقق من قيم `nil`.
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 `./wallet_test.go:31:25: wallet.Withdraw(Bitcoin(100)) used as value`
 
-The wording is perhaps a little unclear, but our previous intent with `Withdraw` was just to call it, it will never return a value. To make this compile we will need to change it so it has a return type.
+لعل الصياغة غير واضحة بعض الشيء، لكن قصدنا السابق من `Withdraw` كان مجرد استدعائها، فهي لا تعيد أي قيمة. ولكي يتم التصريف، علينا تغييرها بحيث يكون لها نوع قيمة معادة.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -398,9 +398,9 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-Again, it is very important to just write enough code to satisfy the compiler. We correct our `Withdraw` method to return `error` and for now we have to return _something_ so let's just return `nil`.
+مرة أخرى، من المهم جداً ألا تكتب إلا ما يكفي من الشيفرة لإرضاء المصرِّف. نصحح الطريقة `Withdraw` لتعيد `error`، وعلينا الآن أن نعيد _شيئاً ما_، فلنُعِد `nil` فحسب.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -414,13 +414,13 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-Remember to import `errors` into your code.
+تذكّر أن تستورد الحزمة `errors` في شيفرتك.
 
-`errors.New` creates a new `error` with a message of your choosing.
+تنشئ الدالة `errors.New` قيمة `error` جديدة برسالة من اختيارك.
 
-## Refactor
+## أعد الهيكلة
 
-Let's make a quick test helper for our error check to improve the test's readability
+لنكتب دالة مساعدة سريعة للاختبار تتحقق من الخطأ، لتحسين قابلية قراءة الاختبار
 
 ```go
 assertError := func(t testing.TB, err error) {
@@ -431,7 +431,7 @@ assertError := func(t testing.TB, err error) {
 }
 ```
 
-And in our test
+وفي اختبارنا
 
 ```go
 t.Run("withdraw insufficient funds", func(t *testing.T) {
@@ -444,13 +444,13 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 })
 ```
 
-Hopefully when returning an error of "oh no" you were thinking that we _might_ iterate on that because it doesn't seem that useful to return.
+أرجو أنك حين أعدنا خطأً نصه "oh no" كنت تفكر أننا _قد_ نحسّنه لاحقاً، لأنه لا يبدو مفيداً جداً.
 
-Assuming that the error ultimately gets returned to the user, let's update our test to assert on some kind of error message rather than just the existence of an error.
+وبافتراض أن الخطأ سيصل في النهاية إلى المستخدم، لنحدّث اختبارنا ليؤكد على رسالة خطأ معيّنة بدلاً من مجرد وجود خطأ.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Update our helper for a `string` to compare against.
+حدّث دالتنا المساعدة لتأخذ قيمة `string` تقارن بها.
 
 ```go
 assertError := func(t testing.TB, got error, want string) {
@@ -466,9 +466,9 @@ assertError := func(t testing.TB, got error, want string) {
 }
 ```
 
-As you can see `Error`s can be converted to a string with the `.Error()` method, which we do in order to compare it with the string we want. We are also making sure that the error is not `nil` to ensure we don't call `.Error()` on `nil`.
+كما ترى، يمكن تحويل قيم `Error` إلى سلسلة نصية بالطريقة `.Error()`، وهذا ما نفعله لمقارنتها بالسلسلة التي نريدها. ونتأكد أيضاً من أن الخطأ ليس `nil` كي لا نستدعي `.Error()` على `nil`.
 
-And then update the caller
+ثم حدّث موضع الاستدعاء
 
 ```go
 t.Run("withdraw insufficient funds", func(t *testing.T) {
@@ -481,13 +481,13 @@ t.Run("withdraw insufficient funds", func(t *testing.T) {
 })
 ```
 
-We've introduced `t.Fatal` which will stop the test if it is called. This is because we don't want to make any more assertions on the error returned if there isn't one around. Without this the test would carry on to the next step and panic because of a nil pointer.
+قدّمنا `t.Fatal` التي توقف الاختبار إن استُدعيت. وذلك لأننا لا نريد إجراء أي توكيدات (assertions) أخرى على الخطأ المعاد إن لم يكن هناك خطأ أصلاً. ولولا ذلك لاستمر الاختبار إلى الخطوة التالية ولأطلق الذعر بسبب مؤشر `nil`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `wallet_test.go:61: got err 'oh no' want 'cannot withdraw, insufficient funds'`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func (w *Wallet) Withdraw(amount Bitcoin) error {
@@ -501,13 +501,13 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-We have duplication of the error message in both the test code and the `Withdraw` code.
+لدينا ازدواجية في رسالة الخطأ بين شيفرة الاختبار وشيفرة `Withdraw`.
 
-It would be really annoying for the test to fail if someone wanted to re-word the error and it's just too much detail for our test. We don't _really_ care what the exact wording is, just that some kind of meaningful error around withdrawing is returned given a certain condition.
+سيكون مزعجاً حقاً أن يفشل الاختبار إن أراد أحدهم إعادة صياغة الخطأ، فهذا قدر زائد من التفاصيل على اختبارنا. لا يهمنا _حقاً_ ما الصياغة الدقيقة، بل أن يُعاد خطأ ذو معنى يتعلق بالسحب عند تحقق شرط معيّن.
 
-In Go, errors are values, so we can refactor it out into a variable and have a single source of truth for it.
+الأخطاء في غو قيم، لذا يمكننا نقلها إلى متغير بإعادة الهيكلة، فيكون لها مصدر حقيقة واحد.
 
 ```go
 var ErrInsufficientFunds = errors.New("cannot withdraw, insufficient funds")
@@ -523,11 +523,11 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
 }
 ```
 
-The `var` keyword allows us to define values global to the package.
+تتيح لنا الكلمة المحجوزة `var` تعريف قيم عامة على مستوى الحزمة.
 
-This is a positive change in itself because now our `Withdraw` function looks very clear.
+وهذا تغيير إيجابي في حد ذاته، لأن الدالة `Withdraw` صارت تبدو واضحة جداً.
 
-Next we can refactor our test code to use this value instead of specific strings.
+بعد ذلك يمكننا إعادة هيكلة شيفرة الاختبار لتستعمل هذه القيمة بدلاً من سلاسل نصية محددة.
 
 ```go
 func TestWallet(t *testing.T) {
@@ -574,29 +574,29 @@ func assertError(t testing.TB, got, want error) {
 }
 ```
 
-And now the test is easier to follow too.
+وصار الاختبار الآن أسهل في المتابعة أيضاً.
 
-I have moved the helpers out of the main test function just so when someone opens up a file they can start reading our assertions first, rather than some helpers.
+نقلت الدوال المساعدة خارج دالة الاختبار الرئيسية، كي يبدأ من يفتح الملف بقراءة توكيداتنا أولاً، لا بعض الدوال المساعدة.
 
-Another useful property of tests is that they help us understand the _real_ usage of our code so we can make sympathetic code. We can see here that a developer can simply call our code and do an equals check to `ErrInsufficientFunds` and act accordingly.
+ومن الخصائص المفيدة الأخرى للاختبارات أنها تساعدنا على فهم الاستعمال _الحقيقي_ لشيفرتنا، فنكتب شيفرة مراعية لمستعمليها. ونرى هنا أن المطور يستطيع ببساطة استدعاء شيفرتنا والتحقق من المساواة مع `ErrInsufficientFunds` والتصرف وفقاً لذلك.
 
-### Unchecked errors
+### الأخطاء غير المفحوصة
 
-Whilst the Go compiler helps you a lot, sometimes there are things you can still miss and error handling can sometimes be tricky.
+مع أن مصرِّف غو يساعدك كثيراً، فقد تفوتك أحياناً بعض الأشياء، وقد تكون معالجة الأخطاء صعبة في بعض الأحيان.
 
-There is one scenario we have not tested. To find it, run the following in a terminal to install `errcheck`, one of many linters available for Go.
+هناك سيناريو واحد لم نختبره. ولإيجاده، شغّل ما يلي في الطرفية لتثبيت `errcheck`، وهي واحدة من أدوات تدقيق ساكن كثيرة متاحة لغو.
 
 `go install github.com/kisielk/errcheck@latest`
 
-Then, inside the directory with your code run `errcheck .`
+ثم شغّل `errcheck .` داخل المجلد الذي فيه شيفرتك.
 
-You should get something like
+ينبغي أن تحصل على شيء مثل
 
 `wallet_test.go:17:18: wallet.Withdraw(Bitcoin(10))`
 
-What this is telling us is that we have not checked the error being returned on that line of code. That line of code on my computer corresponds to our normal withdraw scenario because we have not checked that if the `Withdraw` is successful that an error is _not_ returned.
+ما يخبرنا به هذا أننا لم نتحقق من الخطأ المعاد في ذلك السطر من الشيفرة. وذلك السطر على حاسوبي يقابل سيناريو السحب العادي، لأننا لم نتحقق من أنه حين تنجح `Withdraw` فإن خطأً _لا_ يُعاد.
 
-Here is the final test code that accounts for this.
+إليك شيفرة الاختبار النهائية التي تأخذ ذلك في الحسبان.
 
 ```go
 func TestWallet(t *testing.T) {
@@ -653,29 +653,29 @@ func assertError(t testing.TB, got error, want error) {
 }
 ```
 
-## Wrapping up
+## الخلاصة
 
-### Pointers
+### المؤشرات
 
-* Go copies values when you pass them to functions/methods, so if you're writing a function that needs to mutate state you'll need it to take a pointer to the thing you want to change.
-* The fact that Go takes a copy of values is useful a lot of the time but sometimes you won't want your system to make a copy of something, in which case you need to pass a reference. Examples include referencing very large data structures or things where only one instance is necessary \(like database connection pools\).
+* تنسخ غو القيم حين تمررها إلى الدوال أو الطرق، لذا إن كنت تكتب دالة تحتاج إلى تغيير الحالة، فستحتاج إلى أن تأخذ مؤشراً إلى الشيء الذي تريد تغييره.
+* كون غو تأخذ نسخة من القيم مفيد في كثير من الأحيان، لكنك أحياناً لن تريد أن ينسخ نظامك شيئاً ما، وعندها تحتاج إلى تمرير مرجع. ومن الأمثلة الإشارة إلى هياكل بيانات كبيرة جداً، أو أشياء لا يلزم منها إلا نسخة واحدة (مثل مجمّعات اتصالات قواعد البيانات).
 
-### nil
+### القيمة `nil`
 
-* Pointers can be nil
-* When a function returns a pointer to something, you need to make sure you check if it's nil or you might raise a runtime exception - the compiler won't help you here.
-* Useful for when you want to describe a value that could be missing
+* يمكن أن تكون المؤشرات `nil`
+* حين تعيد دالة مؤشراً إلى شيء ما، عليك التأكد من التحقق مما إذا كان `nil`، وإلا فقد تُطلق استثناءً في وقت التشغيل، ولن يساعدك المصرِّف هنا.
+* مفيدة حين تريد وصف قيمة قد تكون مفقودة
 
-### Errors
+### الأخطاء
 
-* Errors are the way to signify failure when calling a function/method.
-* By listening to our tests we concluded that checking for a string in an error would result in a flaky test. So we refactored our implementation to use a meaningful value instead and this resulted in easier to test code and concluded this would be easier for users of our API too.
-* This is not the end of the story with error handling, you can do more sophisticated things but this is just an intro. Later sections will cover more strategies.
-* [Don’t just check errors, handle them gracefully](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully)
+* الأخطاء هي الوسيلة للإشارة إلى الفشل عند استدعاء دالة أو طريقة.
+* بالإصغاء إلى اختباراتنا استنتجنا أن التحقق من سلسلة نصية داخل خطأ سيؤدي إلى اختبار متقلب. لذا أعدنا هيكلة تنفيذنا ليستعمل قيمة ذات معنى بدلاً من ذلك، فنتجت شيفرة أسهل في الاختبار، واستنتجنا أن هذا سيكون أسهل لمستخدمي واجهتنا البرمجية أيضاً.
+* هذه ليست نهاية القصة في معالجة الأخطاء، فيمكنك فعل أشياء أكثر تطوراً، لكن هذه مجرد مقدمة. وستتناول أقسام لاحقة مزيداً من الاستراتيجيات.
+* [لا تكتفِ بفحص الأخطاء، بل عالجها بأناقة](https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully)
 
-### Create new types from existing ones
+### أنشئ أنواعاً جديدة من أنواع موجودة
 
-* Useful for adding more domain specific meaning to values
-* Can let you implement interfaces
+* مفيد لإضافة معنى خاص بالمجال إلى القيم
+* يتيح لك تحقيق الواجهات
 
-Pointers and errors are a big part of writing Go that you need to get comfortable with. Thankfully the compiler will _usually_ help you out if you do something wrong, just take your time and read the error.
+المؤشرات والأخطاء جزء كبير من كتابة شيفرة غو، وعليك أن تعتاد عليهما. ولحسن الحظ فإن المصرِّف سيساعدك _عادةً_ إن فعلت شيئاً خاطئاً، فقط خذ وقتك واقرأ الخطأ.

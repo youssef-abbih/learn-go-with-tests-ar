@@ -157,3 +157,16 @@
 | parametric polymorphism | تعدد الأشكال المعامَلي | مقترح |  |
 | floating-point number | عدد عشري | مقترح |  |
 | identifier | معرّف | مقترح |  |
+| state | الحالة | مقترح |  |
+| memory address | عنوان الذاكرة | مقترح |  |
+| dereference | إلغاء الإشارة | مقترح |  |
+| pointer receiver | مستقبِل مؤشر | مقترح |  |
+| struct pointer | مؤشر بنية | مقترح |  |
+| escape character | محرف الهروب | مقترح |  |
+| reference | مرجع | مقترح |  |
+| idiomatic | الأسلوب المعتاد في اللغة | مقترح |  |
+| error handling | معالجة الأخطاء | مقترح |  |
+| exception | استثناء | مقترح |  |
+| flaky test | اختبار متقلب | مقترح |  |
+| data structure | هيكل بيانات | مقترح | ليس بنية حتى لا يلتبس بـ struct |
+| nil | nil | مقترح | يبقى بالإنجليزية بتنسيق الشيفرة؛ مقترح للحالة يبقى بالإنجليزية |
