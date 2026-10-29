@@ -1,12 +1,12 @@
-# IO and sorting
+# الإدخال والإخراج والترتيب
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/io)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/io)**
 
-[In the previous chapter](json.md) we continued iterating on our application by adding a new endpoint `/league`. Along the way we learned about how to deal with JSON, embedding types and routing.
+[في الفصل السابق](json.md) واصلنا التقدم في تطبيقنا بإضافة نقطة نهاية جديدة `/league`. وتعلّمنا في الطريق كيف نتعامل مع JSON، وتضمين الأنواع، والتوجيه.
 
-Our product owner is somewhat perturbed by the software losing the scores when the server was restarted. This is because our implementation of our store is in-memory. She is also not pleased that we didn't interpret the `/league` endpoint should return the players ordered by the number of wins!
+مالكة المنتج منزعجة بعض الشيء من أن البرنامج يفقد النتائج حين يُعاد تشغيل الخادم. وذلك لأن تنفيذنا للمخزن في الذاكرة. وهي أيضاً غير راضية لأننا لم نفهم أن نقطة النهاية `/league` ينبغي أن تعيد اللاعبين مرتبين بحسب عدد مرات الفوز!
 
-## The code so far
+## الشيفرة حتى الآن
 
 ```go
 // server.go
@@ -131,23 +131,23 @@ func main() {
 }
 ```
 
-You can find the corresponding tests in the link at the top of the chapter.
+يمكنك إيجاد الاختبارات المقابلة في الرابط أعلى الفصل.
 
-## Store the data
+## خزّن البيانات
 
-There are dozens of databases we could use for this but we're going to go for a very simple approach. We're going to store the data for this application in a file as JSON.
+هناك عشرات قواعد البيانات التي يمكننا استعمالها لهذا، لكننا سنختار أسلوباً بسيطاً جداً. سنخزّن بيانات هذا التطبيق بصيغة JSON في ملف.
 
-This keeps the data very portable and is relatively simple to implement.
+وهذا يُبقي البيانات سهلة النقل جداً، وتنفيذه بسيط نسبياً.
 
-It won't scale especially well but given this is a prototype it'll be fine for now. If our circumstances change and it's no longer appropriate it'll be simple to swap it out for something different because of the `PlayerStore` abstraction we have used.
+لن يتوسع جيداً على نحو خاص، لكن بما أن هذا نموذج أولي فسيكون مقبولاً في الوقت الحالي. وإن تغيرت ظروفنا ولم يعد مناسباً، فسيكون من السهل استبداله بشيء مختلف بفضل التجريد `PlayerStore` الذي استعملناه.
 
-We will keep the `InMemoryPlayerStore` for now so that the integration tests keep passing as we develop our new store. Once we are confident our new implementation is sufficient to make the integration test pass we will swap it in and then delete `InMemoryPlayerStore`.
+سنُبقي `InMemoryPlayerStore` في الوقت الحالي كي تظل اختبارات التكامل ناجحة ريثما نطوّر مخزننا الجديد. وبمجرد أن نثق بأن تنفيذنا الجديد كافٍ لجعل اختبار التكامل ينجح، سنستبدله به ثم نحذف `InMemoryPlayerStore`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-By now you should be familiar with the interfaces around the standard library for reading data (`io.Reader`), writing data (`io.Writer`) and how we can use the standard library to test these functions without having to use real files.
+ينبغي أن تكون الآن مألوفاً مع واجهات المكتبة القياسية لقراءة البيانات (`io.Reader`) وكتابتها (`io.Writer`)، ومع كيفية استعمال المكتبة القياسية لاختبار هذه الدوال دون الحاجة إلى استعمال ملفات حقيقية.
 
-For this work to be complete we'll need to implement `PlayerStore` so we'll write tests for our store calling the methods we need to implement. We'll start with `GetLeague`.
+لكي يكتمل هذا العمل سنحتاج إلى تنفيذ `PlayerStore`، لذا سنكتب اختبارات لمخزننا تستدعي الطرق (methods) التي علينا تنفيذها. وسنبدأ بـ`GetLeague`.
 
 ```go
 //file_system_store_test.go
@@ -172,25 +172,25 @@ func TestFileSystemStore(t *testing.T) {
 }
 ```
 
-We're using `strings.NewReader` which will return us a `Reader`, which is what our `FileSystemPlayerStore` will use to read data. In `main` we will open a file, which is also a `Reader`.
+نستعمل `strings.NewReader` التي ستعيد لنا `Reader`، وهو ما سيستعمله `FileSystemPlayerStore` لقراءة البيانات. وفي `main` سنفتح ملفاً، وهو أيضاً `Reader`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 # github.com/quii/learn-go-with-tests/io/v1
 ./file_system_store_test.go:15:12: undefined: FileSystemPlayerStore
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Let's define `FileSystemPlayerStore` in a new file
+لنعرّف `FileSystemPlayerStore` في ملف جديد
 
 ```go
 //file_system_store.go
 type FileSystemPlayerStore struct{}
 ```
 
-Try again
+حاول مجدداً
 
 ```
 # github.com/quii/learn-go-with-tests/io/v1
@@ -198,7 +198,7 @@ Try again
 ./file_system_store_test.go:17:15: store.GetLeague undefined (type FileSystemPlayerStore has no field or method GetLeague)
 ```
 
-It's complaining because we're passing in a `Reader` but not expecting one and it doesn't have `GetLeague` defined yet.
+يعترض لأننا نمرر `Reader` لكنه لا يتوقع واحداً، ولأنه لم تُعرَّف فيه `GetLeague` بعد.
 
 ```go
 //file_system_store.go
@@ -211,7 +211,7 @@ func (f *FileSystemPlayerStore) GetLeague() []Player {
 }
 ```
 
-One more try...
+محاولة أخرى...
 
 ```
 === RUN   TestFileSystemStore//league_from_a_reader
@@ -219,9 +219,9 @@ One more try...
         file_system_store_test.go:24: got [] want [{Cleo 10} {Chris 33}]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We've read JSON from a reader before
+قرأنا JSON من قارئ من قبل
 
 ```go
 //file_system_store.go
@@ -232,15 +232,15 @@ func (f *FileSystemPlayerStore) GetLeague() []Player {
 }
 ```
 
-The test should pass.
+ينبغي أن ينجح الاختبار (test).
 
-## Refactor
+## أعد الهيكلة
 
-We _have_ done this before! Our test code for the server had to decode the JSON from the response.
+لقد فعلنا هذا من قبل _بالفعل_! فقد اضطرت شيفرة اختبار الخادم إلى فك ترميز JSON من الاستجابة.
 
-Let's try DRYing this up into a function.
+لنحاول إزالة التكرار بنقل ذلك إلى دالة (function).
 
-Create a new file called `league.go` and put this inside.
+أنشئ ملفاً جديداً باسم `league.go` وضع فيه ما يلي.
 
 ```go
 //league.go
@@ -255,7 +255,7 @@ func NewLeague(rdr io.Reader) ([]Player, error) {
 }
 ```
 
-Call this in our implementation and in our test helper `getLeagueFromResponse` in `server_test.go`
+استدعِ هذه الدالة في تنفيذنا، وفي الدالة المساعدة للاختبار `getLeagueFromResponse` في `server_test.go`
 
 ```go
 //file_system_store.go
@@ -265,11 +265,11 @@ func (f *FileSystemPlayerStore) GetLeague() []Player {
 }
 ```
 
-We haven't got a strategy yet for dealing with parsing errors but let's press on.
+ليست لدينا بعد استراتيجية للتعامل مع أخطاء التحليل، لكن لنواصل.
 
-### Seeking problems
+### مشكلات التنقل في الملف
 
-There is a flaw in our implementation. First of all, let's remind ourselves how `io.Reader` is defined.
+في تنفيذنا خلل. أولاً، لنذكّر أنفسنا بكيفية تعريف `io.Reader`.
 
 ```go
 type Reader interface {
@@ -277,9 +277,9 @@ type Reader interface {
 }
 ```
 
-With our file, you can imagine it reading through byte by byte until the end. What happens if you try to `Read` a second time?
+مع ملفنا، يمكنك أن تتخيله يقرأ بايتاً بايتاً حتى النهاية. فماذا يحدث إن حاولت القراءة بـ`Read` مرة ثانية؟
 
-Add the following to the end of our current test.
+أضف ما يلي إلى نهاية اختبارنا الحالي.
 
 ```go
 //file_system_store_test.go
@@ -289,11 +289,11 @@ got = store.GetLeague()
 assertLeague(t, got, want)
 ```
 
-We want this to pass, but if you run the test it doesn't.
+نريد أن ينجح هذا، لكنه لا ينجح إن شغّلت الاختبار.
 
-The problem is our `Reader` has reached the end so there is nothing more to read. We need a way to tell it to go back to the start.
+المشكلة أن `Reader` قد وصل إلى النهاية، فلا يبقى شيء للقراءة. ونحتاج إلى وسيلة لنطلب منه العودة إلى البداية.
 
-[ReadSeeker](https://golang.org/pkg/io/#ReadSeeker) is another interface in the standard library that can help.
+الواجهة [ReadSeeker](https://golang.org/pkg/io/#ReadSeeker) واجهة أخرى في المكتبة القياسية يمكن أن تساعد.
 
 ```go
 type ReadSeeker interface {
@@ -302,7 +302,7 @@ type ReadSeeker interface {
 }
 ```
 
-Remember embedding? This is an interface comprised of `Reader` and [`Seeker`](https://golang.org/pkg/io/#Seeker)
+هل تذكر التضمين؟ هذه واجهة (interface) مركّبة من `Reader` و[`Seeker`](https://golang.org/pkg/io/#Seeker)
 
 ```go
 type Seeker interface {
@@ -310,7 +310,7 @@ type Seeker interface {
 }
 ```
 
-This sounds good, can we change `FileSystemPlayerStore` to take this interface instead?
+يبدو هذا جيداً، فهل يمكننا تغيير `FileSystemPlayerStore` ليأخذ هذه الواجهة بدلاً من ذلك؟
 
 ```go
 //file_system_store.go
@@ -325,11 +325,11 @@ func (f *FileSystemPlayerStore) GetLeague() []Player {
 }
 ```
 
-Try running the test, it now passes! Happily for us `strings.NewReader` that we used in our test also implements `ReadSeeker` so we didn't have to make any other changes.
+حاول تشغيل الاختبار، فهو ينجح الآن! ولحسن حظنا، `strings.NewReader` التي استعملناها في اختبارنا تحقق أيضاً `ReadSeeker`، لذا لم نضطر إلى إجراء أي تغييرات أخرى.
 
-Next we'll implement `GetPlayerScore`.
+بعد ذلك سننفّذ `GetPlayerScore`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 //file_system_store_test.go
@@ -350,15 +350,15 @@ t.Run("get player score", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./file_system_store_test.go:38:15: store.GetPlayerScore undefined (type FileSystemPlayerStore has no field or method GetPlayerScore)
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We need to add the method to our new type to get the test to compile.
+علينا إضافة الطريقة إلى نوعنا الجديد كي يُصرَّف الاختبار.
 
 ```go
 //file_system_store.go
@@ -367,7 +367,7 @@ func (f *FileSystemPlayerStore) GetPlayerScore(name string) int {
 }
 ```
 
-Now it compiles and the test fails
+صار يُصرَّف الآن والاختبار يفشل
 
 ```
 === RUN   TestFileSystemStore/get_player_score
@@ -375,9 +375,9 @@ Now it compiles and the test fails
         file_system_store_test.go:43: got 0 want 33
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We can iterate over the league to find the player and return their score
+يمكننا المرور على الدوري لإيجاد اللاعب وإعادة نتيجته
 
 ```go
 //file_system_store.go
@@ -396,9 +396,9 @@ func (f *FileSystemPlayerStore) GetPlayerScore(name string) int {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-You will have seen dozens of test helper refactorings so I'll leave this to you to make it work
+لقد رأيت عشرات عمليات إعادة هيكلة الدوال المساعدة للاختبار، لذا سأترك لك جعل هذا يعمل
 
 ```go
 //file_system_store_test.go
@@ -415,15 +415,15 @@ t.Run("get player score", func(t *testing.T) {
 })
 ```
 
-Finally, we need to start recording scores with `RecordWin`.
+وأخيراً، علينا البدء بتسجيل النتائج بـ`RecordWin`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Our approach is fairly short-sighted for writes. We can't (easily) just update one "row" of JSON in a file. We'll need to store the _whole_ new representation of our database on every write.
+أسلوبنا قصير النظر إلى حد ما في الكتابة. فلا نستطيع (بسهولة) تحديث "صف" واحد من JSON في ملف. بل سنحتاج إلى تخزين التمثيل الجديد _كاملاً_ لقاعدة بياناتنا مع كل كتابة.
 
-How do we write? We'd normally use a `Writer` but we already have our `ReadSeeker`. Potentially we could have two dependencies but the standard library already has an interface for us `ReadWriteSeeker` which lets us do all the things we'll need to do with a file.
+كيف نكتب؟ عادةً نستعمل `Writer`، لكن لدينا بالفعل `ReadSeeker`. يمكننا أن نجعل لدينا تبعيتين، لكن في المكتبة القياسية بالفعل واجهة لنا هي `ReadWriteSeeker`، تتيح لنا فعل كل ما سنحتاج إليه مع ملف.
 
-Let's update our type
+لنحدّث نوعنا
 
 ```go
 //file_system_store.go
@@ -432,7 +432,7 @@ type FileSystemPlayerStore struct {
 }
 ```
 
-See if it compiles
+لنرَ إن كان يُصرَّف
 
 ```
 ./file_system_store_test.go:15:34: cannot use database (type *strings.Reader) as type io.ReadWriteSeeker in field value:
@@ -441,18 +441,18 @@ See if it compiles
     *strings.Reader does not implement io.ReadWriteSeeker (missing Write method)
 ```
 
-It's not too surprising that `strings.Reader` does not implement `ReadWriteSeeker` so what do we do?
+ليس مفاجئاً كثيراً أن `strings.Reader` لا يحقق `ReadWriteSeeker`، فماذا نفعل؟
 
-We have two choices
+أمامنا خياران
 
-- Create a temporary file for each test. `*os.File` implements `ReadWriteSeeker`. The pro of this is it becomes more of an integration test, we're really reading and writing from the file system so it will give us a very high level of confidence. The cons are we prefer unit tests because they are faster and generally simpler. We will also need to do more work around creating temporary files and then making sure they're removed after the test.
-- We could use a third party library. [Mattetti](https://github.com/mattetti) has written a library [filebuffer](https://github.com/mattetti/filebuffer) which implements the interface we need and doesn't touch the file system.
+- إنشاء ملف مؤقت لكل اختبار. فالنوع `*os.File` يحقق `ReadWriteSeeker`. وميزة هذا أنه يصبح أقرب إلى اختبار تكامل، فنحن نقرأ ونكتب فعلاً من نظام الملفات، وهذا سيمنحنا مستوى عالياً جداً من الثقة. أما عيوبه فهي أننا نفضّل اختبارات الوحدة لأنها أسرع وأبسط عموماً. كما سنحتاج إلى مزيد من العمل حول إنشاء الملفات المؤقتة ثم التأكد من حذفها بعد الاختبار.
+- يمكننا استعمال مكتبة طرف ثالث. فقد كتب [Mattetti](https://github.com/mattetti) مكتبة [filebuffer](https://github.com/mattetti/filebuffer) تحقق الواجهة التي نحتاج إليها ولا تلمس نظام الملفات.
 
-I don't think there's an especially wrong answer here, but by choosing to use a third party library I would have to explain dependency management! So we will use files instead.
+لا أظن أن هناك إجابة خاطئة بشكل خاص هنا، لكن باختيار استعمال مكتبة طرف ثالث سأضطر إلى شرح إدارة التبعيات! لذا سنستعمل الملفات بدلاً من ذلك.
 
-Before adding our test we need to make our other tests compile by replacing the `strings.Reader` with an `os.File`.
+قبل إضافة اختبارنا، علينا جعل اختباراتنا الأخرى تُصرَّف باستبدال `strings.Reader` بـ`os.File`.
 
-Let's create some helper functions which will create a temporary file with some data inside it, and abstract our score tests
+لننشئ بعض الدوال المساعدة التي تنشئ ملفاً مؤقتاً فيه بعض البيانات، ونجرّد اختبارات النتائج
 
 ```go
 //file_system_store_test.go
@@ -483,9 +483,9 @@ func assertScoreEquals(t testing.TB, got, want int) {
 }
 ```
 
-[CreateTemp](https://pkg.go.dev/os#CreateTemp) creates a temporary file for us to use. The `"db"` value we've passed in is a prefix put on a random file name it will create. This is to ensure it won't clash with other files by accident.
+تنشئ [CreateTemp](https://pkg.go.dev/os#CreateTemp) ملفاً مؤقتاً لنستعمله. والقيمة `"db"` التي مررناها بادئة تُوضع على اسم ملف عشوائي ستنشئه. وهذا لضمان ألا يتعارض مع ملفات أخرى عن طريق الخطأ.
 
-You'll notice we're not only returning our `ReadWriteSeeker` (the file) but also a function. We need to make sure that the file is removed once the test is finished. We don't want to leak details of the files into the test as it's prone to error and uninteresting for the reader. By returning a `removeFile` function, we can take care of the details in our helper and all the caller has to do is run `defer cleanDatabase()`.
+ستلاحظ أننا لا نعيد `ReadWriteSeeker` (الملف) فقط، بل دالة أيضاً. فعلينا التأكد من حذف الملف بمجرد انتهاء الاختبار. ولا نريد تسريب تفاصيل الملفات إلى الاختبار، لأن ذلك عرضة للأخطاء وغير مثير لاهتمام القارئ. وبإعادة الدالة `removeFile` يمكننا الاعتناء بالتفاصيل في دالتنا المساعدة، وكل ما على المستدعي فعله هو تنفيذ `defer cleanDatabase()`.
 
 ```go
 //file_system_store_test.go
@@ -528,9 +528,9 @@ func TestFileSystemStore(t *testing.T) {
 }
 ```
 
-Run the tests and they should be passing! There were a fair amount of changes but now it feels like we have our interface definition complete and it should be very easy to add new tests from now.
+شغّل الاختبارات، وينبغي أن تنجح! كانت هناك تغييرات لا بأس بها، لكن يبدو الآن أن تعريف واجهتنا قد اكتمل، وينبغي أن تكون إضافة اختبارات جديدة سهلة جداً من الآن فصاعداً.
 
-Let's get the first iteration of recording a win for an existing player
+لننجز التكرار الأول لتسجيل فوز للاعب موجود
 
 ```go
 //file_system_store_test.go
@@ -550,13 +550,13 @@ t.Run("store wins for existing players", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./file_system_store_test.go:67:8: store.RecordWin undefined (type FileSystemPlayerStore has no field or method RecordWin)`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Add the new method
+أضف الطريقة الجديدة
 
 ```go
 //file_system_store.go
@@ -571,9 +571,9 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
         file_system_store_test.go:71: got 33 want 34
 ```
 
-Our implementation is empty so the old score is getting returned.
+تنفيذنا فارغ، لذا تُعاد النتيجة القديمة.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 //file_system_store.go
@@ -591,19 +591,19 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 }
 ```
 
-You may be asking yourself why I am doing `league[i].Wins++` rather than `player.Wins++`.
+لعلك تسأل نفسك لماذا أكتب `league[i].Wins++` بدلاً من `player.Wins++`.
 
-When you `range` over a slice you are returned the current index of the loop (in our case `i`) and a _copy_ of the element at that index. Changing the `Wins` value of a copy won't have any effect on the `league` slice that we iterate on. For that reason, we need to get the reference to the actual value by doing `league[i]` and then changing that value instead.
+حين تمر بـ`range` على شريحة (slice)، يُعاد إليك الفهرس الحالي للحلقة (في حالتنا `i`) و_نسخة_ من العنصر عند ذلك الفهرس. وتغيير قيمة `Wins` في النسخة لن يكون له أي أثر على الشريحة `league` التي نمر عليها. لهذا السبب، علينا الحصول على المرجع إلى القيمة الفعلية بكتابة `league[i]` ثم تغيير تلك القيمة بدلاً من ذلك.
 
-If you run the tests, they should now be passing.
+إن شغّلت الاختبارات، فينبغي أن تنجح الآن.
 
-## Refactor
+## أعد الهيكلة
 
-In `GetPlayerScore` and `RecordWin`, we are iterating over `[]Player` to find a player by name.
+في `GetPlayerScore` و`RecordWin` نمر على `[]Player` لإيجاد لاعب بالاسم.
 
-We could refactor this common code in the internals of `FileSystemStore` but to me, it feels like this is maybe useful code we can lift into a new type. Working with a "League" so far has always been with `[]Player` but we can create a new type called `League`. This will be easier for other developers to understand and then we can attach useful methods onto that type for us to use.
+يمكننا إعادة هيكلة هذه الشيفرة المشتركة داخل `FileSystemStore`، لكنها تبدو لي شيفرة مفيدة ربما يمكننا رفعها إلى نوع (type) جديد. فالعمل مع "الدوري" كان دائماً حتى الآن باستعمال `[]Player`، لكن يمكننا إنشاء نوع جديد باسم `League`. وهذا سيكون أسهل فهماً للمطورين الآخرين، ثم يمكننا إرفاق طرق مفيدة بذلك النوع لنستعملها.
 
-Inside `league.go` add the following
+أضف ما يلي داخل `league.go`
 
 ```go
 //league.go
@@ -619,11 +619,11 @@ func (l League) Find(name string) *Player {
 }
 ```
 
-Now if anyone has a `League` they can easily find a given player.
+والآن إن كان لدى أي أحد `League`، فيمكنه بسهولة إيجاد لاعب معيّن.
 
-Change our `PlayerStore` interface to return `League` rather than `[]Player`. Try to re-run the tests, you'll get a compilation problem because we've changed the interface but it's very easy to fix; just change the return type from `[]Player` to `League`.
+غيّر الواجهة `PlayerStore` لتعيد `League` بدلاً من `[]Player`. وحاول إعادة تشغيل الاختبارات، فستحصل على مشكلة تصريف لأننا غيّرنا الواجهة، لكن إصلاحها سهل جداً؛ غيّر فقط نوع القيمة المعادة من `[]Player` إلى `League`.
 
-This lets us simplify our methods in `file_system_store`.
+وهذا يتيح لنا تبسيط طرقنا في `file_system_store`.
 
 ```go
 //file_system_store.go
@@ -651,11 +651,11 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 }
 ```
 
-This is looking much better and we can see how we might be able to find other useful functionality around `League` that can be refactored.
+يبدو هذا أفضل بكثير، ويمكننا أن نرى كيف قد نجد وظائف مفيدة أخرى حول `League` يمكن إعادة هيكلتها.
 
-We now need to handle the scenario of recording wins of new players.
+علينا الآن معالجة سيناريو تسجيل مرات فوز لاعبين جدد.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 //file_system_store_test.go
@@ -675,7 +675,7 @@ t.Run("store wins for new players", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestFileSystemStore/store_wins_for_new_players#01
@@ -683,9 +683,9 @@ t.Run("store wins for new players", func(t *testing.T) {
         file_system_store_test.go:86: got 0 want 1
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We just need to handle the scenario where `Find` returns `nil` because it couldn't find the player.
+علينا فقط معالجة السيناريو الذي تعيد فيه `Find` القيمة `nil` لأنها لم تجد اللاعب.
 
 ```go
 //file_system_store.go
@@ -704,9 +704,9 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 }
 ```
 
-The happy path is looking ok so we can now try using our new `Store` in the integration test. This will give us more confidence that the software works and then we can delete the redundant `InMemoryPlayerStore`.
+يبدو المسار الناجح جيداً، لذا يمكننا الآن تجربة استعمال `Store` الجديد في اختبار التكامل. وهذا سيمنحنا ثقة أكبر بأن البرنامج يعمل، ثم يمكننا حذف `InMemoryPlayerStore` الزائد عن الحاجة.
 
-In `TestRecordingWinsAndRetrievingThem` replace the old store.
+استبدل المخزن القديم في `TestRecordingWinsAndRetrievingThem`.
 
 ```go
 //server_integration_test.go
@@ -715,7 +715,7 @@ defer cleanDatabase()
 store := &FileSystemPlayerStore{database}
 ```
 
-If you run the test it should pass and now we can delete `InMemoryPlayerStore`. `main.go` will now have compilation problems which will motivate us to now use our new store in the "real" code.
+إن شغّلت الاختبار فينبغي أن ينجح، ويمكننا الآن حذف `InMemoryPlayerStore`. وستظهر الآن مشكلات تصريف في `main.go`، وهذا سيدفعنا إلى استعمال مخزننا الجديد في الشيفرة "الحقيقية".
 
 ```go
 // main.go
@@ -745,17 +745,17 @@ func main() {
 }
 ```
 
-- We create a file for our database.
-- The 2nd argument to `os.OpenFile` lets you define the permissions for opening the file, in our case `O_RDWR` means we want to read and write _and_ `os.O_CREATE` means create the file if it doesn't exist.
-- The 3rd argument means sets permissions for the file, in our case, all users can read and write the file. [(See superuser.com for a more detailed explanation)](https://superuser.com/questions/295591/what-is-the-meaning-of-chmod-666).
+- ننشئ ملفاً لقاعدة بياناتنا.
+- الوسيط الثاني لـ`os.OpenFile` يتيح لك تحديد أذونات فتح الملف، وفي حالتنا `O_RDWR` تعني أننا نريد القراءة والكتابة، _و_`os.O_CREATE` تعني إنشاء الملف إن لم يكن موجوداً.
+- الوسيط الثالث يضبط أذونات الملف، وفي حالتنا يستطيع كل المستخدمين قراءة الملف والكتابة فيه. [(انظر superuser.com لشرح أكثر تفصيلاً)](https://superuser.com/questions/295591/what-is-the-meaning-of-chmod-666).
 
-Running the program now persists the data in a file in between restarts, hooray!
+صار تشغيل البرنامج الآن يحفظ البيانات في ملف بين عمليات إعادة التشغيل، رائع!
 
-## More refactoring and performance concerns
+## مزيد من إعادة الهيكلة واهتمامات الأداء
 
-Every time someone calls `GetLeague()` or `GetPlayerScore()` we are reading the entire file and parsing it into JSON. We should not have to do that because `FileSystemStore` is entirely responsible for the state of the league; it should only need to read the file when the program starts up and only need to update the file when data changes.
+في كل مرة يستدعي فيها أحدهم `GetLeague()` أو `GetPlayerScore()` نقرأ الملف كله ونحلله من JSON. ولا ينبغي أن نضطر إلى ذلك، لأن `FileSystemStore` مسؤول بالكامل عن حالة الدوري؛ فلا ينبغي أن يحتاج إلى قراءة الملف إلا حين يبدأ البرنامج، ولا إلى تحديثه إلا حين تتغير البيانات.
 
-We can create a constructor which can do some of this initialisation for us and store the league as a value in our `FileSystemStore` to be used on the reads instead.
+يمكننا إنشاء دالة بانية تجري لنا بعض هذه التهيئة، وتخزّن الدوري كقيمة في `FileSystemStore` لتُستعمل في عمليات القراءة بدلاً من ذلك.
 
 ```go
 //file_system_store.go
@@ -774,7 +774,7 @@ func NewFileSystemPlayerStore(database io.ReadWriteSeeker) *FileSystemPlayerStor
 }
 ```
 
-This way we only have to read from disk once. We can now replace all of our previous calls to getting the league from disk and just use `f.league` instead.
+بهذه الطريقة لا نضطر إلى القراءة من القرص إلا مرة واحدة. ويمكننا الآن استبدال كل استدعاءاتنا السابقة لجلب الدوري من القرص، واستعمال `f.league` بدلاً منها.
 
 ```go
 //file_system_store.go
@@ -807,19 +807,19 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 }
 ```
 
-If you try to run the tests it will now complain about initialising `FileSystemPlayerStore` so just fix them by calling our new constructor.
+إن حاولت تشغيل الاختبارات فستعترض الآن على تهيئة `FileSystemPlayerStore`، فأصلحها فقط باستدعاء الدالة البانية الجديدة.
 
-### Another problem
+### مشكلة أخرى
 
-There is some more naivety in the way we are dealing with files which _could_ create a very nasty bug down the line.
+هناك سذاجة أخرى في طريقة تعاملنا مع الملفات _قد_ تُحدث خطأً برمجياً سيئاً جداً لاحقاً.
 
-When we `RecordWin`, we `Seek` back to the start of the file and then write the new data—but what if the new data was smaller than what was there before?
+حين ننفّذ `RecordWin` نعود بـ`Seek` إلى بداية الملف ثم نكتب البيانات الجديدة، لكن ماذا لو كانت البيانات الجديدة أصغر مما كان موجوداً من قبل؟
 
-In our current case, this is impossible. We never edit or delete scores so the data can only get bigger. However, it would be irresponsible for us to leave the code like this; it's not unthinkable that a delete scenario could come up.
+في حالتنا الحالية، هذا مستحيل. فنحن لا نعدّل النتائج ولا نحذفها أبداً، لذا لا يمكن للبيانات إلا أن تكبر. لكن من غير المسؤول أن نترك الشيفرة هكذا؛ فليس من المستبعد أن يظهر سيناريو حذف.
 
-How will we test for this though? What we need to do is first refactor our code so we separate out the concern of the _kind of data we write, from the writing_. We can then test that separately to check it works how we hope.
+لكن كيف سنختبر هذا؟ ما علينا فعله أولاً هو إعادة هيكلة شيفرتنا بحيث نفصل اهتمام _نوع البيانات التي نكتبها عن عملية الكتابة نفسها_. ثم يمكننا اختبار ذلك منفصلاً للتحقق من أنه يعمل كما نأمل.
 
-We'll create a new type to encapsulate our "when we write we go from the beginning" functionality. I'm going to call it `Tape`. Create a new file with the following:
+سننشئ نوعاً جديداً لتغليف وظيفة "حين نكتب نبدأ من البداية". وسأسميه `Tape`. أنشئ ملفاً جديداً بما يلي:
 
 ```go
 // tape.go
@@ -837,7 +837,7 @@ func (t *tape) Write(p []byte) (n int, err error) {
 }
 ```
 
-Notice that we're only implementing `Write` now, as it encapsulates the `Seek` part. This means our `FileSystemStore` can just have a reference to a `Writer` instead.
+لاحظ أننا لا ننفّذ الآن إلا `Write`، لأنها تغلّف جزء `Seek`. وهذا يعني أن `FileSystemStore` يمكن أن يحتفظ بمرجع إلى `Writer` بدلاً من ذلك.
 
 ```go
 //file_system_store.go
@@ -847,7 +847,7 @@ type FileSystemPlayerStore struct {
 }
 ```
 
-Update the constructor to use `Tape`
+حدّث الدالة البانية لتستعمل `Tape`
 
 ```go
 //file_system_store.go
@@ -862,13 +862,13 @@ func NewFileSystemPlayerStore(database io.ReadWriteSeeker) *FileSystemPlayerStor
 }
 ```
 
-Finally, we can get the amazing payoff we wanted by removing the `Seek` call from `RecordWin`. Yes, it doesn't feel much, but at least it means if we do any other kind of writes we can rely on our `Write` to behave how we need it to. Plus it will now let us test the potentially problematic code separately and fix it.
+وأخيراً، يمكننا الحصول على المكسب المذهل الذي أردناه بحذف استدعاء `Seek` من `RecordWin`. نعم، لا يبدو الأمر كبيراً، لكنه على الأقل يعني أننا إن أجرينا أي نوع آخر من الكتابة، يمكننا الاعتماد على `Write` لتتصرف كما نحتاج إليها. وفوق ذلك، سيتيح لنا الآن اختبار الشيفرة التي قد تكون إشكالية بشكل منفصل وإصلاحها.
 
-Let's write the test where we want to update the entire contents of a file with something that is smaller than the original contents.
+لنكتب الاختبار الذي نريد فيه تحديث المحتويات الكاملة لملف بشيء أصغر من المحتويات الأصلية.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Our test will create a file with some content, try to write to it using the `tape`, and read it all again to see what's in the file. In `tape_test.go`:
+سينشئ اختبارنا ملفاً فيه بعض المحتوى، ويحاول الكتابة فيه باستعمال `tape`، ثم يقرأ كل شيء مجدداً ليرى ما في الملف. في `tape_test.go`:
 
 ```go
 //tape_test.go
@@ -892,7 +892,7 @@ func TestTape_Write(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestTape_Write
@@ -900,13 +900,13 @@ func TestTape_Write(t *testing.T) {
     tape_test.go:23: got 'abc45' want 'abc'
 ```
 
-As we thought! It writes the data we want, but leaves the rest of the original data remaining.
+كما توقعنا! فهو يكتب البيانات التي نريدها، لكنه يترك بقية البيانات الأصلية.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-`os.File` has a truncate function that will let us effectively empty the file. We should be able to just call this to get what we want.
+للنوع `os.File` دالة اقتطاع تتيح لنا تفريغ الملف فعلياً. وينبغي أن نستطيع استدعاءها فقط للحصول على ما نريد.
 
-Change `tape` to the following:
+غيّر `tape` إلى ما يلي:
 
 ```go
 //tape.go
@@ -921,17 +921,17 @@ func (t *tape) Write(p []byte) (n int, err error) {
 }
 ```
 
-The compiler will fail in a number of places where we are expecting an `io.ReadWriteSeeker` but we are sending in `*os.File`. You should be able to fix these problems yourself by now but if you get stuck just check the source code.
+سيفشل المصرِّف (compiler) في عدد من الأماكن التي نتوقع فيها `io.ReadWriteSeeker` لكننا نرسل `*os.File`. ينبغي أن تستطيع إصلاح هذه المشكلات بنفسك الآن، لكن إن علقت فراجع الشيفرة المصدرية.
 
-Once you get it refactoring our `TestTape_Write` test should be passing!
+وبمجرد أن تنجز إعادة الهيكلة، ينبغي أن ينجح اختبار `TestTape_Write`!
 
-### One other small refactor
+### إعادة هيكلة صغيرة أخرى
 
-In `RecordWin` we have the line `json.NewEncoder(f.database).Encode(f.league)`.
+لدينا في `RecordWin` السطر `json.NewEncoder(f.database).Encode(f.league)`.
 
-We don't need to create a new encoder every time we write, we can initialise one in our constructor and use that instead.
+لا نحتاج إلى إنشاء مرمِّز جديد في كل مرة نكتب فيها، بل يمكننا تهيئة واحد في الدالة البانية واستعماله بدلاً من ذلك.
 
-Store a reference to an `Encoder` in our type and initialise it in the constructor:
+خزّن مرجعاً إلى `Encoder` في نوعنا وهيّئه في الدالة البانية:
 
 ```go
 //file_system_store.go
@@ -951,7 +951,7 @@ func NewFileSystemPlayerStore(file *os.File) *FileSystemPlayerStore {
 }
 ```
 
-Use it in `RecordWin`.
+استعمله في `RecordWin`.
 
 ```go
 func (f *FileSystemPlayerStore) RecordWin(name string) {
@@ -967,23 +967,23 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 }
 ```
 
-## Didn't we just break some rules there? Testing private things? No interfaces?
+## ألم نخرق للتو بعض القواعد؟ اختبار أشياء خاصة؟ بلا واجهات؟
 
-### On testing private types
+### عن اختبار الأنواع الخاصة
 
-It's true that _in general_ you should favour not testing private things as that can sometimes lead to your tests being too tightly coupled to the implementation, which can hinder refactoring in future.
+صحيح أنه ينبغي _عموماً_ أن تفضّل عدم اختبار الأشياء الخاصة، لأن ذلك قد يقود أحياناً إلى اقتران اختباراتك بالتنفيذ بشدة، وهذا قد يعيق إعادة الهيكلة مستقبلاً.
 
-However, we must not forget that tests should give us _confidence_.
+لكن يجب ألا ننسى أن الاختبارات ينبغي أن تمنحنا _الثقة_.
 
-We were not confident that our implementation would work if we added any kind of edit or delete functionality. We did not want to leave the code like that, especially if this was being worked on by more than one person who may not be aware of the shortcomings of our initial approach.
+لم نكن واثقين من أن تنفيذنا سيعمل إن أضفنا أي نوع من وظائف التعديل أو الحذف. ولم نرد ترك الشيفرة هكذا، خصوصاً إن كان يعمل عليها أكثر من شخص قد لا يكون مدركاً لقصور أسلوبنا الأولي.
 
-Finally, it's just one test! If we decide to change the way it works it won't be a disaster to just delete the test but we have at the very least captured the requirement for future maintainers.
+وأخيراً، إنه اختبار واحد فقط! فإن قررنا تغيير طريقة عمله، فلن يكون حذف الاختبار كارثة، لكننا على الأقل جسّدنا المتطلب لمن سيصونون الشيفرة مستقبلاً.
 
-### Interfaces
+### الواجهات
 
-We started off the code by using `io.Reader` as that was the easiest path for us to unit test our new `PlayerStore`. As we developed the code we moved on to `io.ReadWriter` and then `io.ReadWriteSeeker`. We then found out there was nothing in the standard library that actually implemented that apart from `*os.File`. We could've taken the decision to write our own or use an open source one but it felt pragmatic just to make temporary files for the tests.
+بدأنا الشيفرة باستعمال `io.Reader`، لأن ذلك كان أسهل مسار لنا لاختبار `PlayerStore` الجديد باختبارات الوحدة. ومع تطويرنا للشيفرة انتقلنا إلى `io.ReadWriter` ثم `io.ReadWriteSeeker`. ثم اكتشفنا أنه لا شيء في المكتبة القياسية يحقق ذلك فعلاً باستثناء `*os.File`. وكان بإمكاننا أن نقرر كتابة واحد خاص بنا أو استعمال واحد مفتوح المصدر، لكن بدا من العملي إنشاء ملفات مؤقتة للاختبارات فحسب.
 
-Finally, we needed `Truncate` which is also on `*os.File`. It would've been an option to create our own interface capturing these requirements.
+وأخيراً، احتجنا إلى `Truncate` الموجودة أيضاً في `*os.File`. وكان من الخيارات إنشاء واجهة خاصة بنا تجسّد هذه المتطلبات.
 
 ```go
 type ReadWriteSeekTruncate interface {
@@ -992,21 +992,21 @@ type ReadWriteSeekTruncate interface {
 }
 ```
 
-But what is this really giving us? Bear in mind we are _not mocking_ and it is unrealistic for a **file system** store to take any type other than an `*os.File` so we don't need the polymorphism that interfaces give us.
+لكن ما الذي يمنحنا إياه هذا حقاً؟ تذكّر أننا _لا نحاكي_، ومن غير الواقعي أن يأخذ مخزن **نظام الملفات** أي نوع غير `*os.File`، لذا لا نحتاج إلى تعدد الأشكال الذي تمنحنا إياه الواجهات.
 
-Don't be afraid to chop and change types and experiment like we have here. The great thing about using a statically typed language is the compiler will help you with every change.
+لا تخف من تبديل الأنواع وتغييرها والتجريب كما فعلنا هنا. فالرائع في استعمال لغة ثابتة الأنواع أن المصرِّف سيساعدك مع كل تغيير.
 
-## Error handling
+## معالجة الأخطاء
 
-Before we start working on sorting we should make sure we're happy with our current code and remove any technical debt we may have. It's an important principle to get to working software as quickly as possible (stay out of the red state) but that doesn't mean we should ignore error cases!
+قبل أن نبدأ العمل على الترتيب، ينبغي أن نتأكد من رضانا عن شيفرتنا الحالية ونزيل أي دَين تقني قد يكون لدينا. فمن المبادئ المهمة الوصول إلى برنامج يعمل بأسرع ما يمكن (البقاء خارج الحالة الحمراء)، لكن هذا لا يعني أن نتجاهل حالات الخطأ!
 
-If we go back to `FileSystemStore.go` we have `league, _ := NewLeague(f.database)` in our constructor.
+إن عدنا إلى `FileSystemStore.go` فسنجد في الدالة البانية `league, _ := NewLeague(f.database)`.
 
-`NewLeague` can return an error if it is unable to parse the league from the `io.Reader` that we provide.
+يمكن أن تعيد `NewLeague` خطأً (error) إن لم تستطع تحليل الدوري من `io.Reader` الذي نقدّمه.
 
-It was pragmatic to ignore that at the time as we already had failing tests. If we had tried to tackle it at the same time, we would have been juggling two things at once.
+كان من العملي تجاهل ذلك في حينه لأن لدينا بالفعل اختبارات فاشلة. ولو حاولنا معالجته في الوقت نفسه، لكنا نتلاعب بأمرين معاً.
 
-Let's make it so our constructor is capable of returning an error.
+لنجعل الدالة البانية قادرة على إعادة خطأ.
 
 ```go
 //file_system_store.go
@@ -1025,7 +1025,7 @@ func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 }
 ```
 
-Remember it is very important to give helpful error messages (just like your tests). People on the internet jokingly say that most Go code is:
+تذكّر أن من المهم جداً إعطاء رسائل خطأ مفيدة (تماماً كما في اختباراتك). يقول الناس على الإنترنت مازحين إن معظم شيفرة غو (Go) هي:
 
 ```go
 if err != nil {
@@ -1033,9 +1033,9 @@ if err != nil {
 }
 ```
 
-**That is 100% not idiomatic.** Adding contextual information (i.e what you were doing to cause the error) to your error messages makes operating your software far easier.
+**هذا ليس الأسلوب المعتاد في اللغة بنسبة 100%.** فإضافة معلومات سياقية (أي ما كنت تفعله حين حدث الخطأ) إلى رسائل الخطأ تجعل تشغيل برنامجك وإدارته أسهل بكثير.
 
-If you try to compile you'll get some errors.
+إن حاولت التصريف فستحصل على بعض الأخطاء.
 
 ```
 ./main.go:18:35: multiple-value NewFileSystemPlayerStore() in single-value context
@@ -1046,7 +1046,7 @@ If you try to compile you'll get some errors.
 ./server_integration_test.go:12:35: multiple-value NewFileSystemPlayerStore() in single-value context
 ```
 
-In main we'll want to exit the program, printing the error.
+في `main` سنريد إنهاء البرنامج مع طباعة الخطأ.
 
 ```go
 //main.go
@@ -1057,7 +1057,7 @@ if err != nil {
 }
 ```
 
-In the tests we should assert there is no error. We can make a helper to help with this.
+وفي الاختبارات ينبغي أن نؤكد عدم وجود خطأ. ويمكننا صنع دالة مساعدة لذلك.
 
 ```go
 //file_system_store_test.go
@@ -1069,7 +1069,7 @@ func assertNoError(t testing.TB, err error) {
 }
 ```
 
-Work through the other compilation problems using this helper. Finally, you should have a failing test:
+عالج مشكلات التصريف الأخرى باستعمال هذه الدالة المساعدة. وأخيراً، ينبغي أن يكون لديك اختبار فاشل:
 
 ```
 === RUN   TestRecordingWinsAndRetrievingThem
@@ -1077,9 +1077,9 @@ Work through the other compilation problems using this helper. Finally, you shou
     server_integration_test.go:14: didn't expect an error but got one, problem loading player store from file /var/folders/nj/r_ccbj5d7flds0sf63yy4vb80000gn/T/db841037437, problem parsing league, EOF
 ```
 
-We cannot parse the league because the file is empty. We weren't getting errors before because we always just ignored them.
+لا نستطيع تحليل الدوري لأن الملف فارغ. ولم نكن نحصل على أخطاء من قبل لأننا كنا نتجاهلها دائماً.
 
-Let's fix our big integration test by putting some valid JSON in it:
+لنصلح اختبار التكامل الكبير بوضع بعض JSON الصالح فيه:
 
 ```go
 //server_integration_test.go
@@ -1089,9 +1089,9 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 }
 ```
 
-Now that all the tests are passing, we need to handle the scenario where the file is empty.
+والآن بعد أن نجحت كل الاختبارات، علينا معالجة سيناريو الملف الفارغ.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 //file_system_store_test.go
@@ -1105,7 +1105,7 @@ t.Run("works with an empty file", func(t *testing.T) {
 })
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestFileSystemStore/works_with_an_empty_file
@@ -1113,9 +1113,9 @@ t.Run("works with an empty file", func(t *testing.T) {
         file_system_store_test.go:108: didn't expect an error but got one, problem loading player store from file /var/folders/nj/r_ccbj5d7flds0sf63yy4vb80000gn/T/db019548018, problem parsing league, EOF
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Change our constructor to the following
+غيّر الدالة البانية إلى ما يلي
 
 ```go
 //file_system_store.go
@@ -1147,11 +1147,11 @@ func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 }
 ```
 
-`file.Stat` returns stats on our file, which lets us check the size of the file. If it's empty, we `Write` an empty JSON array and `Seek` back to the start, ready for the rest of the code.
+تعيد `file.Stat` إحصاءات عن ملفنا، مما يتيح لنا التحقق من حجم الملف. فإن كان فارغاً، نكتب بـ`Write` مصفوفة JSON فارغة، ونعود بـ`Seek` إلى البداية، استعداداً لبقية الشيفرة.
 
-## Refactor
+## أعد الهيكلة
 
-Our constructor is a bit messy now, so let's extract the initialise code into a function:
+صارت الدالة البانية فوضوية بعض الشيء الآن، فلنستخرج شيفرة التهيئة إلى دالة:
 
 ```go
 //file_system_store.go
@@ -1196,15 +1196,15 @@ func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 }
 ```
 
-## Sorting
+## الترتيب
 
-Our product owner wants `/league` to return the players sorted by their scores, from highest to lowest.
+تريد مالكة المنتج أن تعيد `/league` اللاعبين مرتبين بحسب نتائجهم، من الأعلى إلى الأدنى.
 
-The main decision to make here is where in the software should this happen. If we were using a "real" database we would use things like `ORDER BY` so the sorting is super fast. For that reason, it feels like implementations of `PlayerStore` should be responsible.
+القرار الأساسي هنا هو أين ينبغي أن يحدث هذا في البرنامج. فلو كنا نستعمل قاعدة بيانات "حقيقية" لاستعملنا أشياء مثل `ORDER BY` ليكون الترتيب سريعاً جداً. لهذا السبب، يبدو أن تنفيذات `PlayerStore` ينبغي أن تكون المسؤولة.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We can update the assertion on our first test in `TestFileSystemStore`:
+يمكننا تحديث التوكيد في اختبارنا الأول في `TestFileSystemStore`:
 
 ```go
 //file_system_store_test.go
@@ -1233,9 +1233,9 @@ t.Run("league sorted", func(t *testing.T) {
 })
 ```
 
-The order of the JSON coming in is in the wrong order and our `want` will check that it is returned to the caller in the correct order.
+ترتيب JSON الوارد خاطئ، وسيتحقق `want` من أنه يُعاد إلى المستدعي بالترتيب الصحيح.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestFileSystemStore/league_from_a_reader,_sorted
@@ -1244,7 +1244,7 @@ The order of the JSON coming in is in the wrong order and our `want` will check 
         file_system_store_test.go:51: got [{Cleo 10} {Chris 33}] want [{Chris 33} {Cleo 10}]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func (f *FileSystemPlayerStore) GetLeague() League {
@@ -1255,31 +1255,31 @@ func (f *FileSystemPlayerStore) GetLeague() League {
 }
 ```
 
-[`sort.Slice`](https://golang.org/pkg/sort/#Slice)
+الدالة [`sort.Slice`](https://golang.org/pkg/sort/#Slice)
 
-> Slice sorts the provided slice given the provided less function.
+> ترتّب `Slice` الشريحة المقدّمة بحسب دالة "أصغر من" المقدّمة.
 
-Easy!
+سهل!
 
-## Wrapping up
+## الخلاصة
 
-### What we've covered
+### ما تناولناه
 
-- The `Seeker` interface and its relation to `Reader` and `Writer`.
-- Working with files.
-- Creating an easy to use helper for testing with files that hides all the messy stuff.
-- `sort.Slice` for sorting slices.
-- Using the compiler to help us safely make structural changes to the application.
+- الواجهة `Seeker` وعلاقتها بـ`Reader` و`Writer`.
+- العمل مع الملفات.
+- إنشاء دالة مساعدة سهلة الاستعمال للاختبار مع الملفات تخفي كل الأشياء الفوضوية.
+- الدالة `sort.Slice` لترتيب الشرائح.
+- استعمال المصرِّف لمساعدتنا على إجراء تغييرات بنيوية في التطبيق بأمان.
 
-### Breaking rules
+### خرق القواعد
 
-- Most rules in software engineering aren't really rules, just best practices that work 80% of the time.
-- We discovered a scenario where one of our previous "rules" of not testing internal functions was not helpful for us so we broke the rule.
-- It's important when breaking rules to understand the trade-off you are making. In our case, we were ok with it because it was just one test and would've been very difficult to exercise the scenario otherwise.
-- In order to be able to break the rules **you must understand them first**. An analogy is with learning guitar. It doesn't matter how creative you think you are, you must understand and practice the fundamentals.
+- معظم القواعد في هندسة البرمجيات ليست قواعد حقاً، بل أفضل ممارسات تنجح في 80% من الأحيان.
+- اكتشفنا سيناريو لم تكن فيه إحدى "قواعدنا" السابقة، وهي عدم اختبار الدوال الداخلية، مفيدة لنا، فخرقنا القاعدة.
+- من المهم عند خرق القواعد أن تفهم المقايضة التي تقوم بها. ففي حالتنا لم نمانع لأنه كان اختباراً واحداً فقط، وكان سيصعب جداً اختبار السيناريو بطريقة أخرى.
+- لكي تستطيع خرق القواعد **عليك أن تفهمها أولاً**. والتشبيه هنا بتعلّم الغيتار. فلا يهم مدى إبداعك في نظرك، عليك أن تفهم الأساسيات وتتمرن عليها.
 
-### Where our software is at
+### أين وصل برنامجنا
 
-- We have an HTTP API where you can create players and increment their score.
-- We can return a league of everyone's scores as JSON.
-- The data is persisted as a JSON file.
+- لدينا واجهة برمجية عبر HTTP تستطيع فيها إنشاء لاعبين وزيادة نتائجهم.
+- نستطيع إعادة دوري بنتائج الجميع بصيغة JSON.
+- تُحفظ البيانات في ملف JSON.
