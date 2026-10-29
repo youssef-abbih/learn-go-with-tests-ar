@@ -1,12 +1,12 @@
-# JSON, routing & embedding
+# صيغة JSON والتوجيه والتضمين
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/json)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/json)**
 
-[In the previous chapter](http-server.md) we created a web server to store how many games players have won.
+[في الفصل السابق](http-server.md) أنشأنا خادم ويب يخزّن عدد المباريات التي فاز بها اللاعبون.
 
-Our product owner has a new requirement; to have a new endpoint called `/league` which returns a list of all players stored. She would like this to be returned as JSON.
+لدى مالكة المنتج متطلب جديد: نقطة نهاية جديدة اسمها `/league` تعيد قائمة بكل اللاعبين المخزّنين. وتريد أن تُعاد القائمة بصيغة JSON تحديداً.
 
-## Here is the code we have so far
+## إليك الشيفرة التي لدينا حتى الآن
 
 ```go
 // server.go
@@ -91,13 +91,13 @@ func main() {
 }
 ```
 
-You can find the corresponding tests in the link at the top of the chapter.
+يمكنك إيجاد الاختبارات المقابلة في الرابط أعلى الفصل.
 
-We'll start by making the league table endpoint.
+سنبدأ بصنع نقطة النهاية الخاصة بجدول الدوري.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We'll extend the existing suite as we have some useful test functions and a fake `PlayerStore` to use.
+سنوسّع المجموعة الحالية لأن لدينا فيها بعض دوال الاختبار المفيدة و`PlayerStore` مزيفاً نستعمله.
 
 ```go
 //server_test.go
@@ -116,9 +116,9 @@ func TestLeague(t *testing.T) {
 }
 ```
 
-Before worrying about actual scores and JSON we will try and keep the changes small with the plan to iterate toward our goal. The simplest start is to check we can hit `/league` and get an `OK` back.
+قبل القلق بشأن النتائج الفعلية وJSON، سنحاول إبقاء التغييرات صغيرة مع خطة للتقدم تكرارياً نحو هدفنا. وأبسط بداية هي التحقق من أننا نستطيع الوصول إلى `/league` والحصول على `OK`.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
     --- FAIL: TestLeague/it_returns_200_on_/league (0.00s)
@@ -128,19 +128,19 @@ FAIL	playerstore	0.221s
 FAIL
 ```
 
-Our `PlayerServer` returns a `404 Not Found`, as if we were trying to get the wins for an unknown player. Looking at how `server.go` implements `ServeHTTP`, we realize that it always assumes to be called with a URL pointing to a specific player:
+يعيد `PlayerServer` لدينا `404 Not Found`، وكأننا نحاول الحصول على مرات فوز لاعب غير معروف. وبالنظر إلى كيفية تنفيذ `server.go` للطريقة `ServeHTTP`، ندرك أنه يفترض دائماً أنه يُستدعى بعنوان URL يشير إلى لاعب محدد:
 
 ```go
 player := strings.TrimPrefix(r.URL.Path, "/players/")
 ```
 
-In the previous chapter, we mentioned this was a fairly naive way of doing our routing. Our test informs us correctly that we need a concept how to deal with different request paths.
+ذكرنا في الفصل السابق أن هذه طريقة ساذجة إلى حد ما في التوجيه. ويخبرنا اختبارنا (test) بشكل صحيح أننا نحتاج إلى مفهوم للتعامل مع مسارات الطلبات المختلفة.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Go has a built-in routing mechanism called [`ServeMux`](https://golang.org/pkg/net/http/#ServeMux) (request multiplexer) which lets you attach `http.Handler`s to particular request paths.
+لدى غو (Go) آلية توجيه مدمجة اسمها [`ServeMux`](https://golang.org/pkg/net/http/#ServeMux) (مُوزِّع الطلبات)، تتيح لك ربط قيم `http.Handler` بمسارات طلبات معيّنة.
 
-Let's commit some sins and get the tests passing in the quickest way we can, knowing we can refactor it with safety once we know the tests are passing.
+لنرتكب بعض الخطايا ونجعل الاختبارات تنجح بأسرع طريقة ممكنة، عالمين أننا نستطيع إعادة الهيكلة بأمان بمجرد أن نعرف أن الاختبارات تنجح.
 
 ```go
 //server.go
@@ -167,16 +167,16 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-- When the request starts we create a router and then we tell it for `x` path use `y` handler.
-- So for our new endpoint, we use `http.HandlerFunc` and an _anonymous function_ to `w.WriteHeader(http.StatusOK)` when `/league` is requested to make our new test pass.
-- For the `/players/` route we just cut and paste our code into another `http.HandlerFunc`.
-- Finally, we handle the request that came in by calling our new router's `ServeHTTP` (notice how `ServeMux` is _also_ an `http.Handler`?)
+- حين يبدأ الطلب ننشئ موجِّهاً، ثم نخبره أن يستعمل المعالج `y` للمسار `x`.
+- فلنقطة النهاية الجديدة، نستعمل `http.HandlerFunc` و_دالة مجهولة_ تنفّذ `w.WriteHeader(http.StatusOK)` حين يُطلب `/league`، لجعل اختبارنا الجديد ينجح.
+- وللمسار `/players/` نقص شيفرتنا ونلصقها في `http.HandlerFunc` أخرى.
+- وأخيراً، نعالج الطلب الوارد باستدعاء `ServeHTTP` الخاصة بالموجِّه الجديد (هل لاحظت أن `ServeMux` هو _أيضاً_ `http.Handler`؟)
 
-The tests should now pass.
+ينبغي أن تنجح الاختبارات الآن.
 
-## Refactor
+## أعد الهيكلة
 
-`ServeHTTP` is looking quite big, we can separate things out a bit by refactoring our handlers into separate methods.
+تبدو `ServeHTTP` كبيرة إلى حد ما، ويمكننا فصل الأشياء قليلاً بإعادة هيكلة معالجاتنا (handlers) في طرق منفصلة.
 
 ```go
 //server.go
@@ -205,7 +205,7 @@ func (p *PlayerServer) playersHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-It's quite odd (and inefficient) to be setting up a router as a request comes in and then calling it. What we ideally want to do is have some kind of `NewPlayerServer` function which will take our dependencies and do the one-time setup of creating the router. Each request can then just use that one instance of the router.
+من الغريب (وغير الكفء) إعداد موجِّه حين يصل الطلب ثم استدعاؤه. فما نريده في الوضع المثالي هو دالة (function) ما مثل `NewPlayerServer` تأخذ تبعياتنا وتجري الإعداد لمرة واحدة بإنشاء الموجِّه. ثم يستطيع كل طلب ببساطة استعمال تلك النسخة الواحدة من الموجِّه.
 
 ```go
 //server.go
@@ -231,13 +231,13 @@ func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-- `PlayerServer` now needs to store a router.
-- We have moved the routing creation out of `ServeHTTP` and into our `NewPlayerServer` so this only has to be done once, not per request.
-- You will need to update all the test and production code where we used to do `PlayerServer{&store}` with `NewPlayerServer(&store)`.
+- صار `PlayerServer` يحتاج الآن إلى تخزين موجِّه.
+- نقلنا إنشاء التوجيه من `ServeHTTP` إلى `NewPlayerServer`، فلا يلزم فعله إلا مرة واحدة، لا مع كل طلب.
+- ستحتاج إلى تحديث كل شيفرة الاختبار والإنتاج التي كنا نكتب فيها `PlayerServer{&store}` لتصبح `NewPlayerServer(&store)`.
 
-### One final refactor
+### إعادة هيكلة أخيرة
 
-Try changing the code to the following.
+جرّب تغيير الشيفرة إلى ما يلي.
 
 ```go
 type PlayerServer struct {
@@ -260,25 +260,25 @@ func NewPlayerServer(store PlayerStore) *PlayerServer {
 }
 ```
 
-Then replace `server := &PlayerServer{&store}` with `server := NewPlayerServer(&store)` in `server_test.go`, `server_integration_test.go`, and `main.go`.
+ثم استبدل `server := &PlayerServer{&store}` بـ`server := NewPlayerServer(&store)` في `server_test.go` و`server_integration_test.go` و`main.go`.
 
-Finally make sure you **delete** `func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request)` as it is no longer needed!
+وأخيراً تأكد من **حذف** `func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request)` لأنها لم تعد لازمة!
 
-## Embedding
+## التضمين
 
-We changed the second property of `PlayerServer`, removing the named property `router http.ServeMux` and replaced it with `http.Handler`; this is called _embedding_.
+غيّرنا الخاصية الثانية في `PlayerServer`، فحذفنا الخاصية المسماة `router http.ServeMux` واستبدلناها بـ`http.Handler`؛ وهذا يسمى _التضمين_ (embedding).
 
-> Go does not provide the typical, type-driven notion of subclassing, but it does have the ability to “borrow” pieces of an implementation by embedding types within a struct or interface.
+> لا توفر غو المفهوم المعتاد للتصنيف الفرعي المقاد بالأنواع، لكن لديها القدرة على "استعارة" أجزاء من تنفيذ ما بتضمين أنواع داخل بنية أو واجهة.
 
-[Effective Go - Embedding](https://golang.org/doc/effective_go.html#embedding)
+من كتاب [Effective Go: التضمين](https://golang.org/doc/effective_go.html#embedding)
 
-What this means is that our `PlayerServer` now has all the methods that `http.Handler` has, which is just `ServeHTTP`.
+معنى هذا أن `PlayerServer` صار لديه الآن كل الطرق التي لدى `http.Handler`، وهي `ServeHTTP` فقط.
 
-To "fill in" the `http.Handler` we assign it to the `router` we create in `NewPlayerServer`. We can do this because `http.ServeMux` has the method `ServeHTTP`.
+ولـ"ملء" `http.Handler` نسنده إلى `router` الذي ننشئه في `NewPlayerServer`. ويمكننا فعل ذلك لأن `http.ServeMux` لديه الطريقة `ServeHTTP`.
 
-This lets us remove our own `ServeHTTP` method, as we are already exposing one via the embedded type.
+وهذا يتيح لنا حذف طريقتنا `ServeHTTP`، لأننا نكشف واحدة بالفعل عبر النوع المضمَّن.
 
-Embedding is a very interesting language feature. You can use it with interfaces to compose new interfaces.
+التضمين ميزة مثيرة للاهتمام جداً في اللغة. ويمكنك استعماله مع الواجهات لتركيب واجهات جديدة.
 
 ```go
 type Animal interface {
@@ -287,21 +287,21 @@ type Animal interface {
 }
 ```
 
-And you can use it with concrete types too, not just interfaces. As you'd expect if you embed a concrete type you'll have access to all its public methods and fields.
+ويمكنك استعماله مع الأنواع الملموسة أيضاً، لا الواجهات فقط. وكما تتوقع، إن ضمّنت نوعاً ملموساً فستصل إلى كل طرقه وحقوله العامة.
 
-### Any downsides?
+### أي عيوب؟
 
-You must be careful with embedding types because you will expose all public methods and fields of the type you embed. In our case, it is ok because we embedded just the _interface_ that we wanted to expose (`http.Handler`).
+عليك الحذر عند تضمين الأنواع، لأنك ستكشف كل الطرق والحقول العامة للنوع الذي تضمّنه. وفي حالتنا لا بأس بذلك، لأننا ضمّنّا فقط _الواجهة_ التي أردنا كشفها (`http.Handler`).
 
-If we had been lazy and embedded `http.ServeMux` instead (the concrete type) it would still work _but_ users of `PlayerServer` would be able to add new routes to our server because `Handle(path, handler)` would be public.
+لو تكاسلنا وضمّنّا `http.ServeMux` بدلاً منها (النوع الملموس)، لظلت الشيفرة تعمل، _لكن_ مستخدمي `PlayerServer` سيستطيعون إضافة مسارات جديدة إلى خادمنا لأن `Handle(path, handler)` ستكون عامة.
 
-**When embedding types, really think about what impact that has on your public API.**
+**حين تضمّن الأنواع، فكّر جيداً في أثر ذلك على واجهتك البرمجية العامة.**
 
-It is a _very_ common mistake to misuse embedding and end up polluting your APIs and exposing the internals of your type.
+من الأخطاء الشائعة _جداً_ إساءة استعمال التضمين، فينتهي الأمر بتلويث واجهاتك البرمجية وكشف دواخل نوعك.
 
-Now we've restructured our application we can easily add new routes and have the start of the `/league` endpoint. We now need to make it return some useful information.
+والآن بعد أن أعدنا هيكلة تطبيقنا، يمكننا بسهولة إضافة مسارات جديدة، ولدينا بداية نقطة النهاية `/league`. وعلينا الآن جعلها تعيد بعض المعلومات المفيدة.
 
-We should return some JSON that looks something like this.
+ينبغي أن نعيد بعض JSON يبدو شيئاً كهذا.
 
 ```json
 [
@@ -316,9 +316,9 @@ We should return some JSON that looks something like this.
 ]
 ```
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We'll start by trying to parse the response into something meaningful.
+سنبدأ بمحاولة تحليل الاستجابة إلى شيء ذي معنى.
 
 ```go
 //server_test.go
@@ -345,22 +345,22 @@ func TestLeague(t *testing.T) {
 }
 ```
 
-### Why not test the JSON string?
+### لماذا لا نختبر سلسلة JSON النصية؟
 
-You could argue a simpler initial step would be just to assert that the response body has a particular JSON string.
+قد تقول إن خطوة أولى أبسط ستكون التوكيد فقط على أن متن الاستجابة يحتوي على سلسلة JSON معيّنة.
 
-In my experience tests that assert against JSON strings have the following problems.
+بحسب خبرتي، الاختبارات التي تؤكد على سلاسل JSON النصية تعاني المشكلات التالية.
 
-- *Brittleness*. If you change the data-model your tests will fail.
-- *Hard to debug*. It can be tricky to understand what the actual problem is when comparing two JSON strings.
-- *Poor intention*. Whilst the output should be JSON, what's really important is exactly what the data is, rather than how it's encoded.
-- *Re-testing the standard library*. There is no need to test how the standard library outputs JSON, it is already tested. Don't test other people's code.
+- *الهشاشة*. إن غيّرت نموذج البيانات، فستفشل اختباراتك.
+- *صعوبة التنقيح*. قد يكون من الصعب فهم المشكلة الفعلية عند مقارنة سلسلتي JSON.
+- *ضعف التعبير عن القصد*. مع أن المخرجات ينبغي أن تكون JSON، فإن المهم حقاً هو ماهية البيانات بالضبط، لا طريقة ترميزها.
+- *إعادة اختبار المكتبة القياسية*. لا حاجة إلى اختبار كيف تُخرج المكتبة القياسية JSON، فهي مختبَرة بالفعل. لا تختبر شيفرة الآخرين.
 
-Instead, we should look to parse the JSON into data structures that are relevant for us to test with.
+بل ينبغي أن نسعى إلى تحليل JSON إلى هياكل بيانات ذات صلة بما نختبره.
 
-### Data modelling
+### نمذجة البيانات
 
-Given the JSON data model, it looks like we need an array of `Player` with some fields so we have created a new type to capture this.
+بالنظر إلى نموذج بيانات JSON، يبدو أننا نحتاج إلى مصفوفة من `Player` فيها بعض الحقول، لذا أنشأنا نوعاً (type) جديداً لتجسيد ذلك.
 
 ```go
 //server.go
@@ -370,7 +370,7 @@ type Player struct {
 }
 ```
 
-### JSON decoding
+### فك ترميز JSON
 
 ```go
 //server_test.go
@@ -378,13 +378,13 @@ var got []Player
 err := json.NewDecoder(response.Body).Decode(&got)
 ```
 
-To parse JSON into our data model we create a `Decoder` from `encoding/json` package and then call its `Decode` method. To create a `Decoder` it needs an `io.Reader` to read from which in our case is our response spy's `Body`.
+لتحليل JSON إلى نموذج بياناتنا، ننشئ `Decoder` من الحزمة `encoding/json` ثم نستدعي طريقته `Decode`. ولإنشاء `Decoder` يحتاج إلى `io.Reader` يقرأ منه، وهو في حالتنا `Body` الخاص بجاسوس الاستجابة.
 
-`Decode` takes the address of the thing we are trying to decode into, which is why we declare an empty slice of `Player` the line before.
+تأخذ `Decode` عنوان الشيء الذي نحاول فك الترميز إليه، ولهذا نصرّح عن شريحة فارغة من `Player` في السطر السابق.
 
-Parsing JSON can fail so `Decode` can return an `error`. There's no point continuing the test if that fails so we check for the error and stop the test with `t.Fatalf` if it happens. Notice that we print the response body along with the error as it's important for someone running the test to see what string cannot be parsed.
+قد يفشل تحليل JSON، لذا قد تعيد `Decode` قيمة `error`. ولا فائدة من متابعة الاختبار إن فشل ذلك، لذا نتحقق من الخطأ ونوقف الاختبار بـ`t.Fatalf` إن حدث. ولاحظ أننا نطبع متن الاستجابة مع الخطأ، لأن من المهم لمن يشغّل الاختبار أن يرى السلسلة النصية التي لا يمكن تحليلها.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestLeague/it_returns_200_on_/league
@@ -392,9 +392,9 @@ Parsing JSON can fail so `Decode` can return an `error`. There's no point contin
         server_test.go:107: Unable to parse response from server '' into slice of Player, 'unexpected end of JSON input'
 ```
 
-Our endpoint currently does not return a body so it cannot be parsed into JSON.
+نقطة النهاية لدينا لا تعيد حالياً متناً، لذا لا يمكن تحليله كـJSON.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 //server.go
@@ -409,20 +409,20 @@ func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The test now passes.
+ينجح الاختبار الآن.
 
-### Encoding and Decoding
+### الترميز وفك الترميز
 
-Notice the lovely symmetry in the standard library.
+لاحظ التناظر الجميل في المكتبة القياسية.
 
-- To create an `Encoder` you need an `io.Writer` which is what `http.ResponseWriter` implements.
-- To create a `Decoder` you need an `io.Reader` which the `Body` field of our response spy implements.
+- لإنشاء `Encoder` تحتاج إلى `io.Writer`، وهو ما يحققه `http.ResponseWriter`.
+- ولإنشاء `Decoder` تحتاج إلى `io.Reader`، وهو ما يحققه الحقل `Body` في جاسوس الاستجابة لدينا.
 
-Throughout this book, we have used `io.Writer` and this is another demonstration of its prevalence in the standard library and how a lot of libraries easily work with it.
+استعملنا `io.Writer` في هذا الكتاب كله، وهذا دليل آخر على انتشاره في المكتبة القياسية، وعلى سهولة عمل كثير من المكتبات معه.
 
-## Refactor
+## أعد الهيكلة
 
-It would be nice to introduce a separation of concern between our handler and getting the `leagueTable` as we know we're going to not hard-code that very soon.
+سيكون من الجميل تقديم فصل للاهتمامات بين معالجنا والحصول على `leagueTable`، لأننا نعرف أننا لن نُبقيه ثابتاً قريباً جداً.
 
 ```go
 //server.go
@@ -438,13 +438,13 @@ func (p *PlayerServer) getLeagueTable() []Player {
 }
 ```
 
-Next, we'll want to extend our test so that we can control exactly what data we want back.
+بعد ذلك، سنريد توسيع اختبارنا كي نتحكم بالضبط بالبيانات التي نريد استرجاعها.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We can update the test to assert that the league table contains some players that we will stub in our store.
+يمكننا تحديث الاختبار للتوكيد على أن جدول الدوري يحتوي على بعض اللاعبين الذين سنضعهم كبيانات ثابتة في مخزننا.
 
-Update `StubPlayerStore` to let it store a league, which is just a slice of `Player`. We'll store our expected data in there.
+حدّث `StubPlayerStore` ليتيح له تخزين دوري، وهو مجرد شريحة (slice) من `Player`. وسنخزّن فيه بياناتنا المتوقعة.
 
 ```go
 //server_test.go
@@ -455,7 +455,7 @@ type StubPlayerStore struct {
 }
 ```
 
-Next, update our current test by putting some players in the league property of our stub and assert they get returned from our server.
+بعد ذلك، حدّث اختبارنا الحالي بوضع بعض اللاعبين في خاصية الدوري في البديل الثابت، وأكّد أنهم يُعادون من خادمنا.
 
 ```go
 //server_test.go
@@ -493,18 +493,18 @@ func TestLeague(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 ./server_test.go:33:3: too few values in struct initializer
 ./server_test.go:70:3: too few values in struct initializer
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-You'll need to update the other tests as we have a new field in `StubPlayerStore`; set it to nil for the other tests.
+ستحتاج إلى تحديث الاختبارات الأخرى لأن لدينا حقلاً جديداً في `StubPlayerStore`؛ اضبطه على `nil` في الاختبارات الأخرى.
 
-Try running the tests again and you should get
+حاول تشغيل الاختبارات مجدداً، وينبغي أن تحصل على
 
 ```
 === RUN   TestLeague/it_returns_the_league_table_as_JSON
@@ -512,9 +512,9 @@ Try running the tests again and you should get
         server_test.go:124: got [{Chris 20}] want [{Cleo 32} {Chris 20} {Tiest 14}]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We know the data is in our `StubPlayerStore` and we've abstracted that away into an interface `PlayerStore`. We need to update this so anyone passing us in a `PlayerStore` can provide us with the data for leagues.
+نعرف أن البيانات موجودة في `StubPlayerStore`، وقد جرّدنا ذلك خلف الواجهة (interface) `PlayerStore`. ونحتاج إلى تحديثها كي يستطيع أي شخص يمرر إلينا `PlayerStore` أن يوفر لنا بيانات الدوريات.
 
 ```go
 //server.go
@@ -525,7 +525,7 @@ type PlayerStore interface {
 }
 ```
 
-Now we can update our handler code to call that rather than returning a hard-coded list. Delete our method `getLeagueTable()` and then update `leagueHandler` to call `GetLeague()`.
+يمكننا الآن تحديث شيفرة معالجنا لتستدعي ذلك بدلاً من إعادة قائمة ثابتة. احذف الطريقة (method) `getLeagueTable()` ثم حدّث `leagueHandler` لتستدعي `GetLeague()`.
 
 ```go
 //server.go
@@ -535,7 +535,7 @@ func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Try and run the tests.
+حاول تشغيل الاختبارات.
 
 ```
 # github.com/quii/learn-go-with-tests/json-and-io/v4
@@ -551,9 +551,9 @@ Try and run the tests.
     *StubPlayerStore does not implement PlayerStore (missing GetLeague method)
 ```
 
-The compiler is complaining because `InMemoryPlayerStore` and `StubPlayerStore` do not have the new method we added to our interface.
+يعترض المصرِّف (compiler) لأن `InMemoryPlayerStore` و`StubPlayerStore` لا يملكان الطريقة الجديدة التي أضفناها إلى واجهتنا.
 
-For `StubPlayerStore` it's pretty easy, just return the `league` field we added earlier.
+مع `StubPlayerStore` الأمر سهل جداً، فقط أعد الحقل `league` الذي أضفناه سابقاً.
 
 ```go
 //server_test.go
@@ -562,7 +562,7 @@ func (s *StubPlayerStore) GetLeague() []Player {
 }
 ```
 
-Here's a reminder of how `InMemoryStore` is implemented.
+إليك تذكيراً بكيفية تنفيذ `InMemoryStore`.
 
 ```go
 //in_memory_player_store.go
@@ -571,9 +571,9 @@ type InMemoryPlayerStore struct {
 }
 ```
 
-Whilst it would be pretty straightforward to implement `GetLeague` "properly" by iterating over the map remember we are just trying to _write the minimal amount of code to make the tests pass_.
+مع أن تنفيذ `GetLeague` "كما ينبغي" بالمرور على الخريطة سيكون مباشراً جداً، تذكّر أننا نحاول فقط _كتابة أقل قدر من الشيفرة لجعل الاختبارات تنجح_.
 
-So let's just get the compiler happy for now and live with the uncomfortable feeling of an incomplete implementation in our `InMemoryStore`.
+لذا لنُرضِ المصرِّف الآن فحسب، ونتعايش مع الشعور غير المريح بوجود تنفيذ ناقص في `InMemoryStore`.
 
 ```go
 //in_memory_player_store.go
@@ -582,13 +582,13 @@ func (i *InMemoryPlayerStore) GetLeague() []Player {
 }
 ```
 
-What this is really telling us is that _later_ we're going to want to test this but let's park that for now.
+ما يخبرنا به هذا حقاً أننا سنريد اختبار ذلك _لاحقاً_، لكن لنؤجله الآن.
 
-Try and run the tests, the compiler should pass and the tests should be passing!
+حاول تشغيل الاختبارات، وينبغي أن ينجح التصريف وتنجح الاختبارات!
 
-## Refactor
+## أعد الهيكلة
 
-The test code does not convey our intent very well and has a lot of boilerplate we can refactor away.
+شيفرة الاختبار لا تعبّر عن قصدنا جيداً، وفيها كثير من الشيفرة المتكررة التي يمكننا إزالتها بإعادة الهيكلة.
 
 ```go
 //server_test.go
@@ -613,7 +613,7 @@ t.Run("it returns the league table as JSON", func(t *testing.T) {
 })
 ```
 
-Here are the new helpers
+إليك الدوال المساعدة الجديدة
 
 ```go
 //server_test.go
@@ -641,11 +641,11 @@ func newLeagueRequest() *http.Request {
 }
 ```
 
-One final thing we need to do for our server to work is make sure we return a `content-type` header in the response so machines can recognise we are returning `JSON`.
+آخر ما علينا فعله ليعمل خادمنا هو التأكد من أننا نعيد ترويسة `content-type` في الاستجابة، كي تتعرف الآلات على أننا نعيد `JSON`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add this assertion to the existing test
+أضف هذا التوكيد إلى الاختبار الحالي
 
 ```go
 //server_test.go
@@ -654,7 +654,7 @@ if response.Result().Header.Get("content-type") != "application/json" {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestLeague/it_returns_the_league_table_as_JSON
@@ -662,9 +662,9 @@ if response.Result().Header.Get("content-type") != "application/json" {
         server_test.go:124: response did not have content-type of application/json, got map[Content-Type:[text/plain; charset=utf-8]]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Update `leagueHandler`
+حدّث `leagueHandler`
 
 ```go
 //server.go
@@ -674,11 +674,11 @@ func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-The test should pass.
+ينبغي أن ينجح الاختبار.
 
-## Refactor
+## أعد الهيكلة
 
-Create a constant for "application/json" and use it in `leagueHandler`
+أنشئ ثابتاً لـ"application/json" واستعمله في `leagueHandler`
 
 ```go
 //server.go
@@ -690,7 +690,7 @@ func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Then add a helper for `assertContentType`.
+ثم أضف دالة مساعدة `assertContentType`.
 
 ```go
 //server_test.go
@@ -702,20 +702,20 @@ func assertContentType(t testing.TB, response *httptest.ResponseRecorder, want s
 }
 ```
 
-Use it in the test.
+استعملها في الاختبار.
 
 ```go
 //server_test.go
 assertContentType(t, response, jsonContentType)
 ```
 
-Now that we have sorted out `PlayerServer` for now we can turn our attention to `InMemoryPlayerStore` because right now if we tried to demo this to the product owner `/league` will not work.
+والآن بعد أن رتّبنا `PlayerServer` في الوقت الحالي، يمكننا تحويل انتباهنا إلى `InMemoryPlayerStore`، لأننا لو حاولنا الآن عرض هذا على مالكة المنتج فلن تعمل `/league`.
 
-The quickest way for us to get some confidence is to add to our integration test, we can hit the new endpoint and check we get back the correct response from `/league`.
+أسرع طريقة لنا للحصول على بعض الثقة هي الإضافة إلى اختبار التكامل، فنصل إلى نقطة النهاية الجديدة ونتحقق من أننا نحصل على الاستجابة الصحيحة من `/league`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We can use `t.Run` to break up this test a bit and we can reuse the helpers from our server tests - again showing the importance of refactoring tests.
+يمكننا استعمال `t.Run` لتقسيم هذا الاختبار قليلاً، ويمكننا إعادة استعمال الدوال المساعدة من اختبارات الخادم، وهذا يبيّن مرة أخرى أهمية إعادة هيكلة الاختبارات.
 
 ```go
 //server_integration_test.go
@@ -750,7 +750,7 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```
 === RUN   TestRecordingWinsAndRetrievingThem/get_league
@@ -758,9 +758,9 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
         server_integration_test.go:35: got [] want [{Pepper 3}]
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-`InMemoryPlayerStore` is returning `nil` when you call `GetLeague()` so we'll need to fix that.
+يعيد `InMemoryPlayerStore` القيمة `nil` حين تستدعي `GetLeague()`، لذا سنحتاج إلى إصلاح ذلك.
 
 ```go
 //in_memory_player_store.go
@@ -773,16 +773,16 @@ func (i *InMemoryPlayerStore) GetLeague() []Player {
 }
 ```
 
-All we need to do is iterate over the map and convert each key/value to a `Player`.
+كل ما علينا فعله هو المرور على الخريطة وتحويل كل زوج مفتاح وقيمة إلى `Player`.
 
-The test should now pass.
+ينبغي أن ينجح الاختبار الآن.
 
-## Wrapping up
+## الخلاصة
 
-We've continued to safely iterate on our program using TDD, making it support new endpoints in a maintainable way with a router and it can now return JSON for our consumers. In the next chapter, we will cover persisting the data and sorting our league.
+واصلنا التقدم في برنامجنا بأمان باستعمال `TDD`، فجعلناه يدعم نقاط نهاية جديدة بطريقة قابلة للصيانة باستعمال موجِّه، وصار يستطيع الآن إعادة JSON لمستهلكينا. وفي الفصل التالي، سنتناول التخزين الدائم للبيانات وترتيب الدوري.
 
-What we've covered:
+ما تناولناه:
 
-- **Routing**. The standard library offers you an easy to use type to do routing. It fully embraces the `http.Handler` interface in that you assign routes to `Handler`s and the router itself is also a `Handler`. It does not have some features you might expect though such as path variables (e.g `/users/{id}`). You can easily parse this information yourself but you might want to consider looking at other routing libraries if it becomes a burden. Most of the popular ones stick to the standard library's philosophy of also implementing `http.Handler`.
-- **Type embedding**. We touched a little on this technique but you can [learn more about it from Effective Go](https://golang.org/doc/effective_go.html#embedding). If there is one thing you should take away from this is that it can be extremely useful but _always thinking about your public API, only expose what's appropriate_.
-- **JSON deserializing and serializing**. The standard library makes it very trivial to serialise and deserialise your data. It is also open to configuration and you can customise how these data transformations work if necessary.
+- **التوجيه**. توفر لك المكتبة القياسية نوعاً سهل الاستعمال لإجراء التوجيه. وهو يتبنى بالكامل الواجهة `http.Handler`، إذ تسند المسارات إلى قيم `Handler`، والموجِّه نفسه أيضاً `Handler`. لكن ليست فيه بعض الميزات التي قد تتوقعها، مثل متغيرات المسار (كـ`/users/{id}`). ويمكنك بسهولة تحليل هذه المعلومات بنفسك، لكن قد ترغب في النظر في مكتبات توجيه أخرى إن صار ذلك عبئاً. ومعظم المكتبات الشائعة تلتزم بفلسفة المكتبة القياسية في تحقيق `http.Handler` أيضاً.
+- **تضمين الأنواع**. تطرقنا قليلاً إلى هذا الأسلوب، لكن يمكنك [تعلّم المزيد عنه من Effective Go](https://golang.org/doc/effective_go.html#embedding). وإن كان هناك شيء واحد ينبغي أن تخرج به من هذا، فهو أنه قد يكون مفيداً للغاية، لكن _فكّر دائماً في واجهتك البرمجية العامة، ولا تكشف إلا ما هو مناسب_.
+- **تحويل JSON من البيانات وإليها**. تجعل المكتبة القياسية تحويل بياناتك إلى صيغة متسلسلة وبالعكس أمراً بسيطاً جداً. كما أنها قابلة للضبط، ويمكنك تخصيص طريقة عمل تحويلات البيانات هذه إن لزم.
