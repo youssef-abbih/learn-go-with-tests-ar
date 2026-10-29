@@ -1,18 +1,18 @@
-# Build an application
+# بناء تطبيق
 
-Now that you have hopefully digested the _Go Fundamentals_ section you have a solid grounding of a majority of Go's language features and how to do TDD.
+والآن بعد أن استوعبت، كما أرجو، قسم _أساسيات غو_، صار لديك أساس متين في معظم ميزات لغة غو (Go) وفي كيفية ممارسة `TDD`.
 
-This next section will involve building an application.
+سيتضمن القسم التالي بناء تطبيق.
 
-Each chapter will iterate on the previous one, expanding the application's functionality as our product owner dictates.
+سيبني كل فصل على الفصل الذي قبله، موسّعاً وظائف التطبيق بحسب ما يمليه مالك المنتج.
 
-New concepts will be introduced to help facilitate writing great code but most of the new material will be learning what can be accomplished from Go's standard library.
+ستُقدَّم مفاهيم جديدة للمساعدة على كتابة شيفرة (code) رائعة، لكن معظم المادة الجديدة ستكون تعلّم ما يمكن إنجازه بمكتبة غو القياسية.
 
-By the end of this, you should have a strong grasp as to how to iteratively write an application in Go, backed by tests.
+وفي نهاية هذا القسم، ينبغي أن يكون لديك فهم قوي لكيفية كتابة تطبيق بغو خطوة خطوة، مدعوماً بالاختبارات.
 
-- [HTTP server](http-server.md) - We will create an application which listens to HTTP requests and responds to them.
-- [JSON, routing and embedding](json.md) - We will make our endpoints return JSON and explore how to do routing.
-- [IO and sorting](io.md) - We will persist and read our data from disk and we'll cover sorting data.
-- [Command line & project structure](command-line.md) - Support multiple applications from one code base and read input from command line.
-- [Time](time.md) - using the `time` package to schedule activities.
-- [WebSockets](websockets.md) - learn how to write and test a server that uses WebSockets.
+- فصل [خادم HTTP](http-server.md): سننشئ تطبيقاً يستمع إلى طلبات HTTP ويستجيب لها.
+- فصل [صيغة JSON والتوجيه والتضمين](json.md): سنجعل نقاط النهاية لدينا تعيد JSON، ونستكشف كيفية إجراء التوجيه.
+- فصل [الإدخال والإخراج والترتيب](io.md): سنخزّن بياناتنا على القرص ونقرؤها منه، وسنتناول ترتيب البيانات.
+- فصل [سطر الأوامر وبنية الحزم](command-line.md): دعم تطبيقات متعددة من قاعدة شيفرة واحدة، وقراءة المدخلات من سطر الأوامر.
+- فصل [الوقت](time.md): استعمال الحزمة `time` لجدولة الأنشطة.
+- فصل [الاتصال عبر WebSockets](websockets.md): تعلّم كيف تكتب خادماً يستعمل WebSockets وتختبره.
