@@ -1,19 +1,19 @@
-# Select
+# التعليمة `select`
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/select)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/select)**
 
-You have been asked to make a function called `WebsiteRacer` which takes two URLs and "races" them by hitting them with an HTTP GET and returning the URL which returned first. If none of them return within 10 seconds then it should return an `error`.
+طُلب منك أن تكتب دالة (function) باسم `WebsiteRacer` تأخذ عنواني URL وتجعلهما "يتسابقان"، بإرسال طلب HTTP GET إلى كل منهما وإعادة العنوان الذي استجاب أولاً. وإن لم يستجب أي منهما خلال 10 ثوانٍ، فينبغي أن تعيد خطأً `error`.
 
-For this, we will be using:
+سنستعمل لذلك:
 
-- `net/http` to make the HTTP calls.
-- `net/http/httptest` to help us test them.
-- goroutines.
-- `select` to synchronise processes.
+- الحزمة `net/http` لإجراء استدعاءات HTTP.
+- الحزمة `net/http/httptest` لمساعدتنا على اختبارها.
+- الـ`goroutines`.
+- التعليمة `select` لمزامنة العمليات.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Let's start with something naive to get us going.
+لنبدأ بشيء ساذج كي ننطلق.
 
 ```go
 func TestRacer(t *testing.T) {
@@ -29,13 +29,13 @@ func TestRacer(t *testing.T) {
 }
 ```
 
-We know this isn't perfect and has problems, but it's a start. It's important not to get too hung-up on getting things perfect first time.
+نعرف أن هذا ليس مثالياً وأن فيه مشكلات، لكنه بداية. فمن المهم ألا ننشغل كثيراً بجعل الأمور مثالية من المرة الأولى.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./racer_test.go:14:9: undefined: Racer`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func Racer(a, b string) (winner string) {
@@ -45,7 +45,7 @@ func Racer(a, b string) (winner string) {
 
 `racer_test.go:25: got '', want 'http://www.quii.dev'`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Racer(a, b string) (winner string) {
@@ -65,29 +65,29 @@ func Racer(a, b string) (winner string) {
 }
 ```
 
-For each URL:
+نفعل ما يلي لكل عنوان URL على حدة:
 
-1. We use `time.Now()` to record just before we try and get the `URL`.
-1. Then we use [`http.Get`](https://golang.org/pkg/net/http/#Client.Get) to try and perform an HTTP `GET` request against the `URL`. This function returns an [`http.Response`](https://golang.org/pkg/net/http/#Response) and an `error` but so far we are not interested in these values.
-1. `time.Since` takes the start time and returns a `time.Duration` of the difference.
+1. نستعمل `time.Now()` لتسجيل الوقت قبل أن نحاول جلب `URL` مباشرة.
+1. ثم نستعمل [`http.Get`](https://golang.org/pkg/net/http/#Client.Get) لمحاولة تنفيذ طلب HTTP من نوع `GET` إلى `URL`. تعيد هذه الدالة [`http.Response`](https://golang.org/pkg/net/http/#Response) و`error`، لكن هذه القيم لا تهمنا حتى الآن.
+1. تأخذ `time.Since` وقت البدء وتعيد الفرق على شكل `time.Duration`.
 
-Once we have done this we simply compare the durations to see which is the quickest.
+بعد ذلك نقارن المدد ببساطة لنرى أيها الأسرع.
 
-### Problems
+### المشكلات
 
-This may or may not make the test pass for you. The problem is we're reaching out to real websites to test our own logic.
+قد ينجح الاختبار (test) لديك بهذا وقد لا ينجح. فالمشكلة أننا نتصل بمواقع حقيقية لاختبار منطقنا الخاص.
 
-Testing code that uses HTTP is so common that Go has tools in the standard library to help you test it.
+اختبار الشيفرة (code) التي تستعمل HTTP شائع جداً، حتى إن في المكتبة القياسية لغو (Go) أدوات تساعدك على اختبارها.
 
-In the mocking and dependency injection chapters, we covered how ideally we don't want to be relying on external services to test our code because they can be
+تناولنا في فصلي المحاكاة وحقن التبعية كيف أننا في الوضع المثالي لا نريد الاعتماد على خدمات خارجية لاختبار شيفرتنا، لأنها قد تكون
 
-- Slow
-- Flaky
-- Can't test edge cases
+- بطيئة
+- متقلبة
+- لا تسمح باختبار الحالات الحدّية
 
-In the standard library, there is a package called [`net/http/httptest`](https://golang.org/pkg/net/http/httptest/) which enables users to easily create a mock HTTP server.
+في المكتبة القياسية حزمة اسمها [`net/http/httptest`](https://golang.org/pkg/net/http/httptest/) تتيح للمستخدمين إنشاء خادم HTTP وهمي بسهولة.
 
-Let's change our tests to use mocks so we have reliable servers to test against that we can control.
+لنغيّر اختباراتنا لتستعمل البدائل الوهمية (mocks)، كي تكون لدينا خوادم موثوقة نتحكم بها ونختبر عليها.
 
 ```go
 func TestRacer(t *testing.T) {
@@ -116,23 +116,23 @@ func TestRacer(t *testing.T) {
 }
 ```
 
-The syntax may look a bit busy but just take your time.
+قد تبدو الصياغة مزدحمة بعض الشيء، لكن خذ وقتك فحسب.
 
-`httptest.NewServer` takes an `http.HandlerFunc` which we are sending in via an _anonymous function_.
+تأخذ `httptest.NewServer` قيمة `http.HandlerFunc` نمررها عبر _دالة مجهولة_.
 
-`http.HandlerFunc` is a type that looks like this: `type HandlerFunc func(ResponseWriter, *Request)`.
+والنوع `http.HandlerFunc` يبدو هكذا: `type HandlerFunc func(ResponseWriter, *Request)`.
 
-All it's really saying is it needs a function that takes a `ResponseWriter` and a `Request`, which is not too surprising for an HTTP server.
+كل ما يقوله في الحقيقة أنه يحتاج إلى دالة تأخذ `ResponseWriter` و`Request`، وهذا ليس مفاجئاً في خادم HTTP على الإطلاق.
 
-It turns out there's really no extra magic here, **this is also how you would write a _real_ HTTP server in Go**. The only difference is we are wrapping it in an `httptest.NewServer` which makes it easier to use with testing, as it finds an open port to listen on and then you can close it when you're done with your test.
+يتضح أنه لا سحر إضافياً هنا، **فهذه أيضاً هي الطريقة التي تكتب بها خادم HTTP _حقيقياً_ في غو**. والفرق الوحيد أننا نغلّفه في `httptest.NewServer` الذي يسهّل استعماله في الاختبار، إذ يجد منفذاً مفتوحاً للاستماع عليه، ثم تستطيع إغلاقه حين تنتهي من اختبارك.
 
-Inside our two servers, we make the slow one have a short `time.Sleep` when we get a request to make it slower than the other one. Both servers then write an `OK` response with `w.WriteHeader(http.StatusOK)` back to the caller.
+داخل الخادمين، نجعل الخادم البطيء ينام قليلاً بـ`time.Sleep` حين يصلنا طلب، كي يكون أبطأ من الآخر. ثم يكتب كلا الخادمين استجابة `OK` إلى المستدعي بـ`w.WriteHeader(http.StatusOK)`.
 
-If you re-run the test it will definitely pass now and should be faster. Play with these sleeps to deliberately break the test.
+إن أعدت تشغيل الاختبار، فسينجح الآن بالتأكيد، وينبغي أن يكون أسرع. جرّب التلاعب بمدد النوم هذه لتُفشل الاختبار عمداً.
 
-## Refactor
+## أعد الهيكلة
 
-We have some duplication in both our production code and test code.
+لدينا بعض الازدواجية في شيفرة الإنتاج وفي شيفرة الاختبار معاً.
 
 ```go
 func Racer(a, b string) (winner string) {
@@ -153,7 +153,7 @@ func measureResponseTime(url string) time.Duration {
 }
 ```
 
-This DRY-ing up makes our `Racer` code a lot easier to read.
+إزالة التكرار هذه تجعل شيفرة `Racer` أسهل قراءة بكثير.
 
 ```go
 func TestRacer(t *testing.T) {
@@ -183,24 +183,24 @@ func makeDelayedServer(delay time.Duration) *httptest.Server {
 }
 ```
 
-We've refactored creating our fake servers into a function called `makeDelayedServer` to move some uninteresting code out of the test and reduce repetition.
+أعدنا هيكلة إنشاء خوادمنا المزيفة بنقله إلى دالة باسم `makeDelayedServer`، لإخراج بعض الشيفرة غير المهمة من الاختبار وتقليل التكرار.
 
-### `defer`
+### التعليمة `defer`
 
-By prefixing a function call with `defer` it will now call that function _at the end of the containing function_.
+حين تسبق استدعاء دالة بالكلمة `defer`، فإنها ستستدعي تلك الدالة _في نهاية الدالة التي تحتويها_.
 
-Sometimes you will need to clean up resources, such as closing a file or in our case closing a server so that it does not continue to listen to a port.
+ستحتاج أحياناً إلى تنظيف الموارد، كإغلاق ملف، أو كما في حالتنا إغلاق خادم كي لا يواصل الاستماع على منفذ.
 
-You want this to execute at the end of the function, but keep the instruction near where you created the server for the benefit of future readers of the code.
+تريد أن يُنفَّذ هذا في نهاية الدالة، لكن مع إبقاء التعليمة قرب المكان الذي أنشأت فيه الخادم، لفائدة من سيقرأ الشيفرة مستقبلاً.
 
-Our refactoring is an improvement and is a reasonable solution given the Go features covered so far, but we can make the solution simpler.
+إعادة الهيكلة التي أجريناها تحسين، وهي حل معقول بالنظر إلى ميزات غو التي تناولناها حتى الآن، لكن يمكننا جعل الحل أبسط.
 
-### Synchronising processes
+### مزامنة العمليات
 
-- Why are we testing the speeds of the websites one after another when Go is great at concurrency? We should be able to check both at the same time.
-- We don't really care about _the exact response times_ of the requests, we just want to know which one comes back first.
+- لماذا نختبر سرعات المواقع واحداً تلو الآخر، وغو بارعة في التزامن (concurrency)؟ ينبغي أن نستطيع التحقق من كليهما في الوقت نفسه.
+- لا تهمنا حقاً _أزمنة الاستجابة الدقيقة_ للطلبات، بل نريد فقط أن نعرف أيها يعود أولاً.
 
-To do this, we're going to introduce a new construct called `select` which helps us synchronise processes really easily and clearly.
+لفعل ذلك، سنقدّم تركيباً لغوياً جديداً اسمه `select`، يساعدنا على مزامنة العمليات بسهولة ووضوح كبيرين.
 
 ```go
 func Racer(a, b string) (winner string) {
@@ -222,39 +222,39 @@ func ping(url string) chan struct{} {
 }
 ```
 
-#### `ping`
+#### الدالة `ping`
 
-We have defined a function `ping` which creates a `chan struct{}` and returns it.
+عرّفنا دالة باسم `ping` تنشئ `chan struct{}` وتعيدها.
 
-In our case, we don't _care_ what type is sent to the channel, _we just want to signal we are done_ and closing the channel works perfectly!
+في حالتنا، لا _يهمنا_ نوع ما يُرسل إلى القناة (channel)، _بل نريد فقط الإشارة إلى أننا انتهينا_، وإغلاق القناة يؤدي ذلك تماماً!
 
-Why `struct{}` and not another type like a `bool`? Well, a `chan struct{}` is the smallest data type available from a memory perspective so we
-get no allocation versus a `bool`. Since we are closing and not sending anything on the chan, why allocate anything?
+لماذا `struct{}` وليس نوعاً آخر مثل `bool`؟ لأن `chan struct{}` هو أصغر نوع بيانات متاح من ناحية الذاكرة، فلا
+نحصل على أي تخصيص للذاكرة مقارنة بـ`bool`. وبما أننا نغلق القناة ولا نرسل عليها شيئاً، فلماذا نخصص أي شيء؟
 
-Inside the same function, we start a goroutine which will send a signal into that channel once we have completed `http.Get(url)`.
+داخل الدالة نفسها، نبدأ `goroutine` سترسل إشارة إلى تلك القناة بمجرد أن ننتهي من `http.Get(url)`.
 
-##### Always `make` channels
+##### أنشئ القنوات دائماً بـ`make`
 
-Notice how we have to use `make` when creating a channel; rather than say `var ch chan struct{}`. When you use `var` the variable will be initialised with the "zero" value of the type. So for `string` it is `""`, `int` it is 0, etc.
+لاحظ أن علينا استعمال `make` عند إنشاء قناة، بدلاً من أن نكتب مثلاً `var ch chan struct{}`. فحين تستعمل `var` يُهيَّأ المتغير بالقيمة "الصفرية" لنوعه. فهي `""` للنوع `string`، و0 للنوع `int`، وهكذا.
 
-For channels the zero value is `nil` and if you try and send to it with `<-` it will block forever because you cannot send to `nil` channels
+والقيمة الصفرية للقنوات هي `nil`، وإن حاولت الإرسال إليها بـ`<-` فستُحجب إلى الأبد، لأنك لا تستطيع الإرسال إلى قنوات `nil`
 
-[You can see this in action in The Go Playground](https://play.golang.org/p/IIbeAox5jKA)
-#### `select`
+[يمكنك أن ترى هذا عملياً في ساحة تجارب غو](https://play.golang.org/p/IIbeAox5jKA)
+#### التعليمة `select`
 
-You'll recall from the concurrency chapter that you can wait for values to be sent to a channel with `myVar := <-ch`. This is a _blocking_ call, as you're waiting for a value.
+تذكر من فصل التزامن أنك تستطيع انتظار إرسال القيم إلى قناة بكتابة `myVar := <-ch`. وهذا استدعاء _حاجب_، لأنك تنتظر قيمة.
 
-`select` allows you to wait on _multiple_ channels. The first one to send a value "wins" and the code underneath the `case` is executed.
+تتيح لك `select` الانتظار على قنوات _متعددة_. فأول قناة ترسل قيمة "تفوز"، وتُنفَّذ الشيفرة الواقعة تحت `case` الخاصة بها.
 
-We use `ping` in our `select` to set up two channels, one for each of our `URL`s. Whichever one writes to its channel first will have its code executed in the `select`, which results in its `URL` being returned (and being the winner).
+نستعمل `ping` في `select` لإعداد قناتين، واحدة لكل `URL`. وأي منهما تكتب إلى قناتها أولاً، تُنفَّذ شيفرتها في `select`، فيُعاد `URL` الخاص بها (ويكون هو الفائز).
 
-After these changes, the intent behind our code is very clear and the implementation is actually simpler.
+بعد هذه التغييرات صار القصد من شيفرتنا واضحاً جداً، وصار التنفيذ في الحقيقة أبسط.
 
-### Timeouts
+### المهل الزمنية
 
-Our final requirement was to return an error if `Racer` takes longer than 10 seconds.
+متطلبنا الأخير كان إعادة خطأ (error) إن استغرقت `Racer` أكثر من 10 ثوانٍ.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestRacer(t *testing.T) {
@@ -292,15 +292,15 @@ func TestRacer(t *testing.T) {
 }
 ```
 
-We've made our test servers take longer than 10s to return to exercise this scenario and we are expecting `Racer` to return two values now, the winning URL (which we ignore in this test with `_`) and an `error`.
+جعلنا خوادم الاختبار تستغرق أكثر من 10 ثوانٍ لتستجيب كي نختبر هذا السيناريو، ونتوقع الآن أن تعيد `Racer` قيمتين: عنوان URL الفائز (الذي نتجاهله في هذا الاختبار بـ`_`)، و`error`.
 
-Note that we've also handled the error return in our original test, we're using	`_` for now to ensure the tests will run.
+لاحظ أننا عالجنا أيضاً الخطأ المعاد في اختبارنا الأصلي، ونستعمل `_` حالياً لضمان أن الاختبارات ستعمل.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 `./racer_test.go:37:10: assignment mismatch: 2 variables but Racer returns 1 value`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
 ```go
 func Racer(a, b string) (winner string, error error) {
@@ -313,11 +313,11 @@ func Racer(a, b string) (winner string, error error) {
 }
 ```
 
-Change the signature of `Racer` to return the winner and an `error`. Return `nil` for our happy cases.
+غيّر توقيع `Racer` لتعيد الفائز و`error`، وأعد `nil` في الحالات الناجحة.
 
-The compiler will complain about your _first test_ only looking for one value so change that line to `got, err := Racer(slowURL, fastURL)`, knowing that we should check we _don't_ get an error in our happy scenario.
+سيعترض المصرِّف (compiler) على أن _اختبارك الأول_ لا ينتظر إلا قيمة واحدة، فغيّر ذلك السطر إلى `got, err := Racer(slowURL, fastURL)`، مع العلم أن علينا التحقق من أننا _لا_ نحصل على خطأ في السيناريو الناجح.
 
-If you run it now after 11 seconds it will fail.
+إن شغّلته الآن فسيفشل بعد 11 ثانية.
 
 ```
 --- FAIL: TestRacer (12.00s)
@@ -325,7 +325,7 @@ If you run it now after 11 seconds it will fail.
         racer_test.go:40: expected an error but didn't get one
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Racer(a, b string) (winner string, error error) {
@@ -340,15 +340,15 @@ func Racer(a, b string) (winner string, error error) {
 }
 ```
 
-`time.After` is a very handy function when using `select`. Although it didn't happen in our case you can potentially write code that blocks forever if the channels you're listening on never return a value. `time.After` returns a `chan` (like `ping`) and will send a signal down it after the amount of time you define.
+الدالة `time.After` مفيدة جداً عند استعمال `select`. فمع أن ذلك لم يحدث في حالتنا، فقد تكتب شيفرة تُحجب إلى الأبد إن لم تُعِد القنوات التي تستمع إليها أي قيمة. تعيد `time.After` قناة `chan` (مثل `ping`)، وترسل عليها إشارة بعد مرور المدة التي تحددها.
 
-For us this is perfect; if `a` or `b` manage to return they win, but if we get to 10 seconds then our `time.After` will send a signal and we'll return an `error`.
+وهذا مثالي لنا؛ فإن استطاعت `a` أو `b` أن تعود فإنها تفوز، لكن إن وصلنا إلى 10 ثوانٍ فسترسل `time.After` إشارة ونعيد `error`.
 
-### Slow tests
+### الاختبارات البطيئة
 
-The problem we have is that this test takes 10 seconds to run. For such a simple bit of logic, this doesn't feel great.
+المشكلة لدينا أن هذا الاختبار يستغرق 10 ثوانٍ ليعمل. ولمنطق بهذه البساطة، لا يبدو هذا جيداً.
 
-What we can do is make the timeout configurable. So in our test, we can have a very short timeout and then when the code is used in the real world it can be set to 10 seconds.
+ما يمكننا فعله هو جعل المهلة الزمنية قابلة للضبط. فيمكننا في اختبارنا استعمال مهلة قصيرة جداً، وحين تُستعمل الشيفرة في العالم الحقيقي يمكن ضبطها على 10 ثوانٍ.
 
 ```go
 func Racer(a, b string, timeout time.Duration) (winner string, error error) {
@@ -363,14 +363,14 @@ func Racer(a, b string, timeout time.Duration) (winner string, error error) {
 }
 ```
 
-Our tests now won't compile because we're not supplying a timeout.
+لن تُصرَّف اختباراتنا الآن لأننا لا نقدّم مهلة زمنية.
 
-Before rushing in to add this default value to both our tests let's _listen to them_.
+قبل أن نسارع إلى إضافة هذه القيمة الافتراضية إلى الاختبارين، لـ_نصغِ إليهما_.
 
-- Do we care about the timeout in the "happy" test?
-- The requirements were explicit about the timeout.
+- هل تهمنا المهلة الزمنية في الاختبار "الناجح"؟
+- كانت المتطلبات صريحة بشأن المهلة الزمنية.
 
-Given this knowledge, let's do a little refactoring to be sympathetic to both our tests and the users of our code.
+وبناءً على هذا، لنُجرِ قليلاً من إعادة الهيكلة (refactoring) بما يراعي اختباراتنا ومستخدمي شيفرتنا معاً.
 
 ```go
 var tenSecondTimeout = 10 * time.Second
@@ -391,7 +391,7 @@ func ConfigurableRacer(a, b string, timeout time.Duration) (winner string, error
 }
 ```
 
-Our users and our first test can use `Racer` (which uses `ConfigurableRacer` under the hood) and our sad path test can use `ConfigurableRacer`.
+يستطيع مستخدمونا واختبارنا الأول استعمال `Racer` (التي تستعمل `ConfigurableRacer` في الخفاء)، ويستطيع اختبار المسار الفاشل استعمال `ConfigurableRacer`.
 
 ```go
 func TestRacer(t *testing.T) {
@@ -432,16 +432,16 @@ func TestRacer(t *testing.T) {
 }
 ```
 
-I added one final check on the first test to verify we don't get an `error`.
+أضفت تحققاً أخيراً في الاختبار الأول للتأكد من أننا لا نحصل على `error`.
 
-## Wrapping up
+## الخلاصة
 
-### `select`
+### التعليمة `select`
 
-- Helps you wait on multiple channels.
-- Sometimes you'll want to include `time.After` in one of your `cases` to prevent your system blocking forever.
+- تساعدك على الانتظار على قنوات متعددة.
+- ستريد أحياناً تضمين `time.After` في إحدى حالات `cases` لمنع نظامك من الحجب إلى الأبد.
 
-### `httptest`
+### الحزمة `httptest`
 
-- A convenient way of creating test servers so you can have reliable and controllable tests.
-- Uses the same interfaces as the "real" `net/http` servers which is consistent and less for you to learn.
+- طريقة مريحة لإنشاء خوادم اختبار كي تكون لديك اختبارات موثوقة يمكن التحكم بها.
+- تستعمل الواجهات (interfaces) نفسها التي تستعملها خوادم `net/http` "الحقيقية"، وهذا متسق ويقلل ما عليك تعلّمه.
