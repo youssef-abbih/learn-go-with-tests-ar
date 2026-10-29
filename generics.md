@@ -1,20 +1,20 @@
-# Generics
+# الأنواع العامة
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/generics)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/generics)**
 
-This chapter will give you an introduction to generics, dispel reservations you may have about them, and give you an idea how to simplify some of your code in the future. After reading this you'll know how to write:
+سيقدّم لك هذا الفصل مدخلاً إلى الأنواع العامة (generics)، ويبدد تحفظات قد تكون لديك تجاهها، ويعطيك فكرة عن كيفية تبسيط بعض شيفرتك (code) في المستقبل. وبعد قراءته ستعرف كيف تكتب:
 
-- A function that takes generic arguments
-- A generic data-structure
+- دالة (function) تأخذ وسطاء (arguments) عامة
+- هيكل بيانات عاماً
 
 
-## Our own test helpers (`AssertEqual`, `AssertNotEqual`)
+## دوالنا المساعدة الخاصة للاختبار (`AssertEqual` و`AssertNotEqual`)
 
-To explore generics we'll write some test helpers.
+لاستكشاف الأنواع العامة سنكتب بعض الدوال المساعدة للاختبار.
 
-### Assert on integers
+### التوكيد على الأعداد الصحيحة
 
-Let's start with something basic and iterate toward our goal
+لنبدأ بشيء بسيط ونتقدم خطوة خطوة نحو هدفنا
 
 ```go
 import "testing"
@@ -42,9 +42,9 @@ func AssertNotEqual(t *testing.T, got, want int) {
 ```
 
 
-### Assert on strings
+### التوكيد على السلاسل النصية
 
-Being able to assert on the equality of integers is great but what if we want to assert on `string` ?
+القدرة على التوكيد (assertion) على تساوي الأعداد الصحيحة رائعة، لكن ماذا لو أردنا التوكيد على `string`؟
 
 ```go
 t.Run("asserting on strings", func(t *testing.T) {
@@ -53,7 +53,7 @@ t.Run("asserting on strings", func(t *testing.T) {
 })
 ```
 
-You'll get an error
+سيظهر لك خطأ (error)
 
 ```
 # github.com/quii/learn-go-with-tests/generics [github.com/quii/learn-go-with-tests/generics.test]
@@ -62,26 +62,26 @@ You'll get an error
 ./generics_test.go:13:30: cannot use "Grace" (untyped string constant) as int value in argument to AssertNotEqual
 ```
 
-If you take your time to read the error, you'll see the compiler is complaining that we're trying to pass a `string` to a function that expects an `integer`.
+إن أخذت وقتك في قراءة الخطأ، فسترى أن المصرِّف (compiler) يعترض على أننا نحاول تمرير `string` إلى دالة تتوقع `integer`.
 
-#### Recap on type-safety
+#### تذكير بأمان الأنواع
 
-If you've read the previous chapters of this book, or have experience with statically typed languages, this should not surprise you. The Go compiler expects you to write your functions, structs e.t.c. by describing what types you wish to work with.
+إن كنت قد قرأت الفصول السابقة من هذا الكتاب، أو لديك خبرة في اللغات ثابتة الأنواع، فلا ينبغي أن يفاجئك هذا. فمصرِّف غو (Go) يتوقع منك أن تكتب دوالك وبناك وغيرها بوصف الأنواع التي تريد العمل معها.
 
-You can't pass a `string` to a function that expects an `integer`.
+لا يمكنك تمرير `string` إلى دالة تتوقع `integer`.
 
-Whilst this can feel like ceremony, it can be extremely helpful. By describing these constraints you,
+ومع أن هذا قد يبدو مجرد شكليات، فقد يكون مفيداً للغاية. فبوصف هذه القيود، فإنك
 
-- Make function implementation simpler. By describing to the compiler what types you work with, you **constrain the number of possible valid implementations**. You can't "add" a `Person` and a `BankAccount`. You can't capitalise an `integer`. In software, constraints are often extremely helpful.
-- Are prevented from accidentally passing data to a function you didn't mean to.
+- تجعل تنفيذ الدوال أبسط. فبوصفك للمصرِّف الأنواع التي تعمل معها، **تقيّد عدد التنفيذات الصالحة الممكنة**. فلا يمكنك "جمع" `Person` و`BankAccount`، ولا يمكنك تكبير أحرف `integer`. وفي البرمجيات كثيراً ما تكون القيود مفيدة للغاية.
+- تُمنع من تمرير بيانات إلى دالة لم تقصدها عن طريق الخطأ.
 
-Go offers you a way to be more abstract with your types with [interfaces](./structs-methods-and-interfaces.md), so that you can design functions that do not take concrete types but instead, types that offer the behaviour you need. This gives you some flexibility whilst maintaining type-safety.
+توفر لك غو طريقة لتكون أكثر تجريداً مع أنواعك عبر [الواجهات](./structs-methods-and-interfaces.md)، كي تستطيع تصميم دوال لا تأخذ أنواعاً ملموسة، بل أنواعاً توفر السلوك الذي تحتاج إليه. وهذا يمنحك بعض المرونة مع الحفاظ على أمان الأنواع.
 
-### A function that takes a string or an integer? (or indeed, other things)
+### دالة تأخذ سلسلة نصية أو عدداً صحيحاً؟ (أو أشياء أخرى في الحقيقة)
 
-Another option Go has to make your functions more flexible is by declaring the type of your argument as `interface{}` which means "anything".
+ومن الخيارات الأخرى في غو لجعل دوالك أكثر مرونة التصريح عن نوع (type) الوسيط على أنه `interface{}`، وهو ما يعني "أي شيء".
 
-Try changing the signatures to use this type instead.
+جرّب تغيير التواقيع لتستعمل هذا النوع بدلاً من ذلك.
 
 ```go
 func AssertEqual(got, want interface{})
@@ -90,37 +90,37 @@ func AssertNotEqual(got, want interface{})
 
 ```
 
-The tests should now compile and pass. If you try making them fail you'll see the output is a bit ropey because we're using the integer `%d` format string to print our messages, so change them to the general `%+v` format for a better output of any kind of value.
+ينبغي أن تُصرَّف الاختبارات الآن وتنجح. وإن حاولت جعلها تفشل، فسترى أن المخرجات رديئة بعض الشيء، لأننا نستعمل سلسلة تنسيق الأعداد الصحيحة `%d` لطباعة رسائلنا، لذا غيّرها إلى الصيغة العامة `%+v` للحصول على مخرجات أفضل لأي نوع من القيم.
 
-### The problem with `interface{}`
+### المشكلة في `interface{}`
 
-Our `AssertX` functions are quite naive but conceptually aren't too different to how other [popular libraries offer this functionality](https://github.com/matryer/is/blob/master/is.go#L150)
+دوالنا `AssertX` ساذجة إلى حد ما، لكنها من حيث المفهوم لا تختلف كثيراً عن الطريقة التي [توفر بها مكتبات شائعة أخرى هذه الوظيفة](https://github.com/matryer/is/blob/master/is.go#L150)
 
 ```go
 func (is *I) Equal(a, b interface{})
 ```
 
-So what's the problem?
+فما المشكلة إذن؟
 
-By using `interface{}` the compiler can't help us when writing our code, because we're not telling it anything useful about the types of things passed to the function. Try comparing two different types.
+باستعمال `interface{}` لا يستطيع المصرِّف مساعدتنا حين نكتب شيفرتنا، لأننا لا نخبره بأي شيء مفيد عن أنواع الأشياء الممررة إلى الدالة. جرّب مقارنة نوعين مختلفين.
 
 ```go
 AssertEqual(1, "1")
 ```
 
-In this case, we get away with it; the test compiles, and it fails as we'd hope, although the error message `got 1, want 1` is unclear; but do we want to be able to compare strings with integers? What about comparing a `Person` with an `Airport`?
+في هذه الحالة ننجو بفعلتنا؛ فالاختبار (test) يُصرَّف ويفشل كما نأمل، مع أن رسالة الخطأ `got 1, want 1` غير واضحة؛ لكن هل نريد أن نستطيع مقارنة السلاسل النصية بالأعداد الصحيحة؟ وماذا عن مقارنة `Person` بـ`Airport`؟
 
-Writing functions that take `interface{}` can be extremely challenging and bug-prone because we've _lost_ our constraints, and we have no information at compile time as to what kinds of data we're dealing with.
+كتابة دوال تأخذ `interface{}` قد تكون صعبة للغاية وعرضة للأخطاء البرمجية، لأننا _فقدنا_ قيودنا، ولا نملك في وقت التصريف أي معلومات عن أنواع البيانات التي نتعامل معها.
 
-This means **the compiler can't help us** and we're instead more likely to have **runtime errors** which could affect our users, cause outages, or worse.
+وهذا يعني أن **المصرِّف لا يستطيع مساعدتنا**، وأننا بدلاً من ذلك أكثر عرضة لـ**أخطاء وقت التشغيل** التي قد تؤثر في مستخدمينا، أو تسبب انقطاعات، أو ما هو أسوأ.
 
-Often developers have to use reflection to implement these *ahem* generic functions, which can get complicated to read and write, and can hurt the performance of your program.
+كثيراً ما يضطر المطورون إلى استعمال الانعكاس (reflection) لتنفيذ هذه الدوال "العامة" *إحم*، وقد يصبح ذلك معقداً في القراءة والكتابة، وقد يضر بأداء برنامجك.
 
-## Our own test helpers with generics
+## دوالنا المساعدة الخاصة للاختبار باستعمال الأنواع العامة
 
-Ideally, we don't want to have to make specific `AssertX` functions for every type we ever deal with. We'd like to be able to have _one_ `AssertEqual` function that works with _any_ type but does not let you compare [apples and oranges](https://en.wikipedia.org/wiki/Apples_and_oranges).
+في الوضع المثالي، لا نريد أن نضطر إلى صنع دوال `AssertX` محددة لكل نوع نتعامل معه. بل نود أن تكون لدينا دالة `AssertEqual` _واحدة_ تعمل مع _أي_ نوع، لكنها لا تسمح لك بمقارنة [التفاح بالبرتقال](https://en.wikipedia.org/wiki/Apples_and_oranges).
 
-Generics offer us a way to make abstractions (like interfaces) by letting us **describe our constraints**. They allow us to write functions that have a similar level of flexibility that `interface{}` offers but retain type-safety and provide a better developer experience for callers.
+توفر لنا الأنواع العامة طريقة لصنع تجريدات (كالواجهات) بأن تتيح لنا **وصف قيودنا**. فهي تتيح لنا كتابة دوال لها مستوى من المرونة يشبه ما يوفره `interface{}`، لكنها تحافظ على أمان الأنواع وتوفر تجربة أفضل للمطورين المستدعين.
 
 ```go
 func TestAssertFunctions(t *testing.T) {
@@ -152,27 +152,27 @@ func AssertNotEqual[T comparable](t *testing.T, got, want T) {
 }
 ```
 
-To write generic functions in Go, you need to provide "type parameters" which is just a fancy way of saying "describe your generic type and give it a label".
+لكتابة دوال عامة في غو، عليك تقديم "معاملات أنواع"، وهي مجرد طريقة منمقة لقول "صِف نوعك العام وأعطه تسمية".
 
-In our case the type of our type parameter is `comparable` and we've given it the label of `T`. This label then lets us describe the types for the arguments to our function (`got, want T`).
+في حالتنا نوع معامل النوع هو `comparable`، وأعطيناه التسمية `T`. وهذه التسمية تتيح لنا بعد ذلك وصف أنواع وسطاء دالتنا (`got, want T`).
 
-We're using `comparable` because we want to describe to the compiler that we wish to use the `==` and `!=` operators on things of type `T` in our function, we want to compare! If you try changing the type to `any`,
+نستعمل `comparable` لأننا نريد أن نصف للمصرِّف أننا نرغب في استعمال العاملين `==` و`!=` على الأشياء من النوع `T` في دالتنا، فنحن نريد المقارنة! وإن حاولت تغيير النوع إلى `any`،
 
 ```go
 func AssertNotEqual[T any](got, want T)
 ```
 
-You'll get the following error:
+فسيظهر لك الخطأ التالي:
 
 ```
 prog.go2:15:5: cannot compare got != want (operator != not defined for T)
 ```
 
-Which makes a lot of sense, because you can't use those operators on every (or `any`) type.
+وهذا منطقي جداً، لأنك لا تستطيع استعمال هذين العاملين على كل نوع (أي `any` نوع).
 
-### Is a generic function with [`T any`](https://go.googlesource.com/proposal/+/refs/heads/master/design/go2draft-type-parameters.md#the-constraint) the same as `interface{}` ?
+### هل الدالة العامة ذات [`T any`](https://go.googlesource.com/proposal/+/refs/heads/master/design/go2draft-type-parameters.md#the-constraint) هي نفسها `interface{}`؟
 
-Consider two functions
+لننظر في دالتين
 
 ```go
 func GenericFoo[T any](x, y T)
@@ -182,33 +182,33 @@ func GenericFoo[T any](x, y T)
 func InterfaceyFoo(x, y interface{})
 ```
 
-What's the point of generics here? Doesn't `any` describe... anything?
+ما الفائدة من الأنواع العامة هنا؟ ألا يصف `any`... أي شيء؟
 
-In terms of constraints, `any` does mean "anything" and so does `interface{}`. In fact, `any` was added in 1.18 and is _just an alias for `interface{}`_.
+من حيث القيود، `any` تعني فعلاً "أي شيء"، وكذلك `interface{}`. بل إن `any` أضيفت في الإصدار 1.18 وهي _مجرد اسم بديل لـ`interface{}`_.
 
-The difference with the generic version is _you're still describing a specific type_ and what that means is we've still constrained this function to only work with _one_ type.
+الفرق في النسخة العامة أنك _ما زلت تصف نوعاً محدداً_، وهذا يعني أننا ما زلنا نقيّد هذه الدالة لتعمل مع نوع _واحد_ فقط.
 
-What this means is you can call `InterfaceyFoo` with any combination of types (e.g `InterfaceyFoo(apple, orange)`). However `GenericFoo` still offers some constraints because we've said that it only works with _one_ type, `T`.
+وهذا يعني أنك تستطيع استدعاء `InterfaceyFoo` بأي مزيج من الأنواع (مثل `InterfaceyFoo(apple, orange)`). أما `GenericFoo` فما زالت توفر بعض القيود، لأننا قلنا إنها لا تعمل إلا مع نوع _واحد_ هو `T`.
 
-Valid:
+صالح:
 
 - `GenericFoo(apple1, apple2)`
 - `GenericFoo(orange1, orange2)`
 - `GenericFoo(1, 2)`
 - `GenericFoo("one", "two")`
 
-Not valid (fails compilation):
+غير صالح (يفشل في التصريف):
 
 - `GenericFoo(apple1, orange1)`
 - `GenericFoo("1", 1)`
 
-If your function returns the generic type, the caller can also use the type as it was, rather than having to make a type assertion because when a function returns `interface{}` the compiler cannot make any guarantees about the type.
+وإن كانت دالتك تعيد النوع العام، فيستطيع المستدعي أيضاً استعمال النوع كما هو، بدلاً من الاضطرار إلى إجراء توكيد نوع، لأنه حين تعيد الدالة `interface{}` لا يستطيع المصرِّف تقديم أي ضمانات بشأن النوع.
 
-## Next: Generic data types
+## التالي: أنواع البيانات العامة
 
-We're going to create a [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) data type. Stacks should be fairly straightforward to understand from a requirements point of view. They're a collection of items where you can `Push` items to the "top" and to get items back again you `Pop` items from the top (LIFO - last in, first out).
+سننشئ نوع بيانات [مكدس](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)). ينبغي أن يكون فهم المكدسات مباشراً إلى حد ما من ناحية المتطلبات. فهي مجموعة من العناصر يمكنك أن تدفع (`Push`) العناصر إلى "قمتها"، ولاسترجاع العناصر تسحبها (`Pop`) من القمة (LIFO: آخر من يدخل أول من يخرج).
 
-For the sake of brevity I've omitted the TDD process that arrived me at the following code for a stack of `int`s, and a stack of `string`s.
+اختصاراً، حذفت عملية `TDD` التي أوصلتني إلى الشيفرة التالية لمكدس من قيم `int`، ومكدس من قيم `string`.
 
 ```go
 type StackOfInts struct {
@@ -258,7 +258,7 @@ func (s *StackOfStrings) Pop() (string, bool) {
 }
 ```
 
-I've created a couple of other assertion functions to help out
+أنشأت بعض دوال التوكيد الأخرى للمساعدة
 
 ```go
 func AssertTrue(t *testing.T, got bool) {
@@ -276,7 +276,7 @@ func AssertFalse(t *testing.T, got bool) {
 }
 ```
 
-And here's the tests
+وإليك الاختبارات
 
 ```go
 func TestStack(t *testing.T) {
@@ -320,14 +320,14 @@ func TestStack(t *testing.T) {
 }
 ```
 
-### Problems
+### المشكلات
 
-- The code for both `StackOfStrings` and `StackOfInts` is almost identical. Whilst duplication isn't always the end of the world, it's more code to read, write and maintain.
-- As we're duplicating the logic across two types, we've had to duplicate the tests too.
+- الشيفرة الخاصة بكل من `StackOfStrings` و`StackOfInts` متطابقة تقريباً. ومع أن الازدواجية ليست دائماً نهاية العالم، فهي شيفرة أكثر للقراءة والكتابة والصيانة.
+- ولأننا نكرر المنطق في نوعين، فقد اضطررنا إلى تكرار الاختبارات أيضاً.
 
-We really want to capture the _idea_ of a stack in one type, and have one set of tests for them. We should be wearing our refactoring hat right now which means we should not be changing the tests because we want to maintain the same behaviour.
+نريد حقاً أن نجسّد _فكرة_ المكدس في نوع واحد، وأن تكون لنا مجموعة واحدة من الاختبارات له. وينبغي أن نرتدي الآن قبعة إعادة الهيكلة (refactoring)، وهذا يعني ألا نغيّر الاختبارات لأننا نريد الحفاظ على السلوك نفسه.
 
-Without generics, this is what we _could_ do
+دون الأنواع العامة، هذا ما _يمكننا_ فعله
 
 ```go
 type StackOfInts = Stack
@@ -358,24 +358,24 @@ func (s *Stack) Pop() (interface{}, bool) {
 }
 ```
 
-- We're aliasing our previous implementations of `StackOfInts` and `StackOfStrings` to a new unified type `Stack`
-- We've removed the type safety from the `Stack` by making it so `values` is a [slice](https://github.com/quii/learn-go-with-tests/blob/main/arrays-and-slices.md) of `interface{}`
+- نجعل تنفيذينا السابقين `StackOfInts` و`StackOfStrings` اسمين بديلين لنوع جديد موحّد هو `Stack`
+- أزلنا أمان الأنواع من `Stack` بجعل `values` [شريحة](https://github.com/quii/learn-go-with-tests/blob/main/arrays-and-slices.md) من `interface{}`
 
-To try this code, you'll have to remove the type constraints from our assert functions:
+لتجربة هذه الشيفرة، عليك إزالة قيود الأنواع من دوال التوكيد لدينا:
 
 ```go
 func AssertEqual(t *testing.T, got, want interface{})
 ```
 
-If you do this, our tests still pass. Who needs generics?
+إن فعلت هذا، فستظل اختباراتنا ناجحة. فمن يحتاج إلى الأنواع العامة؟
 
-### The problem with throwing out type safety
+### مشكلة التخلي عن أمان الأنواع
 
-The first problem is the same as we saw with our `AssertEquals` - we've lost type safety. I can now `Push` apples onto a stack of oranges.
+المشكلة الأولى هي نفسها التي رأيناها مع `AssertEquals`: لقد فقدنا أمان الأنواع. فيمكنني الآن دفع التفاح بـ`Push` إلى مكدس من البرتقال.
 
-Even if we have the discipline not to do this, the code is still unpleasant to work with because when methods **return `interface{}` they are horrible to work with**.
+وحتى لو كان لدينا الانضباط الكافي لعدم فعل ذلك، فما زال العمل مع الشيفرة مزعجاً، لأن الطرق (methods) حين **تعيد `interface{}` يكون العمل معها فظيعاً**.
 
-Add the following test,
+أضف الاختبار التالي،
 
 ```go
 t.Run("interface stack DX is horrid", func(t *testing.T) {
@@ -389,15 +389,15 @@ t.Run("interface stack DX is horrid", func(t *testing.T) {
 })
 ```
 
-You get a compiler error, showing the weakness of losing type-safety:
+ستحصل على خطأ من المصرِّف يبيّن ضعف فقدان أمان الأنواع:
 
 ```
 invalid operation: operator + not defined on firstNum (variable of type interface{})
 ```
 
-When `Pop` returns `interface{}` it means the compiler has no information about what the data is and therefore severely limits what we can do. It can't know that it should be an integer, so it does not let us use the `+` operator.
+حين تعيد `Pop` قيمة `interface{}` فهذا يعني أن المصرِّف لا يملك أي معلومات عن ماهية البيانات، ولذلك يقيّد ما يمكننا فعله بشدة. فلا يستطيع أن يعرف أنها ينبغي أن تكون عدداً صحيحاً، لذا لا يسمح لنا باستعمال العامل `+`.
 
-To get around this, the caller has to do a [type assertion](https://golang.org/ref/spec#Type_assertions) for each value.
+وللالتفاف على ذلك، على المستدعي إجراء [توكيد نوع](https://golang.org/ref/spec#Type_assertions) لكل قيمة.
 
 ```go
 t.Run("interface stack dx is horrid", func(t *testing.T) {
@@ -419,13 +419,13 @@ t.Run("interface stack dx is horrid", func(t *testing.T) {
 })
 ```
 
-The unpleasantness radiating from this test would be repeated for every potential user of our `Stack` implementation, yuck.
+الإزعاج الذي يشع من هذا الاختبار سيتكرر لدى كل مستخدم محتمل لتنفيذ `Stack` لدينا، يا للقرف.
 
-### Generic data structures to the rescue
+### هياكل البيانات العامة إلى النجدة
 
-Just like you can define generic arguments to functions, you can define generic data structures.
+تماماً كما تستطيع تعريف وسطاء عامة للدوال، يمكنك تعريف هياكل بيانات عامة.
 
-Here's our new `Stack` implementation, featuring a generic data type.
+إليك تنفيذ `Stack` الجديد، الذي يتضمن نوع بيانات عاماً.
 
 ```go
 type Stack[T any] struct {
@@ -453,7 +453,7 @@ func (s *Stack[T]) Pop() (T, bool) {
 }
 ```
 
-Here's the tests, showing them working how we'd like them to work, with full type-safety.
+وإليك الاختبارات، تبيّن أنها تعمل كما نريد، مع أمان أنواع كامل.
 
 ```go
 func TestStack(t *testing.T) {
@@ -485,7 +485,7 @@ func TestStack(t *testing.T) {
 }
 ```
 
-You'll notice the syntax for defining generic data structures is consistent with defining generic arguments to functions.
+ستلاحظ أن صياغة تعريف هياكل البيانات العامة متسقة مع تعريف الوسطاء العامة للدوال.
 
 ```go
 type Stack[T any] struct {
@@ -493,15 +493,15 @@ type Stack[T any] struct {
 }
 ```
 
-It's _almost_ the same as before, it's just that what we're saying is the **type of the stack constrains what type of values you can work with**.
+إنها _تقريباً_ مثل السابق، كل ما في الأمر أننا نقول إن **نوع المكدس يقيّد نوع القيم التي يمكنك العمل معها**.
 
-Once you create a `Stack[Orange]` or a `Stack[Apple]` the methods defined on our stack will only let you pass in and will only return the particular type of the stack you're working with:
+بمجرد أن تنشئ `Stack[Orange]` أو `Stack[Apple]`، فإن الطرق المعرّفة على المكدس لن تسمح لك إلا بتمرير النوع المحدد للمكدس الذي تعمل معه، ولن تعيد إلا ذلك النوع:
 
 ```go
 func (s *Stack[T]) Pop() (T, bool)
 ```
 
-You can imagine the types of implementation being somehow generated for you, depending on what type of stack you create:
+يمكنك أن تتخيل أنواع التنفيذ وكأنها تُولَّد لك بطريقة ما، بحسب نوع المكدس الذي تنشئه:
 
 ```go
 func (s *Stack[Orange]) Pop() (Orange, bool)
@@ -511,23 +511,23 @@ func (s *Stack[Orange]) Pop() (Orange, bool)
 func (s *Stack[Apple]) Pop() (Apple, bool)
 ```
 
-Now that we have done this refactoring, we can safely remove the string stack test because we don't need to prove the same logic over and over.
+والآن بعد أن أجرينا إعادة الهيكلة هذه، يمكننا بأمان حذف اختبار مكدس السلاسل النصية، لأننا لا نحتاج إلى إثبات المنطق نفسه مرة بعد مرة.
 
-Note that so far in the examples of calling generic functions, we have not needed to specify the generic types. For example, to call `AssertEqual[T]`, we do not need to specify what the type `T` is since it can be inferred from the arguments. In cases where the generic types cannot be inferred, you need to specify the types when calling the function. The syntax is the same as when defining the function, i.e. you specify the types inside square brackets before the arguments.
+لاحظ أننا حتى الآن، في أمثلة استدعاء الدوال العامة، لم نحتج إلى تحديد الأنواع العامة. فمثلاً، لاستدعاء `AssertEqual[T]` لا نحتاج إلى تحديد ما هو النوع `T`، إذ يمكن استنتاجه من الوسطاء. أما في الحالات التي لا يمكن فيها استنتاج الأنواع العامة، فعليك تحديد الأنواع عند استدعاء الدالة. والصياغة هي نفسها كما عند تعريف الدالة، أي أنك تحدد الأنواع داخل أقواس مربعة قبل الوسطاء.
 
-For a concrete example, consider making a constructor for `Stack[T]`.
+ولمثال ملموس، فكّر في صنع دالة بانية لـ`Stack[T]`.
 ```go
 func NewStack[T any]() *Stack[T] {
 	return new(Stack[T])
 }
 ```
-To use this constructor to create a stack of ints and a stack of strings for example, you call it like this:
+ولاستعمال هذه الدالة البانية لإنشاء مكدس من الأعداد الصحيحة ومكدس من السلاسل النصية مثلاً، تستدعيها هكذا:
 ```go
 myStackOfInts := NewStack[int]()
 myStackOfStrings := NewStack[string]()
 ```
 
-Here is the `Stack` implementation and the tests after adding the constructor.
+إليك تنفيذ `Stack` والاختبارات بعد إضافة الدالة البانية.
 
 ```go
 type Stack[T any] struct {
@@ -590,41 +590,41 @@ func TestStack(t *testing.T) {
 ```
 
 
-Using a generic data type we have:
+باستعمال نوع بيانات عام:
 
-- Reduced duplication of important logic.
-- Made `Pop` return `T` so that if we create a `Stack[int]` we in practice get back `int` from `Pop`; we can now use `+` without the need for type assertion gymnastics.
-- Prevented misuse at compile time. You cannot `Push` oranges to an apple stack.
+- قلّلنا ازدواجية المنطق المهم.
+- جعلنا `Pop` تعيد `T`، فإن أنشأنا `Stack[int]` نحصل عملياً على `int` من `Pop`؛ ونستطيع الآن استعمال `+` دون الحاجة إلى ألعاب بهلوانية بتوكيدات الأنواع.
+- منعنا سوء الاستعمال في وقت التصريف. فلا يمكنك دفع البرتقال بـ`Push` إلى مكدس تفاح.
 
-## Wrapping up
+## الخلاصة
 
-This chapter should have given you a taste of generics syntax, and some ideas as to why generics might be helpful. We've written our own `Assert` functions which we can safely re-use to experiment with other ideas around generics, and we've implemented a simple data structure to store any type of data we wish, in a type-safe manner.
+ينبغي أن يكون هذا الفصل قد أعطاك لمحة عن صياغة الأنواع العامة، وبعض الأفكار عن أسباب فائدتها. فقد كتبنا دوال `Assert` خاصة بنا يمكننا إعادة استعمالها بأمان لتجربة أفكار أخرى حول الأنواع العامة، ونفّذنا هيكل بيانات بسيطاً لتخزين أي نوع من البيانات نريده، بطريقة آمنة الأنواع.
 
-### Generics are simpler than using `interface{}` in most cases
+### الأنواع العامة أبسط من استعمال `interface{}` في معظم الحالات
 
-If you're inexperienced with statically-typed languages, the point of generics may not be immediately obvious, but I hope the examples in this chapter have illustrated where the Go language isn't as expressive as we'd like. In particular using `interface{}` makes your code:
+إن كنت قليل الخبرة باللغات ثابتة الأنواع، فقد لا تكون الفائدة من الأنواع العامة واضحة على الفور، لكنني أرجو أن تكون أمثلة هذا الفصل قد بيّنت أين لا تكون لغة غو معبّرة بالقدر الذي نريده. وتحديداً، استعمال `interface{}` يجعل شيفرتك:
 
-- Less safe (mix apples and oranges), requires more error handling
-- Less expressive, `interface{}` tells you nothing about the data
-- More likely to rely on [reflection](https://github.com/quii/learn-go-with-tests/blob/main/reflection.md), type-assertions etc which makes your code more difficult to work with and more error prone as it pushes checks from compile-time to runtime
+- أقل أماناً (خلط التفاح بالبرتقال)، وتتطلب معالجة أكثر للأخطاء
+- أقل تعبيراً، فـ`interface{}` لا يخبرك بأي شيء عن البيانات
+- أكثر ميلاً إلى الاعتماد على [الانعكاس](https://github.com/quii/learn-go-with-tests/blob/main/reflection.md) وتوكيدات الأنواع وغيرها، مما يجعل العمل مع شيفرتك أصعب وأكثر عرضة للأخطاء، لأنه ينقل الفحوص من وقت التصريف إلى وقت التشغيل
 
-Using statically typed languages is an act of describing constraints. If you do it well, you create code that is not only safe and simple to use but also simpler to write because the possible solution space is smaller.
+استعمال اللغات ثابتة الأنواع فعلُ وصفٍ للقيود. فإن أحسنت فعله، أنشأت شيفرة ليست آمنة وسهلة الاستعمال فحسب، بل أبسط في الكتابة أيضاً، لأن فضاء الحلول الممكنة أصغر.
 
-Generics gives us a new way to express constraints in our code, which as demonstrated will allow us to consolidate and simplify code that was not possible until Go 1.18.
+تمنحنا الأنواع العامة طريقة جديدة للتعبير عن القيود في شيفرتنا، وكما رأينا، ستتيح لنا دمج شيفرة وتبسيطها بطريقة لم تكن ممكنة قبل غو 1.18.
 
-### Will generics turn Go into Java?
+### هل ستحوّل الأنواع العامة غو إلى Java؟
 
-- No.
+- لا.
 
-There's a lot of [FUD (fear, uncertainty and doubt)](https://en.wikipedia.org/wiki/Fear,_uncertainty,_and_doubt) in the Go community about generics leading to nightmare abstractions and baffling code bases. This is usually caveatted with "they must be used carefully".
+هناك كثير من [الخوف وعدم اليقين والشك (FUD)](https://en.wikipedia.org/wiki/Fear,_uncertainty,_and_doubt) في مجتمع غو بشأن أن الأنواع العامة ستقود إلى تجريدات كابوسية وقواعد شيفرة محيّرة. وعادةً ما يُستدرك ذلك بعبارة "يجب استعمالها بحذر".
 
-Whilst this is true, it's not especially useful advice because this is true of any language feature.
+ومع أن هذا صحيح، فهو ليس نصيحة مفيدة بشكل خاص، لأنه ينطبق على أي ميزة في أي لغة.
 
-Not many people complain about our ability to define interfaces which, like generics is a way of describing constraints within our code. When you describe an interface you are making a design choice that _could be poor_, generics are not unique in their ability to make confusing, annoying to use code.
+قليلون يشتكون من قدرتنا على تعريف الواجهات، التي هي، كالأنواع العامة، وسيلة لوصف القيود داخل شيفرتنا. فحين تصف واجهة (interface) فإنك تتخذ قراراً تصميمياً _قد يكون سيئاً_، والأنواع العامة ليست فريدة في قدرتها على صنع شيفرة محيّرة ومزعجة الاستعمال.
 
-### You're already using generics
+### أنت تستعمل الأنواع العامة بالفعل
 
-When you consider that if you've used arrays, slices or maps; you've _already been a consumer of generic code_.
+فكّر في أنك إن كنت قد استعملت المصفوفات أو الشرائح أو الخرائط، فقد كنت _بالفعل مستهلكاً لشيفرة عامة_.
 
 ```
 var myApples []Apple
@@ -632,31 +632,31 @@ var myApples []Apple
 append(myApples, Orange{})
 ```
 
-### Abstraction is not a dirty word
+### التجريد ليس كلمة بذيئة
 
-It's easy to dunk on [AbstractSingletonProxyFactoryBean](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/aop/framework/AbstractSingletonProxyFactoryBean.html) but let's not pretend a code base with no abstraction at all isn't also bad. It's your job to _gather_ related concepts when appropriate, so your system is easier to understand and change; rather than being a collection of disparate functions and types with a lack of clarity.
+من السهل السخرية من [AbstractSingletonProxyFactoryBean](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/aop/framework/AbstractSingletonProxyFactoryBean.html)، لكن لا نتظاهر بأن قاعدة شيفرة خالية تماماً من التجريد ليست سيئة أيضاً. فمهمتك أن _تجمع_ المفاهيم المترابطة حين يكون ذلك مناسباً، كي يكون نظامك أسهل في الفهم والتغيير، بدلاً من أن يكون مجموعة من الدوال والأنواع المتفرقة التي يغيب عنها الوضوح.
 
-### [Make it work, make it right, make it fast](https://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast#:~:text=%22Make%20it%20work%2C%20make%20it,to%20DesignForPerformance%20ahead%20of%20time.)
+### [اجعلها تعمل، اجعلها صحيحة، اجعلها سريعة](https://wiki.c2.com/?MakeItWorkMakeItRightMakeItFast#:~:text=%22Make%20it%20work%2C%20make%20it,to%20DesignForPerformance%20ahead%20of%20time.)
 
-People run in to problems with generics when they're abstracting too quickly without enough information to make good design decisions.
+يقع الناس في مشكلات مع الأنواع العامة حين يجرّدون بسرعة كبيرة دون معلومات كافية لاتخاذ قرارات تصميمية جيدة.
 
-The TDD cycle of red, green, refactor means that you have more guidance as to what code you _actually need_ to deliver your behaviour, **rather than imagining abstractions up front**; but you still need to be careful.
+دورة `TDD` من الأحمر إلى الأخضر إلى إعادة الهيكلة تعني أن لديك إرشاداً أكبر بشأن الشيفرة التي _تحتاج إليها فعلاً_ لتقديم سلوكك، **بدلاً من تخيّل التجريدات مسبقاً**؛ لكن ما زال عليك الحذر.
 
-There's no hard and fast rules here but resist making things generic until you can see that you have a useful generalisation. When we created the various `Stack` implementations we importantly started with _concrete_ behaviour like `StackOfStrings` and `StackOfInts` backed by tests. From our _real_ code we could start to see real patterns, and backed by our tests, we could explore refactoring toward a more general-purpose solution.
+لا توجد قواعد صارمة هنا، لكن قاوم جعل الأشياء عامة حتى ترى أن لديك تعميماً مفيداً. فحين أنشأنا تنفيذات `Stack` المختلفة، كان من المهم أننا بدأنا بسلوك _ملموس_ مثل `StackOfStrings` و`StackOfInts` مدعوم بالاختبارات. ومن شيفرتنا _الحقيقية_ استطعنا أن نبدأ برؤية أنماط حقيقية، وبدعم من اختباراتنا استطعنا استكشاف إعادة الهيكلة نحو حل أعم.
 
-People often advise you to only generalise when you see the same code three times, which seems like a good starting rule of thumb.
+كثيراً ما ينصحك الناس بألا تعمّم إلا حين ترى الشيفرة نفسها ثلاث مرات، ويبدو هذا قاعدة بداية جيدة.
 
-A common path I've taken in other programming languages has been:
+ومن المسارات الشائعة التي سلكتها في لغات برمجة أخرى:
 
-- One TDD cycle to drive some behaviour
-- Another TDD cycle to exercise some other related scenarios
+- دورة `TDD` واحدة لقيادة سلوك ما
+- دورة `TDD` أخرى لاختبار بعض السيناريوهات المترابطة الأخرى
 
-> Hmm, these things look similar - but a little duplication is better than coupling to a bad abstraction
+> همم، هذه الأشياء تبدو متشابهة، لكن قليلاً من الازدواجية أفضل من الاقتران بتجريد سيئ
 
-- Sleep on it
-- Another TDD cycle
+- أنام على الفكرة
+- دورة `TDD` أخرى
 
-> OK, I'd like to try to see if I can generalise this thing. Thank goodness I am so smart and good-looking because I use TDD, so I can refactor whenever I wish, and the process has helped me understand what behaviour I actually need before designing too much.
+> حسناً، أود أن أرى إن كنت أستطيع تعميم هذا الشيء. الحمد لله أنني ذكي جداً ووسيم لأنني أستعمل `TDD`، فأستطيع إعادة الهيكلة متى شئت، وقد ساعدتني العملية على فهم السلوك الذي أحتاج إليه فعلاً قبل الإفراط في التصميم.
 
-- This abstraction feels nice! The tests are still passing, and the code is simpler
-- I can now delete a number of tests, I've captured the _essence_ of the behaviour and removed unnecessary detail
+- هذا التجريد يبدو لطيفاً! والاختبارات ما زالت ناجحة، والشيفرة أبسط
+- يمكنني الآن حذف عدد من الاختبارات، فقد جسّدت _جوهر_ السلوك وأزلت التفاصيل غير الضرورية
