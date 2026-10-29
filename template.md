@@ -1,12 +1,12 @@
-# Chapter template
+# قالب الفصل
 
-Some intro
+مقدمة ما
 
-## Write the test first
-## Try to run the test
-## Write the minimal amount of code for the test to run and check the failing test output
-## Write enough code to make it pass
-## Refactor
+## اكتب الاختبار أولاً
+## حاول تشغيل الاختبار
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
+## أعد الهيكلة
 
-## Repeat for new requirements
-## Wrapping up
+## كرر مع المتطلبات الجديدة
+## الخلاصة
