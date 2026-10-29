@@ -1,14 +1,14 @@
-# Error types
+# أنواع الأخطاء
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/error-types)**
+**[تجد كل الشيفرة هنا](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/error-types)**
 
-**Creating your own types for errors can be an elegant way of tidying up your code, making your code easier to use and test.**
+**إنشاء أنواعك الخاصة للأخطاء قد يكون وسيلة أنيقة لترتيب شيفرتك، وجعلها أسهل في الاستعمال والاختبار.**
 
-Pedro on the Gopher Slack asks
+يسأل بيدرو على Gopher Slack
 
-> If I’m creating an error like `fmt.Errorf("%s must be foo, got %s", bar, baz)`, is there a way to test equality without comparing the string value?
+> إن كنت أنشئ خطأً مثل `fmt.Errorf("%s must be foo, got %s", bar, baz)`، فهل هناك طريقة لاختبار المساواة دون مقارنة قيمة السلسلة النصية؟
 
-Let's make up a function to help explore this idea.
+لنصنع دالة (function) تساعدنا على استكشاف هذه الفكرة.
 
 ```go
 // DumbGetter will get the string body of url if it gets a 200
@@ -30,9 +30,9 @@ func DumbGetter(url string) (string, error) {
 }
 ```
 
-It's not uncommon to write a function that might fail for different reasons and we want to make sure we handle each scenario correctly.
+ليس من غير المألوف كتابة دالة قد تفشل لأسباب مختلفة، ونريد التأكد من أننا نعالج كل سيناريو بشكل صحيح.
 
-As Pedro says, we _could_ write a test for the status error like so.
+وكما يقول بيدرو، _يمكننا_ كتابة اختبار (test) لخطأ الحالة هكذا.
 
 ```go
 t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
@@ -57,29 +57,29 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-This test creates a server which always returns `StatusTeapot` and then we use its URL as the argument to `DumbGetter` so we can see it handles non `200` responses correctly.
+ينشئ هذا الاختبار خادماً يعيد دائماً `StatusTeapot`، ثم نستعمل عنوان URL الخاص به وسيطاً (argument) لـ`DumbGetter`، كي نرى أنه يعالج الاستجابات غير `200` بشكل صحيح.
 
-## Problems with this way of testing
+## مشكلات طريقة الاختبار هذه
 
-This book tries to emphasise _listen to your tests_ and this test doesn't _feel_ good:
+يحاول هذا الكتاب التشديد على أن _تصغي إلى اختباراتك_، وهذا الاختبار لا _يبدو_ جيداً:
 
-- We're constructing the same string as production code does to test it
-- It's annoying to read and write
-- Is the exact error message string what we're _actually concerned with_ ?
+- نبني السلسلة النصية نفسها التي تبنيها شيفرة الإنتاج لنختبرها
+- قراءته وكتابته مزعجتان
+- هل السلسلة النصية الدقيقة لرسالة الخطأ هي ما _يهمنا فعلاً_؟
 
-What does this tell us? The ergonomics of our test would be reflected on another bit of code trying to use our code.
+ماذا يخبرنا هذا؟ إن سهولة استعمال اختبارنا ستنعكس على أي شيفرة (code) أخرى تحاول استعمال شيفرتنا.
 
-How does a user of our code react to the specific kind of errors we return? The best they can do is look at the error string which is extremely error prone and horrible to write.
+كيف يتصرف مستخدم شيفرتنا مع الأنواع المحددة من الأخطاء التي نعيدها؟ أفضل ما يستطيع فعله هو النظر في سلسلة الخطأ النصية، وهذا عرضة للأخطاء إلى حد بعيد وفظيع الكتابة.
 
-## What we should do
+## ما ينبغي أن نفعله
 
-With TDD we have the benefit of getting into the mindset of:
+مع `TDD` نستفيد من الدخول في طريقة التفكير التالية:
 
-> How would _I_ want to use this code?
+> كيف _أريد_ أنا أن أستعمل هذه الشيفرة؟
 
-What we could do for `DumbGetter` is provide a way for users to use the type system to understand what kind of error has happened.
+ما يمكننا فعله لـ`DumbGetter` هو توفير وسيلة للمستخدمين لاستعمال نظام الأنواع لفهم نوع الخطأ الذي حدث.
 
-What if `DumbGetter` could return us something like
+ماذا لو استطاعت `DumbGetter` أن تعيد لنا شيئاً مثل
 
 ```go
 type BadStatusError struct {
@@ -88,9 +88,9 @@ type BadStatusError struct {
 }
 ```
 
-Rather than a magical string, we have actual _data_ to work with.
+بدلاً من سلسلة نصية سحرية، صارت لدينا _بيانات_ فعلية نعمل معها.
 
-Let's change our existing test to reflect this need
+لنغيّر اختبارنا الحالي ليعكس هذه الحاجة
 
 ```go
 t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
@@ -120,7 +120,7 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-We'll have to make `BadStatusError` implement the error interface.
+سنضطر إلى جعل `BadStatusError` يحقق واجهة الخطأ.
 
 ```go
 func (b BadStatusError) Error() string {
@@ -128,11 +128,11 @@ func (b BadStatusError) Error() string {
 }
 ```
 
-### What does the test do?
+### ماذا يفعل الاختبار؟
 
-Instead of checking the exact string of the error, we are doing a [type assertion](https://tour.golang.org/methods/15) on the error to see if it is a `BadStatusError`. This reflects our desire for the _kind_ of error clearer. Assuming the assertion passes we can then check the properties of the error are correct.
+بدلاً من التحقق من السلسلة النصية الدقيقة للخطأ، نجري [توكيد نوع](https://tour.golang.org/methods/15) على الخطأ لنرى إن كان `BadStatusError`. وهذا يعكس رغبتنا في _نوع_ الخطأ بوضوح أكبر. وبافتراض نجاح التوكيد، يمكننا بعد ذلك التحقق من أن خصائص الخطأ صحيحة.
 
-When we run the test, it tells us we didn't return the right kind of error
+حين نشغّل الاختبار، يخبرنا بأننا لم نُعِد نوع الخطأ الصحيح
 
 ```
 --- FAIL: TestDumbGetter (0.00s)
@@ -140,7 +140,7 @@ When we run the test, it tells us we didn't return the right kind of error
     	error-types_test.go:56: was not a BadStatusError, got *errors.errorString
 ```
 
-Let's fix `DumbGetter` by updating our error handling code to use our type
+لنصلح `DumbGetter` بتحديث شيفرة معالجة الأخطاء لتستعمل نوعنا
 
 ```go
 if res.StatusCode != http.StatusOK {
@@ -148,23 +148,23 @@ if res.StatusCode != http.StatusOK {
 }
 ```
 
-This change has had some _real positive effects_
+كان لهذا التغيير بعض _الآثار الإيجابية الحقيقية_
 
-- Our `DumbGetter` function has become simpler, it's no longer concerned with the intricacies of an error string, it just creates a `BadStatusError`.
-- Our tests now reflect (and document) what a user of our code _could_ do if they decided they wanted to do some more sophisticated error handling than just logging. Just do a type assertion and then you get easy access to the properties of the error.
-- It is still "just" an `error`, so if they choose to they can pass it up the call stack or log it like any other `error`.
+- صارت الدالة `DumbGetter` أبسط، فلم تعد تهتم بتعقيدات سلسلة الخطأ النصية، بل تنشئ `BadStatusError` فحسب.
+- صارت اختباراتنا تعكس (وتوثّق) ما _يمكن_ أن يفعله مستخدم شيفرتنا إن قرر أنه يريد معالجة أخطاء أكثر تطوراً من مجرد التسجيل. فكل ما عليه هو إجراء توكيد نوع، فيحصل على وصول سهل إلى خصائص الخطأ.
+- وما زال "مجرد" `error`، لذا إن شاؤوا يستطيعون تمريره إلى أعلى مكدس الاستدعاءات أو تسجيله كأي `error` آخر.
 
-## Wrapping up
+## الخلاصة
 
-If you find yourself testing for multiple error conditions don't fall in to the trap of comparing the error messages.
+إن وجدت نفسك تختبر عدة حالات خطأ، فلا تقع في فخ مقارنة رسائل الخطأ.
 
-This leads to flaky and difficult to read/write tests and it reflects the difficulties the users of your code will have if they also need to start doing things differently depending on the kind of errors that have occurred.
+فهذا يقود إلى اختبارات متقلبة وصعبة القراءة والكتابة، ويعكس الصعوبات التي سيواجهها مستخدمو شيفرتك إن احتاجوا هم أيضاً إلى فعل أشياء مختلفة بحسب نوع الأخطاء التي حدثت.
 
-Always make sure your tests reflect how _you'd_ like to use your code, so in this respect consider creating error types to encapsulate your kinds of errors. This makes handling different kinds of errors easier for users of your code and also makes writing your error handling code simpler and easier to read.
+تأكد دائماً من أن اختباراتك تعكس الطريقة التي _تحب_ أن تستعمل بها شيفرتك، لذا فكّر في هذا الصدد في إنشاء أنواع أخطاء تغلّف أنواع أخطائك. وهذا يجعل معالجة الأنواع المختلفة من الأخطاء أسهل لمستخدمي شيفرتك، ويجعل كتابة شيفرة معالجة الأخطاء لديك أبسط وأسهل قراءة.
 
-## Addendum
+## ملحق
 
-As of Go 1.13 there are new ways to work with errors in the standard library which is covered in the [Go Blog](https://blog.golang.org/go1.13-errors)
+منذ غو (Go) 1.13 صارت هناك طرق جديدة للعمل مع الأخطاء في المكتبة القياسية، يتناولها [مقال في مدونة غو](https://blog.golang.org/go1.13-errors)
 
 ```go
 t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
@@ -194,4 +194,4 @@ t.Run("when you don't get a 200 you get a status error", func(t *testing.T) {
 })
 ```
 
-In this case we are using [`errors.As`](https://pkg.go.dev/errors#example-As) to try and extract our error into our custom type. It returns a `bool` to denote success and extracts it into `got` for us.
+نستعمل في هذه الحالة [`errors.As`](https://pkg.go.dev/errors#example-As) لمحاولة استخراج خطئنا إلى نوعنا المخصص. وهي تعيد `bool` للدلالة على النجاح، وتستخرجه إلى `got` لنا.
