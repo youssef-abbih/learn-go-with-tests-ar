@@ -1,11 +1,11 @@
-# Hello, World
+# مرحباً يا عالم
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/hello-world)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/hello-world)**
 
-It is traditional for your first program in a new language to be [Hello, World](https://en.m.wikipedia.org/wiki/%22Hello,_World!%22_program).
+جرت العادة أن يكون أول برنامج تكتبه بلغة جديدة هو برنامج [Hello, World](https://en.m.wikipedia.org/wiki/%22Hello,_World!%22_program).
 
-- Create a folder wherever you like
-- Put a new file in it called `hello.go` and put the following code inside it
+- أنشئ مجلداً في أي مكان تريده
+- ضع فيه ملفاً جديداً باسم `hello.go` واكتب فيه الشيفرة (code) التالية
 
 ```go
 package main
@@ -17,21 +17,21 @@ func main() {
 }
 ```
 
-To run it, type `go run hello.go`.
+لتشغيله، اكتب `go run hello.go`.
 
-## How it works
+## كيف يعمل
 
-When you write a program in Go, you will have a `main` package defined with a `main` func inside it. Packages are ways of grouping up related Go code together.
+عندما تكتب برنامجاً بلغة غو (Go)، تكون لديك حزمة (package) باسم `main` معرّفة وفيها دالة `main`. والحزم وسيلة لتجميع شيفرة غو المترابطة معاً.
 
-The `func` keyword defines a function with a name and a body.
+الكلمة المحجوزة `func` تعرّف دالة (function) لها اسم وجسم.
 
-With `import "fmt"` we are importing a package which contains the `Println` function that we use to print.
+وبالسطر `import "fmt"` نستورد حزمة تحتوي على الدالة `Println` التي نستعملها للطباعة.
 
-## How to test
+## كيف تختبره
 
-How do you test this? It is good to separate your "domain" code from the outside world \(side-effects\). The `fmt.Println` is a side effect \(printing to stdout\), and the string we send in is our domain.
+كيف تختبر هذا؟ من الجيد أن تفصل شيفرة "المجال" (domain) عن العالم الخارجي (الآثار الجانبية). فالدالة `fmt.Println` لها أثر جانبي (side effect) هو الطباعة إلى `stdout`، والسلسلة النصية التي نمررها إليها هي مجالنا.
 
-So let's separate these concerns so it's easier to test
+فلنفصل هذه الاهتمامات بعضها عن بعض كي يسهل الاختبار
 
 ```go
 package main
@@ -47,9 +47,9 @@ func main() {
 }
 ```
 
-We have created a new function with `func`, but this time, we've added another keyword, `string,` to the definition. This means this function returns a `string`.
+أنشأنا دالة جديدة بالكلمة `func`، لكننا هذه المرة أضفنا كلمة أخرى هي `string` إلى التعريف. وهذا يعني أن هذه الدالة تعيد قيمة من النوع `string`.
 
-Now create a new file called `hello_test.go` where we are going to write a test for our `Hello` function
+والآن أنشئ ملفاً جديداً باسم `hello_test.go` سنكتب فيه اختباراً (test) للدالة `Hello`
 
 ```go
 package main
@@ -66,16 +66,16 @@ func TestHello(t *testing.T) {
 }
 ```
 
-## Go modules?
+## الوحدات النمطية في غو؟
 
-The next step is to run the tests. Enter `go test` in your terminal. If the tests pass, then you are probably using an earlier version of Go. However, if you are using Go 1.16 or later, the tests will likely not run. Instead, you will see an error message like this in the terminal:
+الخطوة التالية هي تشغيل الاختبارات. اكتب `go test` في الطرفية (terminal). إن نجحت الاختبارات، فأنت على الأرجح تستعمل إصداراً أقدم من غو. أما إن كنت تستعمل غو 1.16 أو أحدث، فالأرجح أن الاختبارات لن تعمل، وسترى بدلاً من ذلك رسالة خطأ (error) كهذه في الطرفية:
 
 ```shell
 $ go test
 go: cannot find main module; see 'go help modules'
 ```
 
-What's the problem? In a word, [modules](https://blog.golang.org/go116-module-changes). Luckily, the problem is easy to fix. Enter `go mod init example.com/hello` in your terminal. That will create a new file with the following contents:
+ما المشكلة؟ باختصار: [الوحدات النمطية (modules)](https://blog.golang.org/go116-module-changes). لحسن الحظ، حل المشكلة سهل. اكتب `go mod init example.com/hello` في الطرفية، فيُنشأ ملف جديد بالمحتوى التالي:
 
 ```
 module example.com/hello
@@ -83,49 +83,49 @@ module example.com/hello
 go 1.16
 ```
 
-This file tells the `go` tools essential information about your code. If you planned to distribute your application, you would include where the code was available for download as well as information about dependencies.  The name of the module, example\.com\/hello, usually refers to a URL where the module can be found and downloaded. For compatibility with tools we'll start using soon, make sure your module's name has a dot somewhere in it, like the dot in .com of example\.com/hello. For now, your module file is minimal, and you can leave it that way. To read more about modules, [you can check out the reference in the Golang documentation](https://golang.org/doc/modules/gomod-ref). We can get back to testing and learning Go now since the tests should run, even on Go 1.16.
+يخبر هذا الملف أدوات `go` بمعلومات أساسية عن شيفرتك. ولو كنت تخطط لتوزيع تطبيقك، لأضفت إليه المكان الذي تتوفر فيه الشيفرة للتنزيل، إضافة إلى معلومات عن التبعيات (dependencies). واسم الوحدة النمطية، `example.com/hello`، يشير عادةً إلى عنوان URL يمكن إيجاد الوحدة فيه وتنزيلها منه. وللتوافق مع أدوات سنبدأ باستعمالها قريباً، تأكد من أن اسم وحدتك النمطية يحتوي على نقطة في مكان ما، مثل النقطة في `.com` من `example.com/hello`. ملف وحدتك النمطية بسيط جداً الآن، ويمكنك أن تتركه كذلك. ولقراءة المزيد عن الوحدات النمطية، [يمكنك الاطلاع على المرجع في توثيق غو](https://golang.org/doc/modules/gomod-ref). يمكننا الآن العودة إلى الاختبار وتعلّم غو، فالاختبارات ينبغي أن تعمل الآن حتى على غو 1.16.
 
-In future chapters, you will need to run `go mod init SOMENAME` in each new folder before running commands like `go test` or `go build`.
+ستحتاج في الفصول القادمة إلى تشغيل `go mod init SOMENAME` في كل مجلد جديد قبل تشغيل أوامر مثل `go test` أو `go build`.
 
-## Back to Testing
+## العودة إلى الاختبار
 
-Run `go test` in your terminal. It should've passed! Just to check, try deliberately breaking the test by changing the `want` string.
+شغّل `go test` في الطرفية. ينبغي أن ينجح! وللتحقق فقط، جرّب أن تُفشل الاختبار عمداً بتغيير السلسلة النصية `want`.
 
-Notice how you have not had to pick between multiple testing frameworks and then figure out how to install them. Everything you need is built into the language, and the syntax is the same as the rest of the code you will write.
+لاحظ أنك لم تضطر إلى الاختيار بين عدة أطر عمل للاختبار ثم معرفة كيفية تثبيتها. فكل ما تحتاج إليه مدمج في اللغة، والصياغة هي نفسها صياغة بقية الشيفرة التي ستكتبها.
 
-### Writing tests
+### كتابة الاختبارات
 
-Writing a test is just like writing a function, with a few rules
+كتابة اختبار تشبه تماماً كتابة دالة، مع بعض القواعد
 
-* It needs to be in a file with a name like `xxx_test.go`
-* The test function must start with the word `Test`
-* The test function takes one argument only `t *testing.T`
-* To use the `*testing.T` type, you need to `import "testing"`, like we did with `fmt` in the other file
+* يجب أن يكون في ملف اسمه على شكل `xxx_test.go`
+* يجب أن يبدأ اسم دالة الاختبار بالكلمة `Test`
+* تأخذ دالة الاختبار وسيطاً (argument) واحداً فقط هو `t *testing.T`
+* لاستعمال النوع `*testing.T`، عليك أن تكتب `import "testing"`، كما فعلنا مع `fmt` في الملف الآخر
 
-For now, it's enough to know that your `t` of type `*testing.T` is your "hook" into the testing framework so you can do things like `t.Fail()` when you want to fail.
+يكفي الآن أن تعرف أن `t` من النوع `*testing.T` هو "خطّافك" إلى إطار الاختبار، فتستطيع به فعل أشياء مثل `t.Fail()` حين تريد الإفشال.
 
-We've covered some new topics:
+تناولنا بعض المواضيع الجديدة:
 
-#### `if`
-If statements in Go are very much like other programming languages.
+#### التعليمة `if`
+تعليمات `if` في غو تشبه كثيراً نظيراتها في لغات البرمجة (programming languages) الأخرى.
 
-#### Declaring variables
+#### التصريح عن المتغيرات
 
-We're declaring some variables with the syntax `varName := value`, which lets us reuse some values in our test for readability.
+نصرّح عن بعض المتغيرات (variables) بالصياغة `varName := value`، مما يتيح لنا إعادة استعمال بعض القيم في اختبارنا لتسهيل قراءته.
 
-#### `t.Errorf`
+#### الطريقة `t.Errorf`
 
-We are calling the `Errorf` _method_ on our `t`, which will print out a message and fail the test. The `f` stands for format, which allows us to build a string with values inserted into the placeholder values `%q`. When you make the test fail, it should be clear how it works.
+نستدعي _الطريقة_ (method) `Errorf` على `t`، فتطبع رسالة وتُفشل الاختبار. يشير الحرف `f` إلى التنسيق (format)، وهو يتيح لنا بناء سلسلة نصية تُدرج فيها القيم مكان العناصر النائبة مثل `%q`. وحين تجعل الاختبار يفشل، ينبغي أن يتضح لك كيف يعمل ذلك.
 
-You can read more about the placeholder strings in the [fmt documentation](https://pkg.go.dev/fmt#hdr-Printing). For tests, `%q` is very useful as it wraps your values in double quotes.
+يمكنك قراءة المزيد عن السلاسل النائبة في [توثيق الحزمة fmt](https://pkg.go.dev/fmt#hdr-Printing). وفي الاختبارات، العنصر `%q` مفيد جداً لأنه يحيط قيمك بعلامتي اقتباس مزدوجتين.
 
-We will later explore the difference between methods and functions.
+سنستكشف لاحقاً الفرق بين الطرق والدوال.
 
-### Go's documentation
+### توثيق غو
 
-Another quality-of-life feature of Go is the documentation.  We just saw the documentation for the fmt package at the official package viewing website, and Go also provides ways for quickly getting at the documentation offline.
+ومن الميزات التي تجعل العمل بغو مريحاً توثيقُها. فقد رأينا للتو توثيق الحزمة `fmt` على الموقع الرسمي لعرض الحزم، كما توفر غو طرقاً للوصول السريع إلى التوثيق دون اتصال بالإنترنت.
 
-Go has a built-in tool, doc, which lets you examine any package installed on your system, or the module you're currently working on. To view that same documentation for the Printing verbs:
+لدى غو أداة مدمجة اسمها `doc`، تتيح لك فحص أي حزمة مثبّتة على نظامك، أو الوحدة النمطية التي تعمل عليها حالياً. ولعرض التوثيق نفسه الخاص بأفعال الطباعة:
 
 ```
 $ go doc fmt
@@ -148,20 +148,20 @@ General:
 ...
 ```
 
-Go's second tool for viewing documentation is the pkgsite command, which powers Go's official package viewing website.  You can install pkgsite with `go install golang.org/x/pkgsite/cmd/pkgsite@latest`, then run it with `pkgsite -open .`.  Go's install command will download the source files from that repository and build them into an executable binary.  For a default installation of Go, that executable will be in `$HOME/go/bin` for Linux and macOS, and `%USERPROFILE%\go\bin` for Windows.  If you have not already added those paths to your $PATH var, you might want to do so to make running go-installed commands easier.
+والأداة الثانية في غو لعرض التوثيق هي الأمر `pkgsite`، وهو الذي يشغّل موقع غو الرسمي لعرض الحزم. يمكنك تثبيت `pkgsite` بالأمر `go install golang.org/x/pkgsite/cmd/pkgsite@latest`، ثم تشغيله بالأمر `pkgsite -open .`. سينزّل أمر التثبيت في غو الملفات المصدرية من ذلك المستودع ويبنيها في ملف تنفيذي ثنائي. وفي التثبيت الافتراضي لغو، يكون ذلك الملف التنفيذي في `$HOME/go/bin` على Linux وmacOS، وفي `%USERPROFILE%\go\bin` على Windows. وإن لم تكن قد أضفت هذه المسارات إلى المتغير `$PATH` بعد، فقد ترغب في ذلك ليسهل تشغيل الأوامر المثبّتة بأداة `go`.
 
-The vast majority of the standard library has excellent documentation with examples. Navigating to [http://localhost:8080/testing](http://localhost:8080/testing) would be worthwhile to see what's available to you.
+الغالبية العظمى من المكتبة القياسية موثّقة توثيقاً ممتازاً مع أمثلة. ويستحق الأمر أن تزور [http://localhost:8080/testing](http://localhost:8080/testing) لترى ما هو متاح لك.
 
 
-### Hello, YOU
+### مرحباً بك أنت
 
-Now that we have a test, we can iterate on our software safely.
+بعد أن صار لدينا اختبار، يمكننا تطوير برنامجنا خطوة خطوة بأمان.
 
-In the last example, we wrote the test _after_ the code had been written so that you could get an example of how to write a test and declare a function. From this point on, we will be _writing tests first_.
+في المثال السابق، كتبنا الاختبار _بعد_ كتابة الشيفرة كي ترى مثالاً على كيفية كتابة اختبار والتصريح عن دالة. ومن الآن فصاعداً، سنكون _نكتب الاختبارات أولاً_.
 
-Our next requirement is to let us specify the recipient of the greeting.
+متطلبنا التالي هو أن نتمكن من تحديد مستقبِل التحية.
 
-Let's start by capturing these requirements in a test. This is basic test-driven development and allows us to make sure our test is _actually_ testing what we want. When you retrospectively write tests, there is the risk that your test may continue to pass even if the code doesn't work as intended.
+لنبدأ بتسجيل هذه المتطلبات في اختبار. هذا هو التطوير المقاد بالاختبارات (test-driven development) في أبسط صوره، وهو يتيح لنا التأكد من أن اختبارنا يختبر _فعلاً_ ما نريد. فحين تكتب الاختبارات بأثر رجعي، يبقى هناك خطر أن يستمر اختبارك في النجاح حتى لو لم تعمل الشيفرة كما هو مقصود.
 
 ```go
 package main
@@ -178,7 +178,7 @@ func TestHello(t *testing.T) {
 }
 ```
 
-Now run `go test`, you should have a compilation error
+شغّل الآن `go test`، وينبغي أن يظهر لك خطأ تصريف
 
 ```text
 ./hello_test.go:6:18: too many arguments in call to Hello
@@ -186,11 +186,11 @@ Now run `go test`, you should have a compilation error
     want ()
 ```
 
-When using a statically typed language like Go it is important to _listen to the compiler_. The compiler understands how your code should snap together and work so you don't have to.
+عند استعمال لغة ثابتة الأنواع (statically typed) مثل غو، من المهم أن _تصغي إلى المصرِّف_ (compiler). فالمصرِّف يفهم كيف ينبغي أن تترابط شيفرتك وتعمل، فلا تضطر أنت إلى ذلك.
 
-In this case the compiler is telling you what you need to do to continue. We have to change our function `Hello` to accept an argument.
+في هذه الحالة، يخبرك المصرِّف بما عليك فعله للمتابعة. علينا أن نغيّر الدالة `Hello` لتقبل وسيطاً.
 
-Edit the `Hello` function to accept an argument of type string
+عدّل الدالة `Hello` لتقبل وسيطاً من النوع (type) `string`
 
 ```go
 func Hello(name string) string {
@@ -198,7 +198,7 @@ func Hello(name string) string {
 }
 ```
 
-If you try and run your tests again your `hello.go` will fail to compile because you're not passing an argument. Send in "world" to make it compile.
+إن حاولت تشغيل اختباراتك مجدداً، فسيفشل تصريف `hello.go` لأنك لا تمرر وسيطاً. مرّر "world" ليتم التصريف.
 
 ```go
 func main() {
@@ -206,15 +206,15 @@ func main() {
 }
 ```
 
-Now when you run your tests, you should see something like
+والآن حين تشغّل اختباراتك، ينبغي أن ترى شيئاً كهذا
 
 ```text
 hello_test.go:10: got 'Hello, world' want 'Hello, Chris''
 ```
 
-We finally have a compiling program but it is not meeting our requirements according to the test.
+صار لدينا أخيراً برنامج يُصرَّف، لكنه لا يلبي متطلباتنا وفقاً للاختبار.
 
-Let's make the test pass by using the name argument and concatenate it with `Hello,`
+لنجعل الاختبار ينجح باستعمال الوسيط `name` ودمجه مع `Hello,`
 
 ```go
 func Hello(name string) string {
@@ -222,27 +222,27 @@ func Hello(name string) string {
 }
 ```
 
-When you run the tests, they should now pass. Normally, as part of the TDD cycle, we should now _refactor_.
+حين تشغّل الاختبارات، ينبغي أن تنجح الآن. وعادةً، كجزء من دورة `TDD`، ينبغي أن _نعيد الهيكلة_ (refactor) الآن.
 
-### A note on source control
+### ملاحظة عن التحكم بالمصدر
 
-At this point, if you are using source control \(which you should!\) I would
-`commit` the code as it is. We have working software backed by a test.
+في هذه المرحلة، إن كنت تستعمل نظاماً للتحكم بالمصدر (وهو ما ينبغي أن تفعله!) فإنني كنت سأنفّذ
+`commit` للشيفرة كما هي. لدينا برنامج يعمل ويدعمه اختبار.
 
-I _wouldn't_ push to main though, because I plan to refactor next. It is nice
-to commit at this point in case you somehow get into a mess with refactoring - you can always go back to the working version.
+لكنني _لن_ أدفع التغييرات إلى الفرع `main`، لأنني أخطط لإعادة الهيكلة بعد ذلك. ومن الجيد
+أن تودع التغييرات في هذه المرحلة تحسباً لأن تقع في فوضى أثناء إعادة الهيكلة، فتستطيع دائماً العودة إلى النسخة التي تعمل.
 
-There's not a lot to refactor here, but we can introduce another language feature, _constants_.
+ليس هناك الكثير مما يمكن إعادة هيكلته هنا، لكن يمكننا تقديم ميزة أخرى من ميزات اللغة: _الثوابت_.
 
-### Constants
+### الثوابت
 
-Constants are defined like so
+تُعرَّف الثوابت (constants) هكذا
 
 ```go
 const englishHelloPrefix = "Hello, "
 ```
 
-We can now refactor our code
+يمكننا الآن إعادة هيكلة شيفرتنا
 
 ```go
 const englishHelloPrefix = "Hello, "
@@ -252,15 +252,15 @@ func Hello(name string) string {
 }
 ```
 
-After refactoring, re-run your tests to make sure you haven't broken anything.
+بعد إعادة الهيكلة، أعد تشغيل اختباراتك للتأكد من أنك لم تُفسد شيئاً.
 
-It's worth thinking about creating constants to capture the meaning of values and sometimes to aid performance.
+يستحق الأمر التفكير في إنشاء ثوابت تعبّر عن معنى القيم، وأحياناً لتحسين الأداء.
 
-## Hello, world... again
+## مرحباً يا عالم... مجدداً
 
-The next requirement is when our function is called with an empty string it defaults to printing "Hello, World", rather than "Hello, ".
+المتطلب التالي هو أنه حين تُستدعى دالتنا بسلسلة نصية فارغة، فإنها تطبع افتراضياً "Hello, World" بدلاً من "Hello, ".
 
-Start by writing a new failing test
+ابدأ بكتابة اختبار جديد فاشل
 
 ```go
 func TestHello(t *testing.T) {
@@ -283,11 +283,11 @@ func TestHello(t *testing.T) {
 }
 ```
 
-Here, we are introducing another tool in our testing arsenal: subtests. Sometimes, it is useful to group tests around a "thing" and then have subtests describing different scenarios.
+نقدّم هنا أداة أخرى في ترسانة الاختبار لدينا: الاختبارات الفرعية (subtests). أحياناً يكون من المفيد تجميع الاختبارات حول "شيء" ما، ثم كتابة اختبارات فرعية تصف سيناريوهات مختلفة.
 
-A benefit of this approach is you can set up shared code that can be used in the other tests.
+ومن فوائد هذا الأسلوب أنك تستطيع إعداد شيفرة مشتركة يمكن استعمالها في الاختبارات الأخرى.
 
-While we have a failing test, let's fix the code, using an `if`.
+وبما أن لدينا اختباراً فاشلاً، فلنصلح الشيفرة باستعمال `if`.
 
 ```go
 const englishHelloPrefix = "Hello, "
@@ -300,13 +300,13 @@ func Hello(name string) string {
 }
 ```
 
-If we run our tests we should see it satisfies the new requirement and we haven't accidentally broken the other functionality.
+إن شغّلنا اختباراتنا، فسنرى أنها تلبي المتطلب الجديد وأننا لم نُفسد الوظائف الأخرى عن غير قصد.
 
-It is important that your tests _are clear specifications_ of what the code needs to do. But there is repeated code when we check if the message is what we expect.
+من المهم أن تكون اختباراتك _مواصفات واضحة_ لما يجب أن تفعله الشيفرة. لكن هناك شيفرة مكررة حين نتحقق مما إذا كانت الرسالة هي ما نتوقعه.
 
-Refactoring is not _just_ for the production code!
+إعادة الهيكلة ليست _فقط_ لشيفرة الإنتاج!
 
-Now that the tests are passing, we can and should refactor our tests.
+والآن بعد أن نجحت الاختبارات، يمكننا، بل ينبغي لنا، أن نعيد هيكلة اختباراتنا.
 
 ```go
 func TestHello(t *testing.T) {
@@ -332,47 +332,47 @@ func assertCorrectMessage(t testing.TB, got, want string) {
 }
 ```
 
-What have we done here?
+ما الذي فعلناه هنا؟
 
-We've refactored our assertion into a new function. This reduces duplication and improves the readability of our tests. We need to pass in `t *testing.T` so that we can tell the test code to fail when we need to.
+أعدنا هيكلة التوكيد (assertion) بنقله إلى دالة جديدة. وهذا يقلل الازدواجية ويحسّن قابلية قراءة اختباراتنا. ونحتاج إلى تمرير `t *testing.T` كي نستطيع أن نطلب من شيفرة الاختبار أن تفشل حين نحتاج إلى ذلك.
 
-For helper functions, it's a good idea to accept a `testing.TB` which is an interface that `*testing.T` and `*testing.B` both satisfy, so you can call helper functions from a test, or a benchmark (don't worry if words like "interface" mean nothing to you right now, it will be covered later).
+في الدوال المساعدة، من الجيد أن تقبل `testing.TB`، وهي واجهة (interface) يحققها كل من `*testing.T` و`*testing.B`، فتستطيع استدعاء الدوال المساعدة من اختبار أو من قياس أداء (benchmark). (لا تقلق إن كانت كلمات مثل "واجهة" لا تعني لك شيئاً الآن، فسنتناولها لاحقاً.)
 
-`t.Helper()` is needed to tell the test suite that this method is a helper. By doing this, when it fails, the line number reported will be in our _function call_ rather than inside our test helper. This will help other developers track down problems more easily. If you still don't understand, comment it out, make a test fail and observe the test output. Comments in Go are a great way to add additional information to your code, or in this case, a quick way to tell the compiler to ignore a line. You can comment out the `t.Helper()` code by adding two forward slashes `//` at the beginning of the line. You should see that line turn grey or change to another color than the rest of your code to indicate it's now commented out.
+نحتاج إلى `t.Helper()` لنخبر مجموعة الاختبارات بأن هذه الطريقة دالة مساعدة. وبذلك، حين يفشل الاختبار، يكون رقم السطر المُبلَّغ عنه في _موضع استدعاء الدالة_ لا داخل الدالة المساعدة. وهذا يساعد المطورين الآخرين على تتبّع المشكلات بسهولة أكبر. وإن لم يتضح لك الأمر بعد، فحوّل السطر إلى تعليق، واجعل اختباراً يفشل، ولاحظ مخرجات الاختبار. التعليقات في غو وسيلة رائعة لإضافة معلومات إلى شيفرتك، أو كما في هذه الحالة، طريقة سريعة لتطلب من المصرِّف تجاهل سطر ما. يمكنك تحويل الشيفرة `t.Helper()` إلى تعليق بإضافة شرطتين مائلتين `//` في بداية السطر. وينبغي أن ترى ذلك السطر يتحول إلى اللون الرمادي أو إلى لون مختلف عن بقية شيفرتك، دلالةً على أنه صار تعليقاً.
 
-When you have more than one argument of the same type \(in our case two strings\) rather than having `(got string, want string)` you can shorten it to `(got, want string)`.
+حين يكون لديك أكثر من وسيط من النوع نفسه (في حالتنا سلسلتان نصيتان)، فبدلاً من كتابة `(got string, want string)` يمكنك اختصارها إلى `(got, want string)`.
 
-### Back to source control
+### العودة إلى التحكم بالمصدر
 
-Now that we are happy with the code, I would amend the previous commit so that we only check in the lovely version of our code with its test.
+والآن بعد أن رضينا عن الشيفرة، كنت سأعدّل الإيداع (commit) السابق كي لا نودع إلا النسخة الجميلة من شيفرتنا مع اختبارها.
 
-### Discipline
+### الانضباط
 
-Let's go over the cycle again
+لنراجع الدورة مرة أخرى
 
-* Write a test
-* Make the compiler pass
-* Run the test, see that it fails and check the error message is meaningful
-* Write enough code to make the test pass
-* Refactor
+* اكتب اختباراً
+* اجعل التصريف ينجح
+* شغّل الاختبار، وشاهده يفشل، وتحقق من أن رسالة الخطأ ذات معنى
+* اكتب من الشيفرة ما يكفي لنجاح الاختبار
+* أعد الهيكلة
 
-On the face of it this may seem tedious but sticking to the feedback loop is important.
+قد يبدو هذا مملاً للوهلة الأولى، لكن الالتزام بحلقة التغذية الراجعة (feedback loop) أمر مهم.
 
-Not only does it ensure that you have _relevant tests_, it helps ensure _you design good software_ by refactoring with the safety of tests.
+فهو لا يضمن فقط أن تكون لديك _اختبارات ذات صلة_، بل يساعدك أيضاً على ضمان أن _تصمم برمجيات جيدة_ بإعادة الهيكلة في ظل أمان الاختبارات.
 
-Seeing the test fail is an important check because it also lets you see what the error message looks like. As a developer it can be very hard to work with a codebase when failing tests do not give a clear idea as to what the problem is.
+رؤية الاختبار يفشل فحص مهم، لأنها تتيح لك أيضاً أن ترى كيف تبدو رسالة الخطأ. فمن الصعب جداً على المطور أن يعمل في قاعدة شيفرة لا تعطي فيها الاختبارات الفاشلة فكرة واضحة عن المشكلة.
 
-By ensuring your tests are _fast_ and setting up your tools so that running tests is simple you can get in to a state of flow when writing your code.
+وبحرصك على أن تكون اختباراتك _سريعة_، وبإعداد أدواتك بحيث يكون تشغيل الاختبارات بسيطاً، تستطيع الدخول في حالة من التدفق الذهني أثناء كتابة شيفرتك.
 
-By not writing tests, you are committing to manually checking your code by running your software, which breaks your state of flow. You won't be saving yourself any time, especially in the long run.
+أما إن لم تكتب اختبارات، فأنت تُلزم نفسك بالتحقق من شيفرتك يدوياً بتشغيل برنامجك، وهذا يقطع حالة التدفق لديك. ولن توفر على نفسك أي وقت، خصوصاً على المدى الطويل.
 
-## Keep going! More requirements
+## واصل! مزيد من المتطلبات
 
-Goodness me, we have more requirements. We now need to support a second parameter, specifying the language of the greeting. If a language is passed in that we do not recognise, just default to English.
+يا للعجب، لدينا متطلبات أخرى. علينا الآن أن ندعم معاملاً (parameter) ثانياً يحدد لغة التحية. وإن مُررت لغة لا نعرفها، فلنستعمل الإنجليزية افتراضياً.
 
-We should be confident that we can easily use TDD to flesh out this functionality!
+ينبغي أن نكون واثقين من أننا نستطيع بسهولة استعمال `TDD` لبناء هذه الوظيفة!
 
-Write a test for a user passing in Spanish. Add it to the existing suite.
+اكتب اختباراً لمستخدم يمرر الإسبانية، وأضفه إلى المجموعة الحالية.
 
 ```go
 	t.Run("in Spanish", func(t *testing.T) {
@@ -382,7 +382,7 @@ Write a test for a user passing in Spanish. Add it to the existing suite.
 	})
 ```
 
-Remember not to cheat! _Test first_. When you try to run the test, the compiler _should_ complain because you are calling `Hello` with two arguments rather than one.
+تذكّر ألا تغش! _الاختبار أولاً_. حين تحاول تشغيل الاختبار، _ينبغي_ أن يعترض المصرِّف لأنك تستدعي `Hello` بوسيطين بدلاً من وسيط واحد.
 
 ```text
 ./hello_test.go:27:19: too many arguments in call to Hello
@@ -390,7 +390,7 @@ Remember not to cheat! _Test first_. When you try to run the test, the compiler 
     want (string)
 ```
 
-Fix the compilation problems by adding another string argument to `Hello`
+أصلح مشكلات التصريف بإضافة وسيط آخر من النوع `string` إلى `Hello`
 
 ```go
 func Hello(name string, language string) string {
@@ -401,7 +401,7 @@ func Hello(name string, language string) string {
 }
 ```
 
-When you try and run the test again it will complain about not passing through enough arguments to `Hello` in your other tests and in `hello.go`
+حين تحاول تشغيل الاختبار مجدداً، سيعترض على أنك لا تمرر ما يكفي من الوسطاء إلى `Hello` في اختباراتك الأخرى وفي `hello.go`
 
 ```text
 ./hello.go:15:19: not enough arguments in call to Hello
@@ -409,13 +409,13 @@ When you try and run the test again it will complain about not passing through e
     want (string, string)
 ```
 
-Fix them by passing through empty strings. Now all your tests should compile _and_ pass, apart from our new scenario
+أصلحها بتمرير سلاسل نصية فارغة. والآن ينبغي أن تُصرَّف كل اختباراتك _وأن_ تنجح، باستثناء السيناريو الجديد
 
 ```text
 hello_test.go:29: got 'Hello, Elodie' want 'Hola, Elodie'
 ```
 
-We can use `if` here to check the language is equal to "Spanish" and if so change the message
+يمكننا استعمال `if` هنا للتحقق مما إذا كانت اللغة تساوي "Spanish"، وإن كانت كذلك نغيّر الرسالة
 
 ```go
 func Hello(name string, language string) string {
@@ -430,9 +430,9 @@ func Hello(name string, language string) string {
 }
 ```
 
-The tests should now pass.
+ينبغي أن تنجح الاختبارات الآن.
 
-Now it is time to _refactor_. You should see some problems in the code, "magic" strings, some of which are repeated. Try and refactor it yourself, with every change make sure you re-run the tests to make sure your refactoring isn't breaking anything.
+حان الآن وقت _إعادة الهيكلة_. ينبغي أن ترى بعض المشكلات في الشيفرة: سلاسل نصية "سحرية"، بعضها مكرر. حاول إعادة هيكلتها بنفسك، ومع كل تغيير تأكد من إعادة تشغيل الاختبارات للتأكد من أن إعادة الهيكلة لا تُفسد شيئاً.
 
 ```go
 	const spanish = "Spanish"
@@ -451,13 +451,13 @@ Now it is time to _refactor_. You should see some problems in the code, "magic" 
 	}
 ```
 
-### French
+### الفرنسية
 
-* Write a test asserting that if you pass in `"French"` you get `"Bonjour, "`
-* See it fail, check the error message is easy to read
-* Do the smallest reasonable change in the code
+* اكتب اختباراً يؤكد أنك إن مررت `"French"` تحصل على `"Bonjour, "`
+* شاهده يفشل، وتحقق من أن رسالة الخطأ سهلة القراءة
+* أجرِ أصغر تغيير معقول في الشيفرة
 
-You may have written something that looks roughly like this
+لعلك كتبت شيئاً يشبه هذا تقريباً
 
 ```go
 func Hello(name string, language string) string {
@@ -475,9 +475,9 @@ func Hello(name string, language string) string {
 }
 ```
 
-## `switch`
+## التعليمة `switch`
 
-When you have lots of `if` statements checking a particular value it is common to use a `switch` statement instead. We can use `switch` to refactor the code to make it easier to read and more extensible if we wish to add more language support later
+حين تكون لديك تعليمات `if` كثيرة تتحقق من قيمة معينة، فمن الشائع أن تستعمل تعليمة `switch` بدلاً منها. يمكننا استعمال `switch` لإعادة هيكلة الشيفرة لتصبح أسهل قراءةً وأكثر قابلية للتوسيع إن أردنا لاحقاً إضافة دعم لغات أخرى
 
 ```go
 func Hello(name string, language string) string {
@@ -498,11 +498,11 @@ func Hello(name string, language string) string {
 }
 ```
 
-Write a test to now include a greeting in the language of your choice and you should see how simple it is to extend our _amazing_ function.
+اكتب الآن اختباراً يتضمن تحية باللغة التي تختارها، وسترى مدى بساطة توسيع دالتنا _المذهلة_.
 
-### one...last...refactor?
+### إعادة... هيكلة... أخيرة؟
 
-You could argue that maybe our function is getting a little big. The simplest refactor for this would be to extract out some functionality into another function.
+قد تقول إن دالتنا ربما بدأت تكبر قليلاً. وأبسط إعادة هيكلة لذلك هي استخراج جزء من الوظائف إلى دالة أخرى.
 
 ```go
 
@@ -536,36 +536,36 @@ func greetingPrefix(language string) (prefix string) {
 }
 ```
 
-A few new concepts:
+بعض المفاهيم الجديدة:
 
-* In our function signature we have made a _named return value_ `(prefix string)`.
-* This will create a variable called `prefix` in your function.
-  * It will be assigned the "zero" value. This depends on the type, for example `int`s are 0 and for `string`s it is `""`.
-    * You can return whatever it's set to by just calling `return` rather than `return prefix`.
-  * This will display in the Go Doc for your function so it can make the intent of your code clearer.
-* `default` in the switch case will be branched to if none of the other `case` statements match.
-* The function name starts with a lowercase letter. In Go, public functions start with a capital letter, and private ones start with a lowercase letter. We don't want the internals of our algorithm exposed to the world, so we made this function private.
-* Also, we can group constants in a block instead of declaring them on their own line. For readability, it's a good idea to use a line between sets of related constants.
+* في توقيع الدالة (function signature) أنشأنا _قيمة معادة مسماة_ هي `(prefix string)`.
+* سيُنشئ هذا متغيراً اسمه `prefix` داخل دالتك.
+  * ستُسند إليه القيمة "الصفرية"، وهي تعتمد على النوع، فمثلاً قيمة `int` الصفرية هي 0، وقيمة `string` هي `""`.
+    * يمكنك إعادة قيمته أياً كانت بكتابة `return` فقط بدلاً من `return prefix`.
+  * سيظهر هذا في توثيق غو لدالتك، فيجعل مقصد شيفرتك أوضح.
+* يُتفرَّع إلى `default` في تعليمة `switch` إن لم تطابق أي من تعليمات `case` الأخرى.
+* يبدأ اسم الدالة بحرف صغير. في غو، تبدأ الدوال العامة بحرف كبير، والدوال الخاصة بحرف صغير. ولا نريد أن نكشف تفاصيل خوارزميتنا الداخلية للعالم، لذا جعلنا هذه الدالة خاصة.
+* كما يمكننا تجميع الثوابت في كتلة بدلاً من التصريح عن كل منها في سطر مستقل. ولتسهيل القراءة، من الجيد ترك سطر فارغ بين مجموعات الثوابت المترابطة.
 
-## Wrapping up
+## الخلاصة
 
-Who knew you could get so much out of `Hello, world`?
+من كان يظن أنك تستطيع أن تستخرج كل هذا من `Hello, world`؟
 
-By now you should have some understanding of:
+ينبغي أن يكون لديك الآن بعض الفهم لما يلي:
 
-### Some of Go's syntax around
+### بعض صياغة غو فيما يخص
 
-* Writing tests
-* Declaring functions, with arguments and return types
-* `if`, `const` and `switch`
-* Declaring variables and constants
+* كتابة الاختبارات
+* التصريح عن الدوال، مع الوسطاء وأنواع القيم المعادة
+* التعليمات `if` و`const` و`switch`
+* التصريح عن المتغيرات والثوابت
 
-### The TDD process and _why_ the steps are important
+### عملية `TDD`، و_لماذا_ خطواتها مهمة
 
-* _Write a failing test and see it fail_ so we know we have written a _relevant_ test for our requirements and seen that it produces an _easy to understand description of the failure_
-* Writing the smallest amount of code to make it pass so we know we have working software
-* _Then_ refactor, backed with the safety of our tests to ensure we have well-crafted code that is easy to work with
+* _اكتب اختباراً فاشلاً وشاهده يفشل_ كي نعرف أننا كتبنا اختباراً _ذا صلة_ بمتطلباتنا، ورأينا أنه يُنتج _وصفاً للفشل سهل الفهم_
+* كتابة أقل قدر من الشيفرة لجعله ينجح كي نعرف أن لدينا برنامجاً يعمل
+* _ثم_ إعادة الهيكلة، مدعومين بأمان اختباراتنا، لضمان أن لدينا شيفرة متقنة الصنع وسهلة العمل معها
 
-In our case, we've gone from `Hello()` to `Hello("name")` and then to `Hello("name", "French")` in small, easy-to-understand steps.
+في حالتنا، انتقلنا من `Hello()` إلى `Hello("name")` ثم إلى `Hello("name", "French")` بخطوات صغيرة سهلة الفهم.
 
-Of course, this is trivial compared to "real-world" software, but the principles still stand. TDD is a skill that needs practice to develop, but by breaking problems down into smaller components that you can test, you will have a much easier time writing software.
+هذا بالطبع بسيط جداً مقارنة بالبرمجيات في "العالم الحقيقي"، لكن المبادئ تبقى صالحة. `TDD` مهارة تحتاج إلى ممارسة لتطويرها، لكنك حين تقسّم المشكلات إلى مكونات أصغر يمكنك اختبارها، ستجد كتابة البرمجيات أسهل بكثير.
