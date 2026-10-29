@@ -401,3 +401,6 @@
 | delegation pattern | نمط التفويض | مقترح | delegate: المفوَّض إليه |
 | inheritance | الوراثة | مقترح |  |
 | object composition | تركيب الكائنات | مقترح |  |
+| single responsibility principle | مبدأ المسؤولية الواحدة | مقترح |  |
+| validate | التحقق من الصحة | مقترح |  |
+| annotation | تعليق توضيحي | مقترح |  |

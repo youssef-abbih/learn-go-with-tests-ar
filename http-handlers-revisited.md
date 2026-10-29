@@ -1,26 +1,26 @@
-# HTTP Handlers Revisited
+# عودة إلى معالجات HTTP
 
-**[You can find all the code here](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)**
+**[تجد كل الشيفرة هنا](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)**
 
-This book already has a chapter on [testing a HTTP handler](http-server.md) but this will feature a broader discussion on designing them, so they are simple to test.
+في هذا الكتاب فصل بالفعل عن [اختبار معالج HTTP](http-server.md)، لكن هذا الفصل سيتضمن نقاشاً أوسع حول تصميمها، بحيث تكون بسيطة الاختبار.
 
-We'll take a look at a real example and how we can improve how it's designed by applying principles such as single responsibility principle and separation of concerns. These principles can be realised by using [interfaces](structs-methods-and-interfaces.md) and [dependency injection](dependency-injection.md). By doing this we'll show how testing handlers is actually quite trivial.
+سننظر في مثال حقيقي، وفي كيفية تحسين تصميمه بتطبيق مبادئ مثل مبدأ المسؤولية الواحدة وفصل الاهتمامات. ويمكن تحقيق هذه المبادئ باستعمال [الواجهات](structs-methods-and-interfaces.md) و[حقن التبعية](dependency-injection.md). وبفعل ذلك سنبيّن أن اختبار المعالجات (handlers) بسيط جداً في الحقيقة.
 
-![Common question in Go community illustrated](amazing-art.png)
+![سؤال شائع في مجتمع غو في صورة](amazing-art.png)
 
-Testing HTTP handlers seems to be a recurring question in the Go community, and I think it points to a wider problem of people misunderstanding how to design them.
+يبدو أن اختبار معالجات HTTP سؤال متكرر في مجتمع غو (Go)، وأظن أنه يشير إلى مشكلة أوسع، وهي سوء فهم الناس لكيفية تصميمها.
 
-So often people's difficulties with testing stems from the design of their code rather than the actual writing of tests. As I stress so often in this book:
+فكثيراً ما تنبع صعوبات الناس في الاختبار من تصميم شيفرتهم (code)، لا من كتابة الاختبارات نفسها. وكما أشدد كثيراً في هذا الكتاب:
 
-> If your tests are causing you pain, listen to that signal and think about the design of your code.
+> إن كانت اختباراتك تسبب لك الألم، فأصغِ إلى تلك الإشارة وفكّر في تصميم شيفرتك.
 
-## An example
+## مثال
 
-[Santosh Kumar tweeted me](https://twitter.com/sntshk/status/1255559003339284481)
+[غرّد لي سانتوش كومار](https://twitter.com/sntshk/status/1255559003339284481)
 
-> How do I test a http handler which has mongodb dependency?
+> كيف أختبر معالج HTTP له تبعية على قاعدة بيانات mongodb الخاصة بي؟
 
-Here is the code
+إليك الشيفرة
 
 ```go
 func Registration(w http.ResponseWriter, r *http.Request) {
@@ -91,62 +91,62 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Let's just list all the things this one function has to do:
+لنسرد فقط كل الأشياء التي على هذه الدالة (function) الواحدة فعلها:
 
-1. Write HTTP responses, send headers, status codes, etc.
-2. Decode the request's body into a `User`
-3. Connect to a database (and all the details around that)
-4. Query the database and applying some business logic depending on the result
-5. Generate a password
-6. Insert a record
+1. كتابة استجابات HTTP، وإرسال الترويسات ورموز الحالة وغيرها.
+2. فك ترميز متن الطلب إلى `User`
+3. الاتصال بقاعدة بيانات (وكل التفاصيل المتعلقة بذلك)
+4. الاستعلام من قاعدة البيانات وتطبيق بعض منطق الأعمال بحسب النتيجة
+5. توليد كلمة مرور
+6. إدراج سجل
 
-This is too much.
+هذا أكثر من اللازم.
 
-## What is a HTTP Handler and what should it do ?
+## ما معالج HTTP، وما الذي ينبغي أن يفعله؟
 
-Forgetting specific Go details for a moment, no matter what language I've worked in what has always served me well is thinking about the [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) and the [single responsibility principle](https://en.wikipedia.org/wiki/Single-responsibility_principle).
+بنسيان تفاصيل غو المحددة للحظة، أياً كانت اللغة التي عملت بها، فما خدمني دائماً جيداً هو التفكير في [فصل الاهتمامات](https://en.wikipedia.org/wiki/Separation_of_concerns) و[مبدأ المسؤولية الواحدة](https://en.wikipedia.org/wiki/Single-responsibility_principle).
 
-This can be quite tricky to apply depending on the problem you're solving. What exactly _is_ a responsibility?
+وقد يكون تطبيق هذا صعباً بعض الشيء بحسب المشكلة التي تحلها. فما هي المسؤولية بالضبط؟
 
-The lines can blur depending on how abstractly you're thinking and sometimes your first guess might not be right.
+قد تتداخل الحدود بحسب مدى تجريد تفكيرك، وقد لا يكون تخمينك الأول صحيحاً أحياناً.
 
-Thankfully with HTTP handlers I feel like I have a pretty good idea what they should do, no matter what project I've worked on:
+لحسن الحظ، مع معالجات HTTP أشعر أن لدي فكرة جيدة جداً عما ينبغي أن تفعله، أياً كان المشروع الذي عملت عليه:
 
-1. Accept a HTTP request, parse and validate it.
-2. Call some `ServiceThing` to do `ImportantBusinessLogic` with the data I got from step 1.
-3. Send an appropriate `HTTP` response depending on what `ServiceThing` returns.
+1. قبول طلب HTTP، وتحليله والتحقق من صحته.
+2. استدعاء `ServiceThing` ما لتنفيذ `ImportantBusinessLogic` بالبيانات التي حصلت عليها من الخطوة 1.
+3. إرسال استجابة `HTTP` مناسبة بحسب ما يعيده `ServiceThing`.
 
-I'm not saying every HTTP handler _ever_ should have roughly this shape, but 99 times out of 100 that seems to be the case for me.
+لا أقول إن كل معالج HTTP على _الإطلاق_ ينبغي أن يكون له هذا الشكل تقريباً، لكن هذا يبدو الحال لدي في 99 مرة من 100.
 
-When you separate these concerns:
+حين تفصل هذه الاهتمامات:
 
- - Testing handlers becomes a breeze and is focused a small number of concerns.
- - Importantly testing `ImportantBusinessLogic` no longer has to concern itself with `HTTP`, you can test the business logic cleanly.
- - You can use `ImportantBusinessLogic` in other contexts without having to modify it.
- - If `ImportantBusinessLogic` changes what it does, so long as the interface remains the same you don't have to change your handlers.
+ - يصبح اختبار المعالجات يسيراً، ويركز على عدد صغير من الاهتمامات.
+ - والأهم أن اختبار `ImportantBusinessLogic` لم يعد يحتاج إلى الاهتمام بـ`HTTP`، فيمكنك اختبار منطق الأعمال بنظافة.
+ - يمكنك استعمال `ImportantBusinessLogic` في سياقات أخرى دون الحاجة إلى تعديلها.
+ - وإن غيّرت `ImportantBusinessLogic` ما تفعله، فما دامت الواجهة (interface) باقية كما هي فلا تحتاج إلى تغيير معالجاتك.
 
-## Go's Handlers
+## المعالجات في غو
 
-[`http.HandlerFunc`](https://golang.org/pkg/net/http/#HandlerFunc)
+النوع [`http.HandlerFunc`](https://golang.org/pkg/net/http/#HandlerFunc)
 
-> The HandlerFunc type is an adapter to allow the use of ordinary functions as HTTP handlers.
+> النوع `HandlerFunc` محوّل يتيح استعمال الدوال العادية معالجاتٍ لطلبات HTTP الواردة.
 
 `type HandlerFunc func(ResponseWriter, *Request)`
 
-Reader, take a breath and look at the code above. What do you notice?
+أيها القارئ، خذ نفساً وانظر إلى الشيفرة أعلاه. ماذا تلاحظ؟
 
-**It is a function that takes some arguments**
+**إنها دالة تأخذ بعض الوسطاء**
 
-There's no framework magic, no annotations, no magic beans, nothing.
+لا سحر إطار عمل، ولا تعليقات توضيحية، ولا حبوب سحرية، لا شيء.
 
-It's just a function, _and we know how to test functions_.
+إنها مجرد دالة، _ونحن نعرف كيف نختبر الدوال_.
 
-It fits in nicely with the commentary above:
+وهي تنسجم جيداً مع التعليق أعلاه:
 
-- It takes a [`http.Request`](https://golang.org/pkg/net/http/#Request) which is just a bundle of data for us to inspect, parse and validate.
-- > [A `http.ResponseWriter` interface is used by an HTTP handler to construct an HTTP response.](https://golang.org/pkg/net/http/#ResponseWriter)
+- تأخذ [`http.Request`](https://golang.org/pkg/net/http/#Request)، وهو مجرد حزمة من البيانات نفحصها ونحللها ونتحقق من صحتها.
+- > [تستعمل معالجات HTTP الواجهة `http.ResponseWriter` لبناء استجاباتها.](https://golang.org/pkg/net/http/#ResponseWriter)
 
-### Super basic example test
+### مثال اختبار بسيط جداً
 
 ```go
 func Teapot(res http.ResponseWriter, req *http.Request) {
@@ -165,37 +165,37 @@ func TestTeapotHandler(t *testing.T) {
 }
 ```
 
-To test our function, we _call_ it.
+لاختبار دالتنا، _نستدعيها_.
 
-For our test we pass a `httptest.ResponseRecorder` as our `http.ResponseWriter` argument, and our function will use it to write the `HTTP` response. The recorder will record (or _spy_ on) what was sent, and then we can make our assertions.
+في اختبارنا (test) نمرر `httptest.ResponseRecorder` كوسيط `http.ResponseWriter`، وستستعمله دالتنا لكتابة استجابة `HTTP`. وسيسجّل المسجِّل (أو _يتجسس_ على) ما أُرسل، ثم يمكننا إجراء توكيداتنا (assertions).
 
-## Calling a `ServiceThing` in our handler
+## استدعاء `ServiceThing` في معالجنا
 
-A common complaint about TDD tutorials is that they're always "too simple" and not "real world enough". My answer to that is:
+من الشكاوى الشائعة على دروس `TDD` أنها دائماً "بسيطة أكثر من اللازم" وليست "واقعية بما يكفي". وجوابي على ذلك:
 
-> Wouldn't it be nice if all your code was simple to read and test like the examples you mention?
+> ألن يكون جميلاً لو كانت كل شيفرتك بسيطة القراءة والاختبار كالأمثلة التي تذكرها؟
 
-This is one of the biggest challenges we face but need to keep striving for. It _is possible_ (although not necessarily easy) to design code, so it can be simple to read and test if we practice and apply good software engineering principles.
+هذا من أكبر التحديات التي نواجهها، لكن علينا مواصلة السعي إليه. فمن _الممكن_ (وإن لم يكن سهلاً بالضرورة) تصميم الشيفرة بحيث تكون بسيطة القراءة والاختبار، إن مارسنا وطبّقنا مبادئ جيدة في هندسة البرمجيات.
 
-Recapping what the handler from earlier does:
+تذكيراً بما يفعله المعالج السابق:
 
-1. Write HTTP responses, send headers, status codes, etc.
-2. Decode the request's body into a `User`
-3. Connect to a database (and all the details around that)
-4. Query the database and applying some business logic depending on the result
-5. Generate a password
-6. Insert a record
+1. كتابة استجابات HTTP، وإرسال الترويسات ورموز الحالة وغيرها.
+2. فك ترميز متن الطلب إلى `User`
+3. الاتصال بقاعدة بيانات (وكل التفاصيل المتعلقة بذلك)
+4. الاستعلام من قاعدة البيانات وتطبيق بعض منطق الأعمال بحسب النتيجة
+5. توليد كلمة مرور
+6. إدراج سجل
 
-Taking the idea of a more ideal separation of concerns I'd want it to be more like:
+بأخذ فكرة فصل أمثل للاهتمامات، أريده أن يكون أقرب إلى:
 
-1. Decode the request's body into a `User`
-2. Call a `UserService.Register(user)` (this is our `ServiceThing`)
-3. If there's an error act on it (the example always sends a `400 BadRequest` which I don't think is right), I'll just have a catch-all handler of a `500 Internal Server Error` _for now_. I must stress that returning `500` for all errors makes for a terrible API! Later on we can make the error handling more sophisticated, perhaps with [error types](error-types.md).
-4. If there's no error, `201 Created` with the ID as the response body (again for terseness/laziness)
+1. فك ترميز متن الطلب إلى `User`
+2. استدعاء `UserService.Register(user)` (وهذا هو `ServiceThing` لدينا)
+3. إن كان هناك خطأ فالتصرف بناءً عليه (المثال يرسل دائماً `400 BadRequest`، ولا أظن ذلك صحيحاً)، وسأكتفي _في الوقت الحالي_ بمعالج شامل يعيد `500 Internal Server Error`. ولا بد أن أشدد على أن إعادة `500` لكل الأخطاء تصنع واجهة برمجية فظيعة! ويمكننا لاحقاً جعل معالجة الأخطاء أكثر تطوراً، ربما بـ[أنواع الأخطاء](error-types.md).
+4. إن لم يكن هناك خطأ، فإعادة `201 Created` مع المعرّف في متن الاستجابة (مرة أخرى، للاختصار أو الكسل)
 
-For the sake of brevity I won't go over the usual TDD process, check all the other chapters for examples.
+اختصاراً، لن أمر بعملية `TDD` المعتادة، فراجع كل الفصول الأخرى للأمثلة.
 
-### New design
+### التصميم الجديد
 
 ```go
 type UserService interface {
@@ -237,17 +237,17 @@ func (u *UserServer) RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Our `RegisterUser` method matches the shape of `http.HandlerFunc` so we're good to go. We've attached it as a method on a new type `UserServer` which contains a dependency on a `UserService` which is captured as an interface.
+تطابق الطريقة (method) `RegisterUser` شكل `http.HandlerFunc`، لذا نحن جاهزون. وقد أرفقناها كطريقة على نوع (type) جديد هو `UserServer`، يحتوي على تبعية على `UserService` مجسّدة كواجهة.
 
-Interfaces are a fantastic way to ensure our `HTTP` concerns are decoupled from any specific implementation; we can just call the method on the dependency, and we don't have to care _how_ a user gets registered.
+الواجهات وسيلة رائعة لضمان أن اهتمامات `HTTP` لدينا منفصلة عن أي تنفيذ محدد؛ فيمكننا ببساطة استدعاء الطريقة على التبعية، ولا نحتاج إلى الاهتمام بـ_كيفية_ تسجيل المستخدم.
 
-If you wish to explore this approach in more detail following TDD read the [Dependency Injection](dependency-injection.md) chapter and the [HTTP Server chapter of the "Build an application" section](http-server.md).
+إن أردت استكشاف هذا الأسلوب بتفصيل أكبر مع اتباع `TDD`، فاقرأ فصل [حقن التبعية](dependency-injection.md) و[فصل خادم HTTP في قسم "بناء تطبيق"](http-server.md).
 
-Now that we've decoupled ourselves from any specific implementation detail around registration writing the code for our handler is straightforward and follows the responsibilities described earlier.
+والآن بعد أن فككنا الاقتران عن أي تفاصيل تنفيذ محددة حول التسجيل، صارت كتابة شيفرة معالجنا مباشرة، وتتبع المسؤوليات الموصوفة سابقاً.
 
-### The tests!
+### الاختبارات!
 
-This simplicity is reflected in our tests.
+تنعكس هذه البساطة في اختباراتنا.
 
 ```go
 type MockUserService struct {
@@ -323,15 +323,15 @@ func TestRegisterUser(t *testing.T) {
 }
 ```
 
-Now our handler isn't coupled to a specific implementation of storage it is trivial for us to write a `MockUserService` to help us write simple, fast unit tests to exercise the specific responsibilities it has.
+والآن بعد أن لم يعد معالجنا مقترناً بتنفيذ محدد للتخزين، صار من البسيط علينا كتابة `MockUserService` يساعدنا على كتابة اختبارات وحدة بسيطة وسريعة تختبر مسؤولياته المحددة.
 
-### What about the database code? You're cheating!
+### وماذا عن شيفرة قاعدة البيانات؟ أنت تغش!
 
-This is all very deliberate. We don't want HTTP handlers concerned with our business logic, databases, connections, etc.
+هذا كله مقصود تماماً. فلا نريد أن تهتم معالجات HTTP بمنطق أعمالنا وقواعد البيانات والاتصالات وغير ذلك.
 
-By doing this we have liberated the handler from messy details, we've _also_ made it easier to test our persistence layer and business logic as it is also no longer coupled to irrelevant HTTP details.
+بفعل هذا حررنا المعالج من التفاصيل الفوضوية، وجعلنا _أيضاً_ اختبار طبقة التخزين الدائم ومنطق الأعمال أسهل، لأنهما لم يعودا مقترنين بتفاصيل HTTP غير ذات الصلة.
 
-All we need to do is now implement our `UserService` using whatever database we want to use
+كل ما علينا فعله الآن هو تنفيذ `UserService` باستعمال أي قاعدة بيانات نريدها
 
 ```go
 type MongoUserService struct {
@@ -349,7 +349,7 @@ func (m MongoUserService) Register(user User) (insertedID string, err error) {
 }
 ```
 
-We can test this separately and once we're happy in `main` we can snap these two units together for our working application.
+يمكننا اختبار هذا منفصلاً، وبمجرد أن نرضى، يمكننا في `main` تركيب هاتين الوحدتين معاً للحصول على تطبيقنا العامل.
 
 ```go
 func main() {
@@ -359,20 +359,20 @@ func main() {
 }
 ```
 
-### A more robust and extensible design with little effort
+### تصميم أكثر متانة وقابلية للتوسيع بجهد قليل
 
-These principles not only make our lives easier in the short-term they make the system easier to extend in the future.
+لا تسهّل هذه المبادئ حياتنا على المدى القصير فحسب، بل تجعل النظام أسهل في التوسيع مستقبلاً.
 
-It wouldn't be surprising that further iterations of this system we'd want to email the user a confirmation of registration.
+لن يكون مفاجئاً أن نريد في تكرارات لاحقة لهذا النظام إرسال بريد إلكتروني إلى المستخدم لتأكيد التسجيل.
 
-With the old design we'd have to change the handler _and_ the surrounding tests. This is often how parts of code become unmaintainable, more and more functionality creeps in because it's already _designed_ that way; for the "HTTP handler" to handle... everything!
+مع التصميم القديم كنا سنضطر إلى تغيير المعالج _و_ الاختبارات المحيطة به. وهكذا كثيراً ما تصبح أجزاء من الشيفرة غير قابلة للصيانة، إذ تتسلل إليها وظائف أكثر فأكثر لأنها _مصممة_ بالفعل بهذه الطريقة؛ ليعالج "معالج HTTP"... كل شيء!
 
-By separating concerns using an interface we don't have to edit the handler _at all_ because it's not concerned with the business logic around registration.
+بفصل الاهتمامات باستعمال واجهة، لا نحتاج إلى تعديل المعالج _إطلاقاً_، لأنه لا يهتم بمنطق الأعمال المتعلق بالتسجيل.
 
-## Wrapping up
+## الخلاصة
 
-Testing Go's HTTP handlers is not challenging, but designing good software can be!
+اختبار معالجات HTTP في غو ليس صعباً، لكن تصميم برمجيات جيدة قد يكون كذلك!
 
-People make the mistake of thinking HTTP handlers are special and throw out good software engineering practices when writing them which then makes testing them challenging.
+يخطئ الناس حين يظنون أن معالجات HTTP خاصة، فيتخلون عن الممارسات الجيدة في هندسة البرمجيات حين يكتبونها، فيصبح اختبارها صعباً.
 
-Reiterating again; **Go's http handlers are just functions**. If you write them like you would other functions, with clear responsibilities, and a good separation of concerns you will have no trouble testing them, and your codebase will be healthier for it.
+وللتكرار مرة أخرى: **معالجات HTTP في غو ليست إلا دوالاً**. فإن كتبتها كما تكتب الدوال الأخرى، بمسؤوليات واضحة وفصل جيد للاهتمامات، فلن تجد أي صعوبة في اختبارها، وستكون قاعدة شيفرتك أكثر صحة بفضل ذلك.
