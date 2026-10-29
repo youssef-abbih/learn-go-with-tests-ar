@@ -1,32 +1,32 @@
-# Refactoring step, starting checklist
+# خطوة إعادة الهيكلة: قائمة تحقق للبداية
 
-Refactoring is a skill that, once practised enough, becomes, in most cases, second nature reasonably easy.
+إعادة الهيكلة (refactoring) مهارة تصبح، بعد ممارستها بما يكفي، طبيعة ثانية سهلة إلى حد معقول في معظم الحالات.
 
-The activity often gets conflated with more significant design changes, but they are separate. Delineating between refactoring and other programming activities is helpful because it allows me to work with clarity and discipline.
+كثيراً ما يُخلط هذا النشاط بتغييرات تصميمية أكبر، لكنهما أمران منفصلان. والتمييز بين إعادة الهيكلة وأنشطة البرمجة الأخرى مفيد، لأنه يتيح لي العمل بوضوح وانضباط.
 
-## Refactoring vs other activities
+## إعادة الهيكلة مقابل الأنشطة الأخرى
 
-Refactoring is just improving existing code and <u>not changing behaviour</u>; therefore, tests shouldn't have to change.
+إعادة الهيكلة ليست إلا تحسين الشيفرة (code) الموجودة <u>دون تغيير السلوك</u>؛ ولذلك لا ينبغي أن تضطر الاختبارات إلى التغير.
 
-This is why it's the 3rd step of the TDD cycle. Once you have added a behaviour and a test to back it up, refactoring should be an activity which requires no change to your test code. **You're doing something else** if you are "refactoring" some code and having to change tests at the same time.
+ولهذا فهي الخطوة الثالثة في دورة `TDD`. فبمجرد أن تضيف سلوكاً واختباراً (test) يدعمه، ينبغي أن تكون إعادة الهيكلة نشاطاً لا يتطلب أي تغيير في شيفرة اختبارك. **فأنت تفعل شيئاً آخر** إن كنت "تعيد هيكلة" شيفرة ما وتضطر إلى تغيير الاختبارات في الوقت نفسه.
 
-Many very helpful refactorings are simple to learn and easy to do (your IDE almost entirely automates many) but, over time, become hugely impactful to the quality of our system.
+كثير من عمليات إعادة الهيكلة المفيدة جداً بسيطة التعلم وسهلة الإجراء (بيئة التطوير المتكاملة لديك تؤتمت كثيراً منها بالكامل تقريباً)، لكنها تصبح مع الوقت بالغة الأثر في جودة نظامنا.
 
-### Other activities, such as "big" design
+### الأنشطة الأخرى، مثل التصميم "الكبير"
 
-> So I'm not changing the "real" behaviour, but I must change my tests? What is that?
+> إذن أنا لا أغيّر السلوك "الحقيقي"، لكن عليّ تغيير اختباراتي؟ فما هذا إذن؟
 
-Let's say you're working on a type and want to improve its code's quality. *Refactoring shouldn't require you to change the tests*, so you can't:
+لنقل إنك تعمل على نوع (type) وتريد تحسين جودة شيفرته. *لا ينبغي أن تتطلب إعادة الهيكلة منك تغيير الاختبارات*، لذا لا يمكنك:
 
-- Change behaviour
-- Change method signatures
+- تغيير السلوك
+- تغيير تواقيع الطرق
 
-...as your tests are coupled to those two things, but you can:
+...لأن اختباراتك مقترنة بهذين الأمرين، لكن يمكنك:
 
-- Introduce private methods, fields and even new types & interfaces
-- Change the internals of public methods
+- تقديم طرق (methods) وحقول خاصة، بل وأنواع وواجهات جديدة
+- تغيير دواخل الطرق العامة
 
-What if you want to change the signature of a method?
+ماذا لو أردت تغيير توقيع طريقة ما؟
 
 ```go
 func (b BirthdayGreeter) WishHappyBirthday(age int, firstname, lastname string, email Email) {
@@ -34,90 +34,90 @@ func (b BirthdayGreeter) WishHappyBirthday(age int, firstname, lastname string, 
 }
 ```
 
-You may feel its argument list is too long and want to bring more cohesion and meaning to the code.
+قد تشعر بأن قائمة وسطائها طويلة جداً، وتريد إضفاء مزيد من التماسك والمعنى على الشيفرة.
 
 ```go
 func (b BirthdayGreeter) WishHappyBirthday(person Person)
 ```
 
-Well, you're **designing** now and must ensure you tread carefully. If you don't do this with discipline, you can make a mess of your code, the test behind it, *and* probably the things that depend on it - remember, it's not just your tests using `WishHappyBirthday`. Hopefully, it's used by "real" code too!
+حسناً، أنت الآن **تصمم**، وعليك أن تتأكد من أنك تخطو بحذر. فإن لم تفعل هذا بانضباط، فقد تُحدث فوضى في شيفرتك، وفي الاختبار الذي خلفها، *وربما* في الأشياء التي تعتمد عليها، فتذكّر أن اختباراتك ليست وحدها التي تستعمل `WishHappyBirthday`. ونرجو أن تستعملها شيفرة "حقيقية" أيضاً!
 
-**You should still be able to drive this change with a test first**. You can split hairs over whether this is a "behaviour" change, but you want your method to behave differently.
+**ينبغي أن تستطيع مع ذلك قيادة هذا التغيير باختبار أولاً**. ويمكنك أن تتجادل في التفاصيل الدقيقة حول ما إذا كان هذا تغييراً في "السلوك"، لكنك تريد أن تتصرف طريقتك بشكل مختلف.
 
-As this is a behaviour change, apply the TDD process here too. One benefit of TDD is that it gives you a simple, safe, repeatable way of driving behaviour change in your system; why abandon it in these situations just because it *feels* different?
+وبما أن هذا تغيير في السلوك، فطبّق عملية `TDD` هنا أيضاً. فمن فوائد `TDD` أنه يمنحك طريقة بسيطة وآمنة وقابلة للتكرار لقيادة تغيير السلوك في نظامك؛ فلماذا تتخلى عنه في هذه المواقف لمجرد أنها *تبدو* مختلفة؟
 
-In this case, you'll change your existing tests to use the new type. The iterative, small steps you usually do with TDD to reduce risk and bring discipline & clarity will help you in these situations, too.
+في هذه الحالة، ستغيّر اختباراتك الموجودة لتستعمل النوع الجديد. والخطوات التكرارية الصغيرة التي تتبعها عادةً مع `TDD` لتقليل المخاطر وإضفاء الانضباط والوضوح ستساعدك في هذه المواقف أيضاً.
 
-Chances are you'll have several tests that call `WishHappyBirthday`; in these scenarios, I'd suggest commenting out all but one of the tests, driving out the change, and then working through the rest of the tests as you see fit.
+والأرجح أن لديك عدة اختبارات تستدعي `WishHappyBirthday`؛ وفي هذه السيناريوهات أقترح تحويل كل الاختبارات إلى تعليقات باستثناء واحد، وقيادة التغيير، ثم المرور على بقية الاختبارات كما تراه مناسباً.
 
-### Big design
+### التصميم الكبير
 
-Design can require more significant changes and more extensive conversations and usually has a level of subjectivity to it. Changing the design of parts of your system is usually a longer process than refactoring; nonetheless, you should still endeavour to reduce risk by thinking about how to do it in small steps.
+قد يتطلب التصميم تغييرات أكبر ونقاشات أوسع، وعادةً ما يكون فيه قدر من الذاتية. وتغيير تصميم أجزاء من نظامك عملية أطول عادةً من إعادة الهيكلة؛ ومع ذلك ينبغي أن تسعى إلى تقليل المخاطر بالتفكير في كيفية فعله بخطوات صغيرة.
 
-### Seeing the wood for the trees
+### رؤية الغابة لا الأشجار فقط
 
-> [If someone can't **see the wood for the trees** in British English, or can't see the forest for the trees in American English, they are very involved in the details of something and so they do not notice what is important about the thing as a whole.](https://www.collinsdictionary.com/dictionary/english/cant-see-the-wood-for-the-trees)
+> [إن كان شخص ما **لا يرى الغابة بسبب الأشجار**، فهو منغمس جداً في تفاصيل شيء ما، فلا يلاحظ ما هو مهم في ذلك الشيء ككل.](https://www.collinsdictionary.com/dictionary/english/cant-see-the-wood-for-the-trees)
 
-Talking about the "big" design issues is more accessible when the **underlying code is well-factored**. If you and your colleagues have to spend a significant amount of time mentally parsing a mess of code every time they open a file, what chance do you have to think about the design of the code?
+يصبح الحديث عن مسائل التصميم "الكبيرة" أيسر حين تكون **الشيفرة الأساسية جيدة الهيكلة**. فإن اضطررت أنت وزملاؤك إلى قضاء وقت كبير في تحليل فوضى من الشيفرة ذهنياً كلما فتحتم ملفاً، فما فرصتكم في التفكير في تصميم الشيفرة؟
 
-This is why **constant refactoring is so significant in the TDD process**. If we fail to address the minor design issues, we'll find it hard to engineer the overall design of our more extensive system.
+ولهذا فإن **إعادة الهيكلة المستمرة بالغة الأهمية في عملية `TDD`**. فإن أخفقنا في معالجة مسائل التصميم الصغيرة، فسنجد صعوبة في هندسة التصميم العام لنظامنا الأوسع.
 
-Sadly, badly-factored code gets exponentially worse as engineers pile on complexity on top of shaky foundations.
+ولسوء الحظ، تسوء الشيفرة الرديئة الهيكلة بشكل أُسّي مع تكديس المهندسين للتعقيد فوق أسس مهتزة.
 
-## Starting mental-checklist
+## قائمة تحقق ذهنية للبداية
 
-**Get in the habit of running through a mental checklist every TDD cycle.** The more you force yourself to practice, the easier it gets. **It is a skill that needs practice.** Remember, each of these changes should not require any change in your tests.
+**اعتد على المرور على قائمة تحقق ذهنية في كل دورة `TDD`.** فكلما أجبرت نفسك على الممارسة، صار الأمر أسهل. **إنها مهارة تحتاج إلى ممارسة.** وتذكّر أن كل تغيير من هذه التغييرات لا ينبغي أن يتطلب أي تغيير في اختباراتك.
 
-I have included shortcuts for IntelliJ/GoLand, which my colleagues and I use. Whenever I coach a new engineer, I encourage them to try and gain the muscle memory and habit of using these tools to refactor quickly and safely.
+أدرجت اختصارات IntelliJ/GoLand التي أستعملها أنا وزملائي. وكلما درّبت مهندساً جديداً، أشجعه على محاولة اكتساب الذاكرة العضلية وعادة استعمال هذه الأدوات لإعادة الهيكلة بسرعة وأمان.
 
-### Inline variables
+### تضمين المتغيرات
 
-If you create a variable, only for it to be passed on to another method/function:
+إن أنشأت متغيراً (variable) لمجرد تمريره إلى طريقة أو دالة أخرى:
 
 ```go
 url := baseURL + "/user/" + id
 res, err := client.Get(url)
 ```
 
-Consider inlining it (`command+option+n`) *unless* the variable name adds significant meaning.
+ففكّر في تضمينه (`command+option+n`) *ما لم* يضف اسم المتغير معنى مهماً.
 
 ```go
 res, err := client.Get(baseURL + "/user/" + id)
 ```
 
-Don't be _too_ clever about inlining; the goal is not to have zero variables and instead have ridiculous one-liners that no one can read. If you can add significant naming to a value, it might be best to leave it be.
+لا تبالغ في الذكاء في التضمين؛ فالهدف ليس ألا يبقى أي متغير، وأن تحصل بدلاً من ذلك على أسطر سخيفة لا يستطيع أحد قراءتها. فإن استطعت إضافة اسم ذي معنى إلى قيمة، فقد يكون من الأفضل تركها كما هي.
 
-### DRY up values with extract variables
+### أزل تكرار القيم باستخراج المتغيرات
 
-"Don't repeat yourself" (DRY). Using the same value multiple times in a function? Consider extracting and capturing a variable in a meaningful variable name (`command+option+v`).
+"لا تكرر نفسك" (DRY). هل تستعمل القيمة نفسها عدة مرات في دالة؟ ففكّر في استخراجها وتجسيدها في متغير باسم ذي معنى (`command+option+v`).
 
-This helps with readability and makes changing the value easier in future, as you won't have to remember to update multiple occurrences of the same value.
+وهذا يساعد على قابلية القراءة، ويسهّل تغيير القيمة مستقبلاً، لأنك لن تضطر إلى تذكّر تحديث مواضع متعددة للقيمة نفسها.
 
-### DRY up stuff in general
+### أزل التكرار عموماً
 
-[DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) gets a bad rep these days, with some justification. DRY is one of those concepts that is *too* easy to understand at a superficial level and then gets misapplied.
+يُساء إلى سمعة مبدأ [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) هذه الأيام، ولذلك بعض المبررات. فهو من تلك المفاهيم التي يسهل جداً فهمها على مستوى سطحي ثم يُساء تطبيقها.
 
-An engineer can easily take DRY too far, creating baffling, entangled abstractions to save some lines of code rather than the *real* idea of DRY, which is capturing an _idea_ in one place. Reducing the number of lines of code is often a side-effect of DRY, **but it is not the actual goal**.
+يمكن للمهندس أن يبالغ في تطبيق DRY بسهولة، فينشئ تجريدات محيّرة ومتشابكة لتوفير بضعة أسطر من الشيفرة، بدلاً من الفكرة *الحقيقية* للمبدأ، وهي تجسيد _فكرة_ في مكان واحد. وتقليل عدد أسطر الشيفرة كثيراً ما يكون أثراً جانبياً لتطبيق المبدأ، **لكنه ليس الهدف الفعلي**.
 
-So yes, DRY can be misapplied, but the extreme opposite of refusing to DRY up anything is also evil. Repeated code adds noise and increases maintenance costs. A refusal to gather related concepts or values into one thing due to fear of DRY misuse causes *different* problems.
+نعم، يمكن إساءة تطبيق DRY، لكن الطرف النقيض المتطرف، أي رفض إزالة أي تكرار، شر أيضاً. فالشيفرة المكررة تضيف ضجيجاً وتزيد تكاليف الصيانة. ورفض جمع المفاهيم أو القيم المترابطة في شيء واحد خوفاً من إساءة تطبيق المبدأ يسبب مشكلات *مختلفة*.
 
-So rather than being extremist on either side of "must DRY everything" or "DRY is bad", engage your brain and think about the code you see in front of you. What is repeated? Does it need to be? Does the parameter list look sensible if you encapsulate some repeated code into a method? Does it feel self-documenting and encapsulate the "idea" clearly?
+لذا بدلاً من التطرف في أي من الجانبين، "يجب إزالة كل تكرار" أو "DRY سيئ"، شغّل عقلك وفكّر في الشيفرة التي تراها أمامك. ما المكرر؟ هل يلزم أن يكون مكرراً؟ هل تبدو قائمة المعاملات (parameters) معقولة إن غلّفت بعض الشيفرة المكررة في طريقة؟ هل تبدو موثّقة ذاتياً، وتغلّف "الفكرة" بوضوح؟
 
-Nine times out of 10, you can look at the argument list of a function, and if it looks messy and confusing, then it is likely to be a poor application of DRY.
+في تسع مرات من عشر، يمكنك النظر إلى قائمة وسطاء دالة ما، فإن بدت فوضوية ومربكة، فالأرجح أنها تطبيق رديء لهذا المبدأ.
 
-If making some code DRY feels hard, you're probably making things more complex; consider stopping.
+إن بدا لك أن إزالة التكرار من شيفرة ما أمر صعب، فالأرجح أنك تجعل الأمور أعقد؛ ففكّر في التوقف.
 
-DRY with care, **but practising this frequently will improve your judgement**. I encourage my colleagues to "just try it" and use source control to get back to safety if it is wrong.
+أزل التكرار بحذر، **لكن ممارسة ذلك كثيراً ستحسّن تقديرك**. وأنا أشجع زملائي على أن "يجربوا فحسب"، ويستعملوا نظام التحكم بالمصدر للعودة إلى بر الأمان إن كان ذلك خطأ.
 
-<u>**Trying these things will teach you more than discussing it**</u>, and source control coupled with good automated tests gives you the perfect setup to experiment and learn.
+<u>**تجربة هذه الأشياء ستعلّمك أكثر من مناقشتها**</u>، ونظام التحكم بالمصدر مع اختبارات آلية جيدة يمنحك الإعداد المثالي للتجريب والتعلم.
 
-### Extract "Magic" values.
+### استخرج القيم "السحرية".
 
-> [Unique values with unexplained meaning or multiple occurrences which could (preferably) be replaced with named constants](https://en.wikipedia.org/wiki/Magic_number_(programming))
+> [قيم فريدة ذات معنى غير مفسَّر أو ذات مواضع متعددة، يمكن (ويُفضَّل) استبدالها بثوابت مسماة](https://en.wikipedia.org/wiki/Magic_number_(programming))
 
-Use extract variable (command+option+v) or constant (command+option+c) to give meaning to magic values. This can be seen as the inverse of the inlining refactor. I often find myself "toggling" the code with inline and extract to help me judge what I think reads better.
+استعمل استخراج المتغير (command+option+v) أو الثابت (command+option+c) لإعطاء معنى للقيم السحرية. ويمكن عدّ هذا عكس إعادة هيكلة التضمين. وكثيراً ما أجد نفسي "أبدّل" الشيفرة بين التضمين والاستخراج لأساعد نفسي على الحكم على ما أظنه أفضل قراءة.
 
-Remember that extracting repeated values also adds a level of _coupling_. Everything that uses that value is now coupled. Consider the following code:
+تذكّر أن استخراج القيم المكررة يضيف أيضاً مستوى من _الاقتران_. فكل ما يستعمل تلك القيمة صار مقترناً بها الآن. انظر في الشيفرة التالية:
 
 ```go
 func main() {
@@ -134,11 +134,11 @@ func main() {
 }
 ```
 
-We are setting up some HTTP clients for our application. There are some _magic values_ here, and we could DRY up the `Timeout` by extracting a variable and giving it a meaningful name.
+نُعدّ بعض عملاء HTTP لتطبيقنا. وفيها بعض _القيم السحرية_، ويمكننا إزالة تكرار `Timeout` باستخراج متغير وإعطائه اسماً ذا معنى.
 
-![A screenshot of me extracting variable](https://i.imgur.com/4sgUG7L.png)
+![لقطة شاشة لي وأنا أستخرج متغيراً](https://i.imgur.com/4sgUG7L.png)
 
-Now the code looks like this
+والآن تبدو الشيفرة هكذا
 
 ```go
 func main() {
@@ -156,17 +156,17 @@ func main() {
 }
 ```
 
-We no longer have a magic value; we have given it a meaningful name, but we have also made it so all three clients **share the same timeout**. That _may_ be what you want; refactors are quite context-specific, but it's something to be wary of.
+لم تعد لدينا قيمة سحرية؛ فقد أعطيناها اسماً ذا معنى، لكننا جعلنا أيضاً العملاء الثلاثة **يتشاركون المهلة الزمنية نفسها**. وهذا _قد_ يكون ما تريده؛ فعمليات إعادة الهيكلة تعتمد كثيراً على السياق، لكنه أمر ينبغي الحذر منه.
 
-If you can use your IDE well, you can do the _inline_ refactor to let the clients have separate `Timeout` values again.
+إن كنت تحسن استعمال بيئة التطوير المتكاملة، فيمكنك إجراء إعادة هيكلة _التضمين_ لتعود للعملاء قيم `Timeout` منفصلة مجدداً.
 
-### Make public methods/functions easy to scan
+### اجعل الطرق والدوال العامة سهلة التصفح
 
-Does your code have excessively long public methods or functions?
+هل في شيفرتك طرق أو دوال عامة طويلة جداً؟
 
-Encapsulate the steps in private methods/functions with the extract method (`command+option+m`) refactor.
+غلّف الخطوات في طرق أو دوال خاصة بإعادة هيكلة استخراج الطريقة (`command+option+m`).
 
-The code below has some boring, distracting ceremony around creating a JSON string and turning it into an `io.Reader` so that we can `POST` it in an HTTP request.
+في الشيفرة أدناه بعض الشكليات المملة والمشتتة حول إنشاء سلسلة JSON نصية وتحويلها إلى `io.Reader` كي نستطيع إرسالها في طلب HTTP من نوع `POST`.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -182,7 +182,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-First, use the inline variable refactor (command+option+n) to put the `payload` into the buffer creation.
+أولاً، استعمل إعادة هيكلة تضمين المتغير (command+option+n) لوضع `payload` داخل إنشاء المخزن المؤقت.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -196,7 +196,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Now, we can extract the creation of the JSON payload into a function using the extract method refactor (`command+option+m`) to remove the noise from the method.
+والآن يمكننا استخراج إنشاء حمولة JSON إلى دالة (function) باستعمال إعادة هيكلة استخراج الطريقة (`command+option+m`) لإزالة الضجيج من الطريقة.
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -210,33 +210,33 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-Public methods and functions should describe *what* they do rather than *how* they do it.
+ينبغي أن تصف الطرق والدوال العامة *ما* تفعله لا *كيف* تفعله.
 
-> **Whenever I have to think to understand what the code is doing, I ask myself if I can refactor the code to make that understanding more immediately apparent**
+> **كلما اضطررت إلى التفكير لفهم ما تفعله الشيفرة، أسأل نفسي إن كنت أستطيع إعادة هيكلتها لأجعل ذلك الفهم أوضح على الفور**
 
--- Martin Fowler
+-- مارتن فاولر
 
-This helps you understand the overall design better, and it then allows you to ask questions about responsibilities:
+وهذا يساعدك على فهم التصميم العام بشكل أفضل، ثم يتيح لك طرح أسئلة عن المسؤوليات:
 
->  Why does this method do X? Shouldn't that live in Y?
+>  لماذا تفعل هذه الطريقة X؟ أليس مكان ذلك في Y بدلاً منها؟
 
-> Why does this method do so many tasks? Can we consolidate this elsewhere?
+> لماذا تؤدي هذه الطريقة مهاماً كثيرة إلى هذا الحد؟ هل يمكننا جمع هذا في مكان آخر؟
 
-Private functions and methods are great; they let you wrap up irrelevant how's into whats.
+الدوال والطرق الخاصة رائعة؛ فهي تتيح لك تغليف "الكيف" غير المهم في "ماذا".
 
-#### But now I don't know how it works!
+#### لكنني لم أعد أعرف كيف تعمل!
 
-A common objection to this refactoring, favouring smaller functions and methods composed of others, is that it can make understanding how the code works difficult. My blunt reply to this is
+من الاعتراضات الشائعة على إعادة الهيكلة هذه، التي تفضّل دوالاً وطرقاً أصغر مركّبة من غيرها، أنها قد تجعل فهم طريقة عمل الشيفرة صعباً. وردّي الصريح على ذلك هو
 
-> Have you learned how to navigate codebases using your tooling effectively?
+> هل تعلّمت كيف تتنقل في قواعد الشيفرة باستعمال أدواتك بفعالية؟
 
-Quite deliberately, as the _writer_ of `CreateWidget`, I do not want the creation of a specific string to be an essential character in the narration of the method. It is distracting, irrelevant noise for the reader 99% of the time.
+عن قصد تام، بصفتي _كاتب_ `CreateWidget`، لا أريد أن يكون إنشاء سلسلة نصية معيّنة شخصية أساسية في سرد الطريقة. فهو ضجيج مشتت وغير مهم للقارئ في 99% من الأحيان.
 
-However, if someone _does_ care, you press `command+b`  (or whatever "navigate to symbol" is for you) on `createWidgetPayload` ... and read it. Press `command+left-arrow` to go back again.
+لكن إن كان أحدهم _يهتم_ بذلك، فإنه يضغط `command+b`  (أو أياً كان اختصار "الانتقال إلى الرمز" لديه) على `createWidgetPayload`... ويقرؤها. ثم يضغط `command+left-arrow` للعودة.
 
-### Move value creation to construction time.
+### انقل إنشاء القيم إلى وقت البناء.
 
-Methods often have to create value and use them, like the `url` in our `CreateWidget` method from before.
+كثيراً ما تضطر الطرق إلى إنشاء قيم واستعمالها، مثل `url` في الطريقة `CreateWidget` السابقة.
 
 ```go
 type WidgetService struct {
@@ -262,7 +262,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-A refactoring technique you could apply here is, if a value is being created **that is not dependant on the arguments to the method**, then you can instead create a _field_ in your type and calculate it in your constructor function.
+من أساليب إعادة الهيكلة التي يمكنك تطبيقها هنا أنه إن كانت هناك قيمة تُنشأ **ولا تعتمد على وسطاء الطريقة**، فيمكنك بدلاً من ذلك إنشاء _حقل_ في نوعك وحسابه في الدالة البانية.
 
 ```go
 type WidgetService struct {
@@ -290,11 +290,11 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-By moving them to construction time, you can simplify your methods.
+بنقل هذه القيم إلى وقت البناء، يمكنك تبسيط طرقك.
 
-#### Comparing and contrasting `CreateWidget`
+#### مقارنة `CreateWidget` قبل وبعد
 
-Starting with
+بدأنا بهذا
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -310,7 +310,7 @@ func (ws *WidgetService) CreateWidget(name string) error {
 
 ```
 
-With a few basic refactors, driven almost entirely using automated tooling, we resulted in
+وبعد بضع عمليات إعادة هيكلة أساسية، مدفوعة بالكامل تقريباً بأدوات آلية، انتهينا إلى
 
 ```go
 func (ws *WidgetService) CreateWidget(name string) error {
@@ -323,51 +323,50 @@ func (ws *WidgetService) CreateWidget(name string) error {
 }
 ```
 
-This is a small improvement, but it undoubtedly reads better. If you are well-practised, this kind of improvement will barely take you a minute, and so long as you have applied TDD well, you'll have the safety net of tests to ensure you're not breaking anything. These continuous minor improvements are vital to the long-term health of a codebase.
+هذا تحسين صغير، لكنه بلا شك أسهل قراءة. وإن كنت متمرّساً جيداً، فلن يستغرق منك هذا النوع من التحسين إلا دقيقة بالكاد، وما دمت قد طبّقت `TDD` جيداً، فستكون لديك شبكة أمان من الاختبارات تضمن أنك لا تُفسد شيئاً. وهذه التحسينات الصغيرة المستمرة حيوية لصحة قاعدة الشيفرة على المدى الطويل.
 
-### Try to remove comments.
+### حاول إزالة التعليقات.
 
-> A heuristic we follow is that whenever we feel the need to comment something, we write a method instead.
+> من القواعد الإرشادية التي نتبعها أنه كلما شعرنا بالحاجة إلى التعليق على شيء ما، نكتب طريقة بدلاً من ذلك.
 
--- Martin Fowler
+-- مارتن فاولر
 
-Again, the extract method refactor can be your friend here.
+مرة أخرى، قد تكون إعادة هيكلة استخراج الطريقة صديقتك هنا.
 
-## Exceptions to the rule
+## استثناءات من القاعدة
 
-There are improvements you can make to your code that require a change in your tests, which I would still be happy to put into the "refactoring" bucket, even though it breaks the rule.
+هناك تحسينات يمكنك إجراؤها على شيفرتك تتطلب تغييراً في اختباراتك، ومع ذلك سأكون سعيداً بوضعها في سلة "إعادة الهيكلة"، مع أنها تكسر القاعدة.
 
-A simple example would be renaming a public symbol (e.g., a method, type, or function) with `shift+F6`. This will, of course, change the production and test codes.
+ومن الأمثلة البسيطة إعادة تسمية رمز عام (كطريقة أو نوع أو دالة) بـ`shift+F6`. وهذا سيغيّر بالطبع شيفرة الإنتاج وشيفرة الاختبار معاً.
 
-However, as it is an **automated and safe** change, the risk of going into a spiral of breaking tests and production code that so many fall into with other kinds of *design* changes is minimal.
+لكن بما أنه تغيير **آلي وآمن**، فإن خطر الدخول في دوامة من كسر الاختبارات وشيفرة الإنتاج، التي يقع فيها كثيرون مع أنواع أخرى من تغييرات *التصميم*، ضئيل جداً.
 
-For that reason, any changes you can safely perform with your IDE/editor, I would still happily call refactoring.
+لهذا السبب، فإن أي تغييرات تستطيع إجراءها بأمان باستعمال بيئة التطوير المتكاملة أو المحرر، سأسميها بسرور إعادة هيكلة.
 
-## Use your tools to help you practice refactoring.
+## استعمل أدواتك لتساعدك على ممارسة إعادة الهيكلة.
 
-- You should run your unit tests every time you do one of these small changes. We invest time in making our code unit-testable, and the feedback loop of a few milliseconds is one of the significant benefits; use it!
-- Lean on source control. You shouldn't feel shy about trying out ideas. If you're happy, commit it; if not, revert. This should feel comfortable and easy and not a big deal.
-- The better you leverage your unit tests and source control, the easier to *practice* refactoring. Once you master this discipline, **your design skills increase quickly** because you have a reliable and effective feedback loop and safety net.
-- Too often in my career, I've heard developers complain about not having time to refactor; unfortunately, it is clear that it takes so much time for them because they don't do it with discipline - and they have not practised it enough.
-- Whilst typing is never the bottleneck, you should be able to use whatever editor/IDE you use to refactor safely and quickly. For instance, if your tool doesn't let you extract variables at a keystroke, you'll do it less because it's more labour-intensive and risky.
+- ينبغي أن تشغّل اختبارات الوحدة في كل مرة تجري فيها أحد هذه التغييرات الصغيرة. فنحن نستثمر الوقت في جعل شيفرتنا قابلة لاختبار الوحدة، وحلقة التغذية الراجعة التي تستغرق بضعة أجزاء من الثانية من أهم الفوائد؛ فاستعملها!
+- اعتمد على نظام التحكم بالمصدر. لا ينبغي أن تخجل من تجربة الأفكار. فإن رضيت، فأودعها؛ وإلا، فتراجع عنها. ينبغي أن يبدو هذا مريحاً وسهلاً وليس أمراً كبيراً.
+- كلما أحسنت الاستفادة من اختبارات الوحدة والتحكم بالمصدر، سهلت عليك *ممارسة* إعادة الهيكلة. وبمجرد أن تتقن هذا الانضباط، **تزداد مهاراتك في التصميم بسرعة**، لأن لديك حلقة تغذية راجعة وشبكة أمان موثوقتين وفعالتين.
+- سمعت كثيراً جداً في مسيرتي مطورين يشتكون من عدم وجود وقت لإعادة الهيكلة؛ ولسوء الحظ، من الواضح أنها تستغرق منهم وقتاً طويلاً لأنهم لا يفعلونها بانضباط، ولم يمارسوها بما يكفي.
+- مع أن الكتابة على لوحة المفاتيح ليست أبداً عنق الزجاجة، فينبغي أن تستطيع استعمال أي محرر أو بيئة تطوير تستعملها لإعادة الهيكلة بأمان وسرعة. فمثلاً، إن كانت أداتك لا تتيح لك استخراج المتغيرات بضغطة مفتاح، فستفعل ذلك أقل لأنه أكثر جهداً ومخاطرة.
 
-## Don't ask permission to refactor
+## لا تطلب الإذن لإعادة الهيكلة
 
-Refactoring should be a frequent occurrence in your work, something you're doing all the time. It also, shouldn't be a time-sink, especially if it's done little and often.
+ينبغي أن تكون إعادة الهيكلة أمراً متكرراً في عملك، شيئاً تفعله طوال الوقت. كما لا ينبغي أن تستنزف الوقت، خصوصاً إن فُعلت قليلاً وكثيراً.
 
-If you don't refactor, your internal quality will suffer, your team's capacity will drop, and pressure will increase.
+إن لم تُعد الهيكلة، فستعاني جودتك الداخلية، وستنخفض قدرة فريقك، وسيزداد الضغط.
 
-Martin Fowler has one more fantastic quote for us.
+لدى مارتن فاولر اقتباس رائع آخر لنا.
 
-> Other than when you are very close to a deadline, however, you should not put off refactoring because you haven’t got time. Experience with several projects has shown that a bout of refactoring results in increased productivity. Not having enough time usually is a sign that you need to do some refactoring.
+> باستثناء الحالات التي تكون فيها قريباً جداً من موعد نهائي، لا ينبغي أن تؤجل إعادة الهيكلة لأنك لا تملك الوقت. فقد أظهرت التجربة في عدة مشاريع أن جولة من إعادة الهيكلة تؤدي إلى زيادة الإنتاجية. وعدم امتلاك الوقت الكافي عادةً ما يكون علامة على أنك تحتاج إلى بعض إعادة الهيكلة.
 
-## Wrap up
+## الخلاصة
 
-This is not an extensive list, just a start. Read Martin Fowler's Refactoring book (2nd ed) to become a pro.
+هذه ليست قائمة شاملة، بل مجرد بداية. اقرأ كتاب مارتن فاولر Refactoring (الطبعة الثانية) لتصبح محترفاً.
 
-Refactoring should be extremely quick and safe when you're well-practised, so there's little excuse not to do it. Too many view refactoring as a decision for others to make rather than a skill to learn to where it's a regular part of your work.
+ينبغي أن تكون إعادة الهيكلة سريعة وآمنة للغاية حين تكون متمرّساً جيداً، لذا لا عذر يُذكر لعدم فعلها. فكثيرون جداً يرون إعادة الهيكلة قراراً يتخذه آخرون، لا مهارة تتعلمها حتى تصبح جزءاً منتظماً من عملك.
 
-We should always strive to leave code in an *exemplary* state.
+ينبغي أن نسعى دائماً إلى ترك الشيفرة في حالة *نموذجية*.
 
-Good refactoring leads to code that is easier to understand. An understanding of the code means better designs are easier to spot. It is much harder to find designs in systems with massive functions, needlessly duplicated code, deep nesting, etc. **Frequent, small refactoring is necessary for better design**.
-
+إعادة الهيكلة الجيدة تقود إلى شيفرة أسهل فهماً. وفهم الشيفرة يعني أن التصاميم الأفضل أسهل اكتشافاً. ومن الأصعب بكثير إيجاد التصاميم في أنظمة فيها دوال ضخمة، وشيفرة مكررة دون داعٍ، وتداخل عميق، وغير ذلك. **إعادة الهيكلة المتكررة والصغيرة ضرورية لتصميم أفضل**.

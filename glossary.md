@@ -358,3 +358,8 @@
 | developer experience | تجربة المطورين | مقترح | DX |
 | incrementalism | التدرجية | مقترح |  |
 | modular | معياري | مقترح | modular design: تصميم معياري |
+| inline (refactoring) | التضمين | مقترح | إعادة هيكلة تضمين المتغير؛ extract variable: استخراج المتغير |
+| extract method | استخراج الطريقة | مقترح |  |
+| muscle memory | الذاكرة العضلية | مقترح |  |
+| heuristic | قاعدة إرشادية | مقترح |  |
+| nesting | التداخل | مقترح |  |
