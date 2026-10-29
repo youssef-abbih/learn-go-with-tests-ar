@@ -1,26 +1,28 @@
-# Roman Numerals
+# الأرقام الرومانية
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/roman-numerals)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/roman-numerals)**
 
-Some companies will ask you to do the [Roman Numeral Kata](http://codingdojo.org/kata/RomanNumerals/) as part of the interview process. This chapter will show how you can tackle it with TDD.
+ستطلب منك بعض الشركات حل [كاتا الأرقام الرومانية](http://codingdojo.org/kata/RomanNumerals/) كجزء من عملية المقابلة. وسيبيّن هذا الفصل كيف يمكنك التصدي لها باستعمال `TDD`.
 
-We are going to write a function which converts an [Arabic number](https://en.wikipedia.org/wiki/Arabic_numerals) (numbers 0 to 9) to a Roman Numeral.
+سنكتب دالة (function) تحوّل [عدداً عربياً](https://en.wikipedia.org/wiki/Arabic_numerals) (الأرقام من 0 إلى 9) إلى رقم روماني.
 
-If you haven't heard of [Roman Numerals](https://en.wikipedia.org/wiki/Roman_numerals) they are how the Romans wrote down numbers.
+> ملاحظة المترجم: المقصود بالأرقام العربية في هذا الفصل الأرقام 0 1 2 3 4 5 6 7 8 9، وهي التي يسميها الغرب Arabic numerals، لا الأرقام ٠ ١ ٢ ٣ المستعملة في المشرق.
 
-You build them by sticking symbols together and those symbols represent numbers
+إن لم تكن قد سمعت بـ[الأرقام الرومانية](https://en.wikipedia.org/wiki/Roman_numerals)، فهي الطريقة التي كتب بها الرومان الأعداد.
 
-So `I` is "one". `III` is three.
+تبنيها بلصق الرموز معاً، وتمثل تلك الرموز أعداداً
 
-Seems easy but there's a few interesting rules. `V` means five, but `IV` is 4 (not `IIII`).
+فالرمز `I` يعني "واحد"، و`III` يعني ثلاثة.
 
-`MCMLXXXIV` is 1984. That looks complicated and it's hard to imagine how we can write code to figure this out right from the start.
+يبدو الأمر سهلاً، لكن هناك بعض القواعد المثيرة للاهتمام. فالرمز `V` يعني خمسة، لكن `IV` يعني 4 (لا `IIII`).
 
-As this book stresses, a key skill for software developers is to try and identify "thin vertical slices" of _useful_ functionality and then **iterating**. The TDD workflow helps facilitate iterative development.
+والرقم `MCMLXXXIV` يعني 1984. يبدو هذا معقداً، ومن الصعب أن نتخيل منذ البداية كيف نكتب شيفرة (code) تحسبه.
 
-So rather than 1984, let's start with 1.
+كما يشدد هذا الكتاب، فإن من المهارات الأساسية لمطوري البرمجيات محاولة تحديد "شرائح عمودية رقيقة" من الوظائف _المفيدة_، ثم **التقدم خطوة خطوة**. ويساعد سير عمل `TDD` على تسهيل التطوير التكراري.
 
-## Write the test first
+لذا بدلاً من 1984، لنبدأ بالعدد 1.
+
+## اكتب الاختبار أولاً
 
 ```go
 func TestRomanNumerals(t *testing.T) {
@@ -33,19 +35,19 @@ func TestRomanNumerals(t *testing.T) {
 }
 ```
 
-If you've got this far in the book this is hopefully feeling very boring and routine to you. That's a good thing.
+إن وصلت إلى هذا الحد من الكتاب، فأرجو أن يبدو لك هذا مملاً وروتينياً جداً. وهذا أمر جيد.
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 ./numeral_test.go:6:9: undefined: ConvertToRoman
 ```
 
-Let the compiler guide the way
+دع المصرِّف (compiler) يرشدك إلى الطريق
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Create our function but don't make the test pass yet, always make sure the tests fails how you expect
+أنشئ دالتنا لكن لا تجعل الاختبار ينجح بعد، وتأكد دائماً من أن الاختبارات تفشل بالطريقة التي تتوقعها
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -53,7 +55,7 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-It should run now
+ينبغي أن يعمل الآن
 
 ```console
 === RUN   TestRomanNumerals
@@ -62,7 +64,7 @@ It should run now
 FAIL
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -70,17 +72,17 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-Not much to refactor yet.
+لا يوجد الكثير مما يمكن إعادة هيكلته بعد.
 
-_I know_ it feels weird just to hard-code the result but with TDD we want to stay out of "red" for as long as possible. It may _feel_ like we haven't accomplished much but we've defined our API and got a test capturing one of our rules; even if the "real" code is pretty dumb.
+_أعرف_ أن تثبيت النتيجة في الشيفرة يبدو غريباً، لكننا مع `TDD` نريد البقاء خارج مرحلة "الأحمر" أطول مدة ممكنة. قد _يبدو_ أننا لم ننجز الكثير، لكننا عرّفنا واجهتنا البرمجية، ولدينا اختبار (test) يجسّد إحدى قواعدنا، حتى لو كانت الشيفرة "الحقيقية" غبية جداً.
 
-Now use that uneasy feeling to write a new test to force us to write slightly less dumb code.
+استعمل الآن ذلك الشعور بعدم الارتياح لكتابة اختبار جديد يجبرنا على كتابة شيفرة أقل غباءً بقليل.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We can use subtests to nicely group our tests
+يمكننا استعمال الاختبارات الفرعية (subtests) لتجميع اختباراتنا بشكل جميل
 
 ```go
 func TestRomanNumerals(t *testing.T) {
@@ -104,7 +106,7 @@ func TestRomanNumerals(t *testing.T) {
 }
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 === RUN   TestRomanNumerals/2_gets_converted_to_II
@@ -112,9 +114,9 @@ func TestRomanNumerals(t *testing.T) {
         numeral_test.go:20: got 'I', want 'II'
 ```
 
-Not much surprise there
+لا مفاجأة كبيرة هنا
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -125,11 +127,11 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-Yup, it still feels like we're not actually tackling the problem. So we need to write more tests to drive us forward.
+نعم، ما زال يبدو أننا لا نتصدى للمشكلة فعلاً، لذا نحتاج إلى كتابة مزيد من الاختبارات لتدفعنا إلى الأمام.
 
-## Refactor
+## أعد الهيكلة
 
-We have some repetition in our tests. When you're testing something which feels like it's a matter of "given input X, we expect Y" you should probably use table based tests.
+لدينا بعض التكرار في اختباراتنا. فحين تختبر شيئاً يبدو أنه مسألة "بمعلومية المدخل X، نتوقع Y"، فالأرجح أن عليك استعمال الاختبارات الجدولية (table driven tests).
 
 ```go
 func TestRomanNumerals(t *testing.T) {
@@ -153,19 +155,19 @@ func TestRomanNumerals(t *testing.T) {
 }
 ```
 
-We can now easily add more cases without having to write any more test boilerplate.
+يمكننا الآن إضافة حالات أخرى بسهولة دون الحاجة إلى كتابة مزيد من الشيفرة المتكررة للاختبار.
 
-Let's push on and go for 3
+لنواصل ونحاول العدد 3
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Add the following to our cases
+أضف ما يلي إلى حالاتنا
 
 ```
 {"3 gets converted to III", 3, "III"},
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 === RUN   TestRomanNumerals/3_gets_converted_to_III
@@ -173,7 +175,7 @@ Add the following to our cases
         numeral_test.go:20: got 'I', want 'III'
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -187,13 +189,13 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-OK so I'm starting to not enjoy these if statements and if you look at the code hard enough you can see that we're building a string of `I` based on the size of `arabic`.
+حسناً، بدأت لا أستمتع بتعليمات `if` هذه، وإن نظرت إلى الشيفرة جيداً فسترى أننا نبني سلسلة نصية من `I` بحسب حجم `arabic`.
 
-We "know" that for more complicated numbers we will be doing some kind of arithmetic and string concatenation.
+نحن "نعرف" أننا سنجري مع الأعداد الأعقد نوعاً من العمليات الحسابية ودمج السلاسل النصية.
 
-Let's try a refactor with these thoughts in mind, it _might not_ be suitable for the end solution but that's OK. We can always throw our code away and start afresh with the tests we have to guide us.
+لنجرّب إعادة هيكلة (refactor) مع وضع هذه الأفكار في الحسبان. قد _لا_ تناسب الحل النهائي، لكن لا بأس، فنحن نستطيع دائماً التخلص من شيفرتنا والبدء من جديد مسترشدين بالاختبارات التي لدينا.
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -208,29 +210,29 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-You may not have used [`strings.Builder`](https://golang.org/pkg/strings/#Builder) before
+لعلك لم تستعمل [`strings.Builder`](https://golang.org/pkg/strings/#Builder) من قبل
 
-> A Builder is used to efficiently build a string using Write methods. It minimizes memory copying.
+> يُستعمل `Builder` لبناء سلسلة نصية بكفاءة باستعمال طرق `Write`، وهو يقلل نسخ الذاكرة إلى أدنى حد.
 
-Normally I wouldn't bother with such optimisations until I have an actual performance problem but the amount of code is not much larger than a "manual" appending on a string so we may as well use the faster approach.
+عادةً لا أهتم بمثل هذه التحسينات حتى تظهر لدي مشكلة أداء فعلية، لكن حجم الشيفرة ليس أكبر بكثير من الإلحاق "اليدوي" بسلسلة نصية، فلنستعمل الأسلوب الأسرع.
 
-The code looks better to me and describes the domain _as we know it right now_.
+تبدو الشيفرة أفضل في نظري، وهي تصف المجال (domain) _كما نعرفه الآن_.
 
-### The Romans were into DRY too...
+### الرومان أيضاً كانوا من أنصار DRY...
 
-Things start getting more complicated now. The Romans in their wisdom thought repeating characters would become hard to read and count. So a rule with Roman Numerals is you can't have the same character repeated more than 3 times in a row.
+بدأت الأمور تتعقد الآن. فقد رأى الرومان بحكمتهم أن تكرار المحارف سيجعل القراءة والعد صعبين، لذا من قواعد الأرقام الرومانية أنه لا يجوز تكرار المحرف نفسه أكثر من 3 مرات متتالية.
 
-Instead you take the next highest symbol and then "subtract" by putting a symbol to the left of it. Not all symbols can be used as subtractors; only I (1), X (10) and C (100).
+بل تأخذ الرمز الأعلى التالي ثم "تطرح" منه بوضع رمز على يساره. ولا يمكن استعمال كل الرموز للطرح، بل فقط I (1) وX (10) وC (100).
 
-For example `5` in Roman Numerals is `V`. To create 4 you do not do `IIII`, instead you do `IV`.
+فمثلاً `5` في الأرقام الرومانية هو `V`. ولإنشاء 4 لا تكتب `IIII`، بل تكتب `IV`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```
 {"4 gets converted to IV (can't repeat more than 3 times)", 4, "IV"},
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 === RUN   TestRomanNumerals/4_gets_converted_to_IV_(cant_repeat_more_than_3_times)
@@ -238,7 +240,7 @@ For example `5` in Roman Numerals is `V`. To create 4 you do not do `IIII`, inst
         numeral_test.go:24: got 'IIII', want 'IV'
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -257,9 +259,9 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-I don't "like" that we have broken our string building pattern and I want to carry on with it.
+لا "يعجبني" أننا كسرنا نمط بناء السلسلة النصية، وأريد مواصلة استعماله.
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -278,17 +280,17 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-In order for 4 to "fit" with my current thinking I now count down from the Arabic number, adding symbols to our string as we progress. Not sure if this will work in the long run but let's see!
+لكي "يتلاءم" العدد 4 مع طريقة تفكيري الحالية، صرت أعدّ تنازلياً من العدد العربي، وأضيف الرموز إلى السلسلة النصية ونحن نتقدم. لست متأكداً من أن هذا سينجح على المدى الطويل، لكن لنرَ!
 
-Let's make 5 work
+لنجعل العدد 5 يعمل
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```
 {"5 gets converted to V", 5, "V"},
 ```
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 === RUN   TestRomanNumerals/5_gets_converted_to_V
@@ -296,9 +298,9 @@ Let's make 5 work
         numeral_test.go:25: got 'IIV', want 'V'
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-Just copy the approach we did for 4
+انسخ فقط الأسلوب الذي اتبعناه مع 4
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -321,11 +323,11 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-Repetition in loops like this are usually a sign of an abstraction waiting to be called out. Short-circuiting loops can be an effective tool for readability but it could also be telling you something else.
+التكرار في الحلقات (loops) بهذا الشكل عادةً علامة على تجريد ينتظر أن يُكتشف. وقطع الحلقات مبكراً قد يكون أداة فعالة لتحسين القراءة، لكنه قد يخبرك أيضاً بشيء آخر.
 
-We are looping over our Arabic number and if we hit certain symbols we are calling `break` but what we are _really_ doing is subtracting over `i` in a ham-fisted manner.
+نحن نمر على العدد العربي، وإن صادفنا رموزاً معيّنة نستدعي `break`، لكن ما نفعله _حقاً_ هو الطرح من `i` بطريقة خرقاء.
 
 ```go
 func ConvertToRoman(arabic int) string {
@@ -350,19 +352,19 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-- Given the signals I'm reading from our code, driven from our tests of some very basic scenarios I can see that to build a Roman Numeral I need to subtract from `arabic` as I apply symbols
-- The `for` loop no longer relies on an `i` and instead we will keep building our string until we have subtracted enough symbols away from `arabic`.
+- بالنظر إلى الإشارات التي أقرؤها في شيفرتنا، مدفوعاً باختباراتنا لبعض السيناريوهات البسيطة جداً، أرى أنني لبناء رقم روماني أحتاج إلى الطرح من `arabic` كلما أضفت رموزاً
+- لم تعد حلقة `for` تعتمد على `i`، بل سنواصل بناء السلسلة النصية حتى نكون قد طرحنا ما يكفي من الرموز من `arabic`.
 
-I'm pretty sure this approach will be valid for 6 (VI), 7 (VII) and 8 (VIII) too. Nonetheless add the cases in to our test suite and check (I won't include the code for brevity, check the github for samples if you're unsure).
+أنا متأكد إلى حد كبير من أن هذا الأسلوب سيصلح أيضاً للأعداد 6 (VI) و7 (VII) و8 (VIII). ومع ذلك أضف الحالات إلى مجموعة اختباراتنا وتحقق (لن أضع الشيفرة اختصاراً، فراجع مستودع GitHub للأمثلة إن لم تكن متأكداً).
 
-9 follows the same rule as 4 in that we should subtract `I` from the representation of the following number. 10 is represented in Roman Numerals with `X`; so therefore 9 should be `IX`.
+يتبع العدد 9 القاعدة نفسها التي يتبعها 4، إذ ينبغي أن نطرح `I` من تمثيل العدد التالي. والعدد 10 يُمثَّل في الأرقام الرومانية بـ`X`، ولذلك ينبغي أن يكون 9 هو `IX`.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```
 {"9 gets converted to IX", 9, "IX"},
 ```
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 === RUN   TestRomanNumerals/9_gets_converted_to_IX
@@ -370,9 +372,9 @@ I'm pretty sure this approach will be valid for 6 (VI), 7 (VII) and 8 (VIII) too
         numeral_test.go:29: got 'VIV', want 'IX'
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-We should be able to adopt the same approach as before
+ينبغي أن نستطيع اتباع الأسلوب نفسه كما في السابق
 
 ```
 case arabic > 8:
@@ -380,13 +382,13 @@ case arabic > 8:
     arabic -= 9
 ```
 
-## Refactor
+## أعد الهيكلة
 
-It _feels_ like the code is still telling us there's a refactor somewhere but it's not totally obvious to me, so let's keep going.
+_يبدو_ أن الشيفرة ما زالت تخبرنا بأن هناك إعادة هيكلة ما في مكان ما، لكنها ليست واضحة تماماً لي، فلنواصل.
 
-I'll skip the code for this too, but add to your test cases a test for `10` which should be `X` and make it pass before reading on.
+سأتجاوز الشيفرة هنا أيضاً، لكن أضف إلى حالات اختبارك اختباراً للعدد `10` الذي ينبغي أن يكون `X`، واجعله ينجح قبل أن تتابع القراءة.
 
-Here are a few tests I added as I'm confident up to 39 our code should work
+إليك بعض الاختبارات التي أضفتها، إذ أنا واثق من أن شيفرتنا ينبغي أن تعمل حتى 39
 
 ```
 {"10 gets converted to X", 10, "X"},
@@ -396,13 +398,13 @@ Here are a few tests I added as I'm confident up to 39 our code should work
 {"39 gets converted to XXXIX", 39, "XXXIX"},
 ```
 
-If you've ever done OO programming, you'll know that you should view `switch` statements with a bit of suspicion. Usually you are capturing a concept or data inside some imperative code when in fact it could be captured in a class structure instead.
+إن كنت قد مارست البرمجة كائنية التوجه يوماً، فستعرف أن عليك النظر إلى تعليمات `switch` بشيء من الريبة. فأنت عادةً تجسّد مفهوماً أو بيانات داخل شيفرة أمرية، بينما كان يمكن تجسيدها في الواقع داخل بنية من الأصناف.
 
-Go isn't strictly OO but that doesn't mean we ignore the lessons OO offers entirely (as much as some would like to tell you).
+غو (Go) ليست لغة كائنية التوجه بالمعنى الصارم، لكن هذا لا يعني أن نتجاهل تماماً الدروس التي تقدمها البرمجة كائنية التوجه (مهما حاول بعضهم إقناعك بذلك).
 
-Our switch statement is describing some truths about Roman Numerals along with behaviour.
+تعليمة `switch` لدينا تصف بعض الحقائق عن الأرقام الرومانية إلى جانب السلوك.
 
-We can refactor this by decoupling the data from the behaviour.
+يمكننا إعادة هيكلة هذا بفك الاقتران بين البيانات والسلوك.
 
 ```go
 type RomanNumeral struct {
@@ -433,11 +435,11 @@ func ConvertToRoman(arabic int) string {
 }
 ```
 
-This feels much better. We've declared some rules around the numerals as data rather than hidden in an algorithm and we can see how we just work through the Arabic number, trying to add symbols to our result if they fit.
+هذا أفضل بكثير. فقد صرّحنا عن بعض قواعد الأرقام كبيانات بدلاً من إخفائها في خوارزمية، ويمكننا أن نرى كيف نمر على العدد العربي فحسب، محاولين إضافة الرموز إلى نتيجتنا إن كانت تلائم.
 
-Does this abstraction work for bigger numbers? Extend the test suite so it works for the Roman number for 50 which is `L`.
+هل يصلح هذا التجريد للأعداد الأكبر؟ وسّع مجموعة الاختبارات لتعمل مع الرقم الروماني للعدد 50، وهو `L`.
 
-Here are some test cases, try and make them pass.
+إليك بعض حالات الاختبار، حاول أن تجعلها تنجح.
 
 ```
 {"40 gets converted to XL", 40, "XL"},
@@ -446,23 +448,23 @@ Here are some test cases, try and make them pass.
 {"50 gets converted to L", 50, "L"},
 ```
 
-Need help? You can see what symbols to add in [this gist](https://gist.github.com/pamelafox/6c7b948213ba55332d86efd0f0b037de).
+تحتاج إلى مساعدة؟ يمكنك أن ترى الرموز التي عليك إضافتها في [هذا الـgist](https://gist.github.com/pamelafox/6c7b948213ba55332d86efd0f0b037de).
 
-## And the rest!
+## والبقية!
 
-Here are the remaining symbols
+إليك الرموز المتبقية
 
-| Arabic | Roman |
+| العربي | الروماني |
 | ------ | :---: |
 | 100    |   C   |
 | 500    |   D   |
 | 1000   |   M   |
 
-Take the same approach for the remaining symbols, it should just be a matter of adding data to both the tests and our array of symbols.
+اتبع الأسلوب نفسه مع الرموز المتبقية، فالأمر ينبغي أن يقتصر على إضافة بيانات إلى الاختبارات وإلى مصفوفة الرموز لدينا.
 
-Does your code work for `1984`: `MCMLXXXIV` ?
+هل تعمل شيفرتك مع `1984`، أي `MCMLXXXIV`؟
 
-Here is my final test suite
+إليك مجموعة اختباراتي النهائية
 
 ```go
 func TestRomanNumerals(t *testing.T) {
@@ -511,10 +513,10 @@ func TestRomanNumerals(t *testing.T) {
 }
 ```
 
-- I removed `description` as I felt the _data_ described enough of the information.
-- I added a few other edge cases I found just to give me a little more confidence. With table based tests this is very cheap to do.
+- حذفت `description` لأنني شعرت أن _البيانات_ تصف ما يكفي من المعلومات.
+- أضفت بعض الحالات الحدّية الأخرى التي وجدتها لأمنح نفسي مزيداً من الثقة. ومع الاختبارات الجدولية فإن هذا رخيص جداً.
 
-I didn't change the algorithm, all I had to do was update the `allRomanNumerals` array.
+لم أغيّر الخوارزمية، وكل ما احتجت إليه هو تحديث المصفوفة `allRomanNumerals`.
 
 ```go
 var allRomanNumerals = []RomanNumeral{
@@ -534,15 +536,15 @@ var allRomanNumerals = []RomanNumeral{
 }
 ```
 
-## Parsing Roman Numerals
+## تحليل الأرقام الرومانية
 
-We're not done yet. Next we're going to write a function that converts _from_ a Roman Numeral to an `int`
+لم ننتهِ بعد. سنكتب الآن دالة تحوّل _من_ رقم روماني إلى `int`
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We can re-use our test cases here with a little refactoring
+يمكننا إعادة استعمال حالات اختبارنا هنا مع قليل من إعادة الهيكلة
 
-Move the `cases` variable outside of the test as a package variable in a `var` block.
+انقل المتغير `cases` إلى خارج الاختبار ليصبح متغيراً على مستوى الحزمة داخل كتلة `var`.
 
 ```go
 func TestConvertingToArabic(t *testing.T) {
@@ -557,17 +559,17 @@ func TestConvertingToArabic(t *testing.T) {
 }
 ```
 
-Notice I am using the slice functionality to just run one of the tests for now (`cases[:1]`) as trying to make all of those tests pass all at once is too big a leap
+لاحظ أنني أستعمل إمكانات الشرائح لتشغيل اختبار واحد فقط في الوقت الحالي (`cases[:1]`)، لأن محاولة جعل كل تلك الاختبارات تنجح دفعة واحدة قفزة كبيرة جداً
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
 ```console
 ./numeral_test.go:60:11: undefined: ConvertToArabic
 ```
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Add our new function definition
+أضف تعريف دالتنا الجديدة
 
 ```go
 func ConvertToArabic(roman string) int {
@@ -575,7 +577,7 @@ func ConvertToArabic(roman string) int {
 }
 ```
 
-The test should now run and fail
+ينبغي أن يعمل الاختبار الآن ويفشل
 
 ```console
 --- FAIL: TestConvertingToArabic (0.00s)
@@ -583,9 +585,9 @@ The test should now run and fail
         numeral_test.go:62: got 0, want 1
 ```
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-You know what to do
+أنت تعرف ما عليك فعله
 
 ```go
 func ConvertToArabic(roman string) int {
@@ -593,7 +595,7 @@ func ConvertToArabic(roman string) int {
 }
 ```
 
-Next, change the slice index in our test to move to the next test case (e.g. `cases[:2]`). Make it pass yourself with the dumbest code you can think of, continue writing dumb code (best book ever right?) for the third case too. Here's my dumb code.
+بعد ذلك، غيّر فهرس الشريحة في اختبارنا للانتقال إلى حالة الاختبار التالية (مثلاً `cases[:2]`). اجعلها تنجح بنفسك بأغبى شيفرة يمكنك التفكير فيها، وواصل كتابة الشيفرة الغبية (أفضل كتاب على الإطلاق، أليس كذلك؟) للحالة الثالثة أيضاً. إليك شيفرتي الغبية.
 
 ```go
 func ConvertToArabic(roman string) int {
@@ -607,7 +609,7 @@ func ConvertToArabic(roman string) int {
 }
 ```
 
-Through the dumbness of _real code that works_ we can start to see a pattern like before. We need to iterate through the input and build _something_, in this case a total.
+عبر غباء _الشيفرة الحقيقية التي تعمل_، نبدأ برؤية نمط كما في السابق. علينا المرور على المدخلات وبناء _شيء ما_، وفي هذه الحالة مجموع.
 
 ```go
 func ConvertToArabic(roman string) int {
@@ -619,11 +621,11 @@ func ConvertToArabic(roman string) int {
 }
 ```
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Next we move to `cases[:4]` (`IV`) which now fails because it gets 2 back as that's the length of the string.
+ننتقل بعد ذلك إلى `cases[:4]` (`IV`)، الذي يفشل الآن لأنه يعيد 2، وهو طول السلسلة النصية.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 // earlier..
@@ -658,33 +660,33 @@ func ConvertToArabic(roman string) int {
 }
 ```
 
-It is basically the algorithm of `ConvertToRoman(int)` implemented backwards. Here, we loop over the given roman numeral string:
-- We look for roman numeral symbols taken from `allRomanNumerals`, highest to lowest, at the beginning of the string.
-- If we find the prefix, we add its value to  `arabic` and trim the prefix.
+إنها في الأساس خوارزمية `ConvertToRoman(int)` منفذة بالعكس. فنحن هنا نمر على سلسلة الرقم الروماني المعطاة:
+- نبحث عن رموز الأرقام الرومانية المأخوذة من `allRomanNumerals`، من الأعلى إلى الأدنى، في بداية السلسلة النصية.
+- إن وجدنا البادئة، نضيف قيمتها إلى `arabic` ونقتطع البادئة.
 
-At the end, we return the sum as the arabic number.
+وفي النهاية، نعيد المجموع على أنه العدد العربي.
 
-The `HasPrefix(s, prefix)` checks whether string `s` starts with `prefix` and `TrimPrefix(s, prefix)` removes the `prefix` from `s`, so we can proceed with the remaining roman numeral symbols. It works with `IV` and all other test cases.
+تتحقق `HasPrefix(s, prefix)` مما إذا كانت السلسلة `s` تبدأ بـ`prefix`، وتحذف `TrimPrefix(s, prefix)` البادئة `prefix` من `s`، كي نستطيع المتابعة مع رموز الأرقام الرومانية المتبقية. وهذا يعمل مع `IV` ومع كل حالات الاختبار الأخرى.
 
-You can implement this as a recursive function, which is more elegant (in my opinion) but might be slower. I'll leave this up to you and some `Benchmark...` tests.
+يمكنك تنفيذ هذا كدالة عَوْدية، وهي أكثر أناقة (في رأيي) لكنها قد تكون أبطأ. سأترك هذا لك ولبعض اختبارات `Benchmark...`.
 
-Now that we have our functions to convert an arabic number into a roman numeral and back, we can take our tests a step further:
+والآن بعد أن صارت لدينا دوال لتحويل العدد العربي إلى رقم روماني والعكس، يمكننا أن نخطو باختباراتنا خطوة أبعد:
 
-## An intro to property based tests
+## مدخل إلى الاختبارات القائمة على الخصائص
 
-There have been a few rules in the domain of Roman Numerals that we have worked with in this chapter
+هناك بعض القواعد في مجال الأرقام الرومانية تعاملنا معها في هذا الفصل
 
-- Can't have more than 3 consecutive symbols
-- Only I (1), X (10) and C (100) can be "subtractors"
-- Taking the result of `ConvertToRoman(N)` and passing it to `ConvertToArabic` should return us `N`
+- لا يجوز وجود أكثر من 3 رموز متتالية متطابقة
+- لا يمكن أن يكون "طارحاً" إلا I (1) وX (10) وC (100)
+- أخذ نتيجة `ConvertToRoman(N)` وتمريرها إلى `ConvertToArabic` ينبغي أن يعيد لنا `N`
 
-The tests we have written so far can be described as "example" based tests where we provide _examples_ for the tooling to verify.
+يمكن وصف الاختبارات التي كتبناها حتى الآن بأنها اختبارات قائمة على "الأمثلة"، إذ نقدّم _أمثلة_ لتتحقق منها الأدوات.
 
-What if we could take these rules that we know about our domain and somehow exercise them against our code?
+ماذا لو استطعنا أخذ هذه القواعد التي نعرفها عن مجالنا واختبارها بطريقة ما على شيفرتنا؟
 
-Property based tests help you do this by throwing random data at your code and verifying the rules you describe always hold true. A lot of people think property based tests are mainly about random data but they would be mistaken. The real challenge about property based tests is having a _good_ understanding of your domain so you can write these properties.
+تساعدك الاختبارات القائمة على الخصائص (property based tests) على فعل ذلك برمي بيانات عشوائية على شيفرتك والتحقق من أن القواعد التي تصفها تظل صحيحة دائماً. يظن كثيرون أن الاختبارات القائمة على الخصائص تدور أساساً حول البيانات العشوائية، لكنهم مخطئون. فالتحدي الحقيقي في هذه الاختبارات هو امتلاك فهم _جيد_ لمجالك كي تستطيع كتابة هذه الخصائص.
 
-Enough words, let's see some code
+كفى كلاماً، لنرَ بعض الشيفرة
 
 ```go
 func TestPropertiesOfConversion(t *testing.T) {
@@ -700,30 +702,30 @@ func TestPropertiesOfConversion(t *testing.T) {
 }
 ```
 
-### Rationale of property
+### الأساس المنطقي للخاصية
 
-Our first test will check that if we transform a number into Roman, when we use our other function to convert it back to a number that we get what we originally had.
+سيتحقق اختبارنا الأول من أننا إن حوّلنا عدداً إلى رقم روماني، ثم استعملنا دالتنا الأخرى لتحويله مرة أخرى إلى عدد، نحصل على ما كان لدينا في الأصل.
 
-- Given random number (e.g `4`).
-- Call `ConvertToRoman` with random number (should return `IV` if `4`).
-- Take the result of above and pass it to `ConvertToArabic`.
-- The above should give us our original input (`4`).
+- بمعلومية عدد عشوائي (مثلاً `4`).
+- استدعِ `ConvertToRoman` بالعدد العشوائي (ينبغي أن تعيد `IV` إن كان `4`).
+- خذ النتيجة السابقة ومررها إلى `ConvertToArabic`.
+- ينبغي أن يعطينا ما سبق مدخلنا الأصلي (`4`).
 
-This feels like a good test to build us confidence because it should break if there's a bug in either. The only way it could pass is if they have the same kind of bug; which isn't impossible but feels unlikely.
+يبدو هذا اختباراً جيداً يمنحنا الثقة، لأنه ينبغي أن يفشل إن كان هناك خطأ برمجي في أي من الدالتين. والطريقة الوحيدة لنجاحه مع وجود خطأ هي أن يكون في كلتيهما الخطأ البرمجي نفسه، وهذا ليس مستحيلاً لكنه يبدو غير مرجح.
 
-### Technical explanation
+### الشرح التقني
 
- We're using the [testing/quick](https://golang.org/pkg/testing/quick/) package from the standard library
+ نستعمل الحزمة [testing/quick](https://golang.org/pkg/testing/quick/) من المكتبة القياسية
 
- Reading from the bottom, we provide `quick.Check` a function that it will run against a number of random inputs, if the function returns `false` it will be seen as failing the check.
+ بالقراءة من الأسفل، نقدّم إلى `quick.Check` دالة ستشغّلها على عدد من المدخلات العشوائية، وإن أعادت الدالة `false` فسيُعدّ ذلك فشلاً في الفحص.
 
- Our `assertion` function above takes a random number and runs our functions to test the property.
+ دالة `assertion` أعلاه تأخذ عدداً عشوائياً وتشغّل دوالنا لاختبار الخاصية.
 
-### Run our test
+### شغّل اختبارنا
 
- Try running it; your computer may hang for a while, so kill it when you're bored :)
+ جرّب تشغيله؛ قد يتجمد حاسوبك لبعض الوقت، فأوقفه حين تملّ :)
 
- What's going on? Try adding the following to the assertion code.
+ ما الذي يجري؟ جرّب إضافة ما يلي إلى شيفرة التوكيد.
 
  ```go
 assertion := func(arabic int) bool {
@@ -737,7 +739,7 @@ assertion := func(arabic int) bool {
 }
 ```
 
-You should see something like this:
+ينبغي أن ترى شيئاً كهذا:
 
 ```console
 === RUN   TestPropertiesOfConversion
@@ -750,19 +752,19 @@ You should see something like this:
 2019/07/09 14:41:27 562755830018219185
 ```
 
-Just running this very simple property has exposed a flaw in our implementation. We used `int` as our input but:
-- You can't do negative numbers with Roman Numerals
-- Given our rule of a max of 3 consecutive symbols we can't represent a value greater than 3999 ([well, kinda](https://www.quora.com/Which-is-the-maximum-number-in-Roman-numerals)) and `int` has a much higher maximum value than 3999.
+مجرد تشغيل هذه الخاصية البسيطة جداً كشف خللاً في تنفيذنا. فقد استعملنا `int` كمدخل، لكن:
+- لا يمكنك تمثيل الأعداد السالبة بالأرقام الرومانية
+- وبحسب قاعدتنا التي لا تسمح بأكثر من 3 رموز متتالية، لا يمكننا تمثيل قيمة أكبر من 3999 ([حسناً، إلى حد ما](https://www.quora.com/Which-is-the-maximum-number-in-Roman-numerals))، وللنوع `int` قيمة قصوى أعلى بكثير من 3999.
 
-This is great! We've been forced to think more deeply about our domain which is a real strength of property based tests.
+هذا رائع! فقد أُجبرنا على التفكير بعمق أكبر في مجالنا، وهذه نقطة قوة حقيقية في الاختبارات القائمة على الخصائص.
 
-Clearly `int` is not a great type. What if we tried something a little more appropriate?
+من الواضح أن `int` ليس نوعاً (type) جيداً. فماذا لو جرّبنا شيئاً أنسب قليلاً؟
 
-### [`uint16`](https://golang.org/pkg/builtin/#uint16)
+### النوع [`uint16`](https://golang.org/pkg/builtin/#uint16)
 
-Go has types for _unsigned integers_, which means they cannot be negative; so that rules out one class of bug in our code immediately. By adding 16, it means it is a 16 bit integer which can store a max of `65535`, which is still too big but gets us closer to what we need.
+لدى غو أنواع لـ_الأعداد الصحيحة غير المؤشَّرة_، أي التي لا يمكن أن تكون سالبة؛ وهذا يستبعد فوراً فئة من الأخطاء البرمجية في شيفرتنا. وإضافة 16 تعني أنه عدد صحيح بطول 16 بت، يستطيع تخزين قيمة قصوى قدرها `65535`، وهي ما زالت كبيرة جداً لكنها تقربنا مما نحتاج إليه.
 
-Try updating the code to use `uint16` rather than `int`. I updated `assertion` in the test to give a bit more visibility.
+جرّب تحديث الشيفرة لتستعمل `uint16` بدلاً من `int`. وقد حدّثت `assertion` في الاختبار ليعطي رؤية أوضح قليلاً.
 
 ```go
 assertion := func(arabic uint16) bool {
@@ -775,11 +777,11 @@ assertion := func(arabic uint16) bool {
 	return fromRoman == arabic
 }
 ```
-Notice that now we are logging the input using the `log` method from the testing framework. Make sure you run the `go test` command with the flag `-v` to print the additional output (`go test -v`).
+لاحظ أننا صرنا نسجّل المدخلات باستعمال الطريقة `log` من إطار الاختبار. وتأكد من تشغيل الأمر `go test` مع الراية `-v` لطباعة المخرجات الإضافية (`go test -v`).
 
-If you run the test they now actually run and you can see what is being tested. You can run multiple times to see our code stands up well to the various values! This gives me a lot of confidence that our code is working how we want.
+إن شغّلت الاختبار الآن فسيعمل فعلاً، ويمكنك أن ترى ما يجري اختباره. ويمكنك تشغيله عدة مرات لترى أن شيفرتنا تصمد جيداً أمام القيم المختلفة! وهذا يمنحني ثقة كبيرة بأن شيفرتنا تعمل كما نريد.
 
-The default number of runs `quick.Check` performs is 100 but you can change that with a config.
+العدد الافتراضي لمرات التشغيل التي تجريها `quick.Check` هو 100، لكن يمكنك تغييره بالإعدادات.
 
 ```go
 if err := quick.Check(assertion, &quick.Config{
@@ -789,73 +791,73 @@ if err := quick.Check(assertion, &quick.Config{
 }
 ```
 
-### Further work
+### عمل إضافي
 
-- Can you write property tests that check the other properties we described?
-- Can you think of a way of making it so it's impossible for someone to call our code with a number greater than 3999?
-    - You could return an error
-    - Or create a new type that cannot represent > 3999
-        - What do you think is best?
+- هل تستطيع كتابة اختبارات خصائص تتحقق من الخصائص الأخرى التي وصفناها؟
+- هل يمكنك التفكير في طريقة تجعل من المستحيل على أي أحد استدعاء شيفرتنا بعدد أكبر من 3999؟
+    - يمكنك إعادة خطأ (error)
+    - أو إنشاء نوع جديد لا يمكنه تمثيل ما هو أكبر من 3999
+        - ما الأفضل في رأيك؟
 
-## Wrapping up
+## الخلاصة
 
-### More TDD practice with iterative development
+### مزيد من التمرّن على `TDD` مع التطوير التكراري
 
-Did the thought of writing code that converts 1984 into MCMLXXXIV feel intimidating to you at first? It did to me and I've been writing software for quite a long time.
+هل بدت لك فكرة كتابة شيفرة تحوّل 1984 إلى MCMLXXXIV مخيفة في البداية؟ لقد بدت لي كذلك، مع أنني أكتب البرمجيات منذ زمن طويل.
 
-The trick, as always, is to **get started with something simple** and take **small steps**.
+والحيلة كالعادة هي أن **تبدأ بشيء بسيط** وتتخذ **خطوات صغيرة**.
 
-At no point in this process did we make any large leaps, do any huge refactorings, or get in a mess.
+لم نقم في أي مرحلة من هذه العملية بقفزات كبيرة، ولم نجرِ عمليات إعادة هيكلة ضخمة، ولم نقع في الفوضى.
 
-I can hear someone cynically saying "this is just a kata". I can't argue with that, but I still take this same approach for every project I work on. I never ship a big distributed system in my first step, I find the simplest thing the team could ship (usually a "Hello world" website) and then iterate on small bits of functionality in manageable chunks, just like how we did here.
+أسمع أحدهم يقول بتهكم "هذه مجرد كاتا". لا أستطيع أن أجادل في ذلك، لكنني ما زلت أتبع هذا الأسلوب نفسه في كل مشروع أعمل عليه. فلا أطلق أبداً نظاماً موزعاً كبيراً في خطوتي الأولى، بل أجد أبسط شيء يستطيع الفريق إطلاقه (عادةً موقع "Hello world")، ثم أتقدم بأجزاء صغيرة من الوظائف على دفعات يمكن التحكم بها، تماماً كما فعلنا هنا.
 
-The skill is knowing _how_ to split work up, and that comes with practice and with some lovely TDD to help you on your way.
+والمهارة هي أن تعرف _كيف_ تقسّم العمل، وهذا يأتي مع الممارسة ومع قليل من `TDD` الجميل الذي يساعدك على طول الطريق.
 
-### Property based tests
+### الاختبارات القائمة على الخصائص
 
-- Built into the standard library
-- If you can think of ways to describe your domain rules in code, they are an excellent tool for giving you more confidence
-- Force you to think about your domain deeply
-- Potentially a nice complement to your test suite
+- مدمجة في المكتبة القياسية
+- إن استطعت التفكير في طرق لوصف قواعد مجالك في الشيفرة، فهي أداة ممتازة لمنحك مزيداً من الثقة
+- تجبرك على التفكير في مجالك بعمق
+- قد تكون مكمّلاً جميلاً لمجموعة اختباراتك
 
-## Postscript
+## حاشية
 
-This book is reliant on valuable feedback from the community.
-[Dave](http://github.com/gypsydave5) is an enormous help in practically every
-chapter. But he had a real rant about my use of 'Arabic numerals' in this
-chapter so, in the interests of full disclosure, here's what he said.
+يعتمد هذا الكتاب على تغذية راجعة (feedback) قيّمة من المجتمع.
+و[ديف](http://github.com/gypsydave5) يقدّم مساعدة هائلة في كل فصل
+تقريباً. لكنه أطلق خطبة حقيقية حول استعمالي لعبارة "الأرقام العربية" في هذا
+الفصل، لذا وفي سبيل الشفافية الكاملة، إليك ما قاله.
 
-> Just going to write up why a value of type `int` isn't really an 'arabic
-> numeral'. This might be me being way too precise so I'll completely understand
-> if you tell me to f off.
+> سأكتب فقط لماذا لا تُعدّ قيمة من النوع `int` "رقماً
+> عربياً" حقاً. قد أكون مفرطاً في الدقة، لذا سأتفهم تماماً
+> إن طلبت مني أن أغرب عن وجهك.
 >
-> A _digit_ is a character used in the representation of numbers - from the Latin
-> for 'finger', as we usually have ten of them. In the Arabic (also called
-> Hindu-Arabic) number system there are ten of them. These Arabic digits are:
+> _الرقم_ محرف يُستعمل في تمثيل الأعداد، وأصل الكلمة اللاتينية
+> يعني "الإصبع"، إذ لدينا عادةً عشرة منها. وفي نظام الأعداد العربي (ويسمى أيضاً
+> الهندي العربي) هناك عشرة منها. وهذه الأرقام العربية هي:
 >
 > ```console
 >   0 1 2 3 4 5 6 7 8 9
 > ```
 >
-> A _numeral_ is the representation of a number using a collection of digits.
-> An Arabic numeral is a number represented by Arabic digits in a base 10
-> positional number system. We say 'positional' because each digit has
-> a different value based upon its position in the numeral. So
+> أما _العدد المكتوب_ فهو تمثيل العدد باستعمال مجموعة من الأرقام.
+> والعدد العربي عدد ممثَّل بالأرقام العربية في نظام عددي
+> موضعي أساسه 10. ونقول "موضعي" لأن لكل رقم
+> قيمة مختلفة بحسب موضعه في العدد المكتوب. لذا في
 >
 > ```console
 >   1337
 > ```
 >
-> The `1` has a value of one thousand because its the first digit in a four
-> digit numeral.
+> للرقم `1` قيمة الألف، لأنه الرقم الأول في عدد مكتوب
+> من أربعة أرقام.
 >
-> Roman are built using a reduced number of digits (`I`, `V` etc...) mainly as
-> values to produce the numeral. There's a bit of positional stuff but it's
-> mostly `I` always representing 'one'.
+> أما الأرقام الرومانية فتُبنى باستعمال عدد مقلّص من الأرقام (`I` و`V` وغيرهما...) كقيم
+> أساساً لإنتاج العدد المكتوب. هناك شيء من الموضعية، لكن في الغالب
+> يمثل `I` دائماً "واحداً".
 >
-> So, given this, is `int` an 'Arabic number'? The idea of a number is not at
-> all tied to its representation - we can see this if we ask ourselves what the
-> correct representation of this number is:
+> فهل `int` إذن "عدد عربي"؟ فكرة العدد ليست
+> مرتبطة إطلاقاً بتمثيله، ويمكننا أن نرى هذا إن سألنا أنفسنا ما
+> التمثيل الصحيح لهذا العدد:
 >
 > ```console
 > 255
@@ -865,18 +867,18 @@ chapter so, in the interests of full disclosure, here's what he said.
 > 377
 > ```
 >
-> Yes, this is a trick question. They're all correct. They're the representation
-> of the same number in the decimal,  binary, English, hexadecimal and octal
-> number systems respectively.
+> نعم، هذا سؤال خادع. فكلها صحيحة. إنها تمثيلات
+> العدد نفسه في الأنظمة العشري والثنائي والإنجليزي والست عشري والثماني
+> على الترتيب.
 >
-> The representation of a number as a numeral is _independent_ of its properties
-> as a number - and we can see this when we look at integer literals in Go:
+> تمثيل العدد كعدد مكتوب _مستقل_ عن خصائصه
+> كعدد، ويمكننا أن نرى هذا حين ننظر إلى الأعداد الصحيحة الحرفية في غو:
 >
 > ```go
 > 	0xFF == 255 // true
 > ```
 >
-> And how we can print integers in a format string:
+> وفي كيفية طباعة الأعداد الصحيحة في سلسلة تنسيق:
 >
 > ```go
 > n := 255
@@ -884,27 +886,27 @@ chapter so, in the interests of full disclosure, here's what he said.
 > // 11111111 ÿ 255 377 'ÿ' ff FF U+00FF
 > ```
 >
-> We can write the same integer both as a hexadecimal and an Arabic (decimal)
-> numeral.
+> يمكننا كتابة العدد الصحيح نفسه بالنظام الست عشري وكعدد عربي (عشري)
+> على حد سواء.
 >
-> So when the function signature looks like `ConvertToRoman(arabic int) string`
-> it's making a bit of an assumption about how it's being called. Because
-> sometimes `arabic` will be written as a decimal integer literal
+> لذا حين يبدو توقيع الدالة هكذا `ConvertToRoman(arabic int) string`
+> فإنه يفترض شيئاً حول طريقة استدعائه. لأن
+> `arabic` ستُكتب أحياناً كعدد صحيح عشري حرفي
 >
 > ```go
 > 	ConvertToRoman(255)
 > ```
 >
-> But it could just as well be written
+> لكنها قد تُكتب بالقدر نفسه هكذا
 >
 > ```go
 > 	ConvertToRoman(0xFF)
 > ```
 >
-> Really, we're not 'converting' from an Arabic numeral at all, we're 'printing'  -
-> representing - an `int` as a Roman numeral - and `int`s are not numerals,
-> Arabic or otherwise; they're just numbers. The `ConvertToRoman` function is
-> more like `strconv.Itoa` in that it's turning an `int` into a `string`.
+> في الحقيقة، نحن لا "نحوّل" من عدد عربي إطلاقاً، بل "نطبع"،
+> أي نمثّل، قيمة `int` كرقم روماني، وقيم `int` ليست أعداداً مكتوبة،
+> لا عربية ولا غيرها؛ إنها مجرد أعداد. والدالة `ConvertToRoman`
+> أشبه بـ`strconv.Itoa`، من حيث إنها تحوّل `int` إلى `string`.
 >
-> But every other version of the kata doesn't care about this distinction so
+> لكن كل النسخ الأخرى من هذه الكاتا لا تهتم بهذا التمييز، لذا
 > :shrug:

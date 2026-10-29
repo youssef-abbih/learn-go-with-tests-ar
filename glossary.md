@@ -246,3 +246,14 @@
 | trace ID | معرّف التتبّع | مقترح |  |
 | long-running process | عملية طويلة الأمد | مقترح |  |
 | concurrency primitives | أدوات التزامن الأساسية | مقترح |  |
+| Roman numeral | رقم روماني | مقترح | الجمع: الأرقام الرومانية |
+| Arabic numeral | عدد عربي | مقترح | الأرقام 0-9؛ انظر ملاحظة المترجم في roman-numerals.md |
+| object-oriented programming | البرمجة كائنية التوجه | مقترح | OO |
+| class | صنف | مقترح |  |
+| imperative code | شيفرة أمرية | مقترح |  |
+| unsigned integer | عدد صحيح غير مؤشَّر | مقترح |  |
+| prefix | بادئة | مقترح |  |
+| boilerplate | شيفرة متكررة | مقترح |  |
+| distributed system | نظام موزع | مقترح |  |
+| literal | حرفي | مقترح | integer literal: عدد صحيح حرفي |
+| property | خاصية | مقترح | في الاختبارات القائمة على الخصائص |
