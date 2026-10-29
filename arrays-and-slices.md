@@ -1,19 +1,19 @@
-# Arrays and slices
+# المصفوفات والشرائح
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
+**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/arrays)**
 
-Arrays allow you to store multiple elements of the same type in a variable in
-a particular order.
+تتيح لك المصفوفات (arrays) تخزين عدة عناصر من النوع (type) نفسه في متغير (variable) واحد
+بترتيب معيّن.
 
-When you have an array, it is very common to have to iterate over them. So let's
-use [our new-found knowledge of `for`](iteration.md) to make a `Sum` function. `Sum` will
-take an array of numbers and return the total.
+وحين تكون لديك مصفوفة، فمن الشائع جداً أن تحتاج إلى المرور على عناصرها. لذا لنستعمل
+[معرفتنا الجديدة بـ`for`](iteration.md) لكتابة دالة (function) باسم `Sum`. ستأخذ الدالة `Sum`
+مصفوفة من الأعداد وتعيد مجموعها.
 
-Let's use our TDD skills
+لنستعمل مهاراتنا في `TDD`
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-Create a new folder to work in. Create a new file called `sum_test.go` and insert the following:
+أنشئ مجلداً جديداً لتعمل فيه، ثم أنشئ ملفاً جديداً باسم `sum_test.go` واكتب فيه ما يلي:
 
 ```go
 package main
@@ -33,33 +33,33 @@ func TestSum(t *testing.T) {
 }
 ```
 
-Arrays have a _fixed capacity_ which you define when you declare the variable.
-We can initialize an array in two ways:
+للمصفوفات _سعة ثابتة_ تحددها حين تصرّح عن المتغير.
+ويمكننا تهيئة المصفوفة بطريقتين:
 
-* \[N\]type{value1, value2, ..., valueN} e.g. `numbers := [5]int{1, 2, 3, 4, 5}`
-* \[...\]type{value1, value2, ..., valueN} e.g. `numbers := [...]int{1, 2, 3, 4, 5}`
+* بالصيغة `[N]type{value1, value2, ..., valueN}`، مثل `numbers := [5]int{1, 2, 3, 4, 5}`
+* بالصيغة `[...]type{value1, value2, ..., valueN}`، مثل `numbers := [...]int{1, 2, 3, 4, 5}`
 
-It is sometimes useful to also print the inputs to the function in the error message.
-Here, we are using the `%v` placeholder to print the "default" format, which works well for arrays.
+من المفيد أحياناً أن تطبع أيضاً مدخلات الدالة في رسالة الخطأ (error).
+ونستعمل هنا العنصر النائب `%v` لطباعة الصيغة "الافتراضية"، وهي تناسب المصفوفات.
 
-[Read more about the format strings](https://golang.org/pkg/fmt/)
+[اقرأ المزيد عن سلاسل التنسيق](https://golang.org/pkg/fmt/)
 
-## Try to run the test
+## حاول تشغيل الاختبار
 
-If you had initialized go mod with `go mod init main` you will be presented with an error
-`_testmain.go:13:2: cannot import "main"`. This is because according to common practice,
-package main will only contain integration of other packages and not unit-testable code and
-hence Go will not allow you to import a package with name `main`.
+إن كنت قد هيّأت الوحدة النمطية بالأمر `go mod init main`، فسيظهر لك الخطأ
+`_testmain.go:13:2: cannot import "main"`. وسبب ذلك أن الممارسة الشائعة تقضي بألا تحتوي
+الحزمة (package) `main` إلا على شيفرة تربط الحزم الأخرى معاً، لا على شيفرة قابلة لاختبار الوحدة (unit test)،
+ولذلك لا تسمح لك غو (Go) باستيراد حزمة اسمها `main`.
 
-To fix this, you can rename the main module in `go.mod` to any other name.
+لإصلاح ذلك، يمكنك تغيير اسم الوحدة النمطية الرئيسية في `go.mod` إلى أي اسم آخر.
 
-Once the above error is fixed, if you run `go test` the compiler will fail with the familiar
-`./sum_test.go:10:15: undefined: Sum` error. Now we can proceed with writing the actual method
-to be tested.
+وبعد إصلاح الخطأ السابق، إن شغّلت `go test` فسيفشل المصرِّف (compiler) بالخطأ المألوف
+`./sum_test.go:10:15: undefined: Sum`. ويمكننا الآن المتابعة بكتابة الطريقة (method) الفعلية
+التي سنختبرها.
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-In `sum.go`
+في الملف `sum.go`
 
 ```go
 package main
@@ -69,11 +69,11 @@ func Sum(numbers [5]int) int {
 }
 ```
 
-Your test should now fail with _a clear error message_
+ينبغي أن يفشل اختبارك (test) الآن مع _رسالة خطأ واضحة_
 
 `sum_test.go:13: got 0 want 15 given, [1 2 3 4 5]`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func Sum(numbers [5]int) int {
@@ -85,13 +85,13 @@ func Sum(numbers [5]int) int {
 }
 ```
 
-To get the value out of an array at a particular index, just use `array[index]`
-syntax. In this case, we are using `for` to iterate 5 times to work through the
-array and add each item onto `sum`.
+لاستخراج قيمة من مصفوفة عند فهرس معيّن، استعمل الصياغة `array[index]`
+فحسب. وفي هذه الحالة نستعمل `for` للتكرار 5 مرات للمرور على
+المصفوفة وإضافة كل عنصر إلى `sum`.
 
-## Refactor
+## أعد الهيكلة
 
-Let's introduce [`range`](https://gobyexample.com/range) to help clean up our code
+لنقدّم [`range`](https://gobyexample.com/range) لتساعدنا على تنظيف شيفرتنا (code)
 
 ```go
 func Sum(numbers [5]int) int {
@@ -103,31 +103,31 @@ func Sum(numbers [5]int) int {
 }
 ```
 
-`range` lets you iterate over an array. On each iteration, `range` returns two values - the index and the value.
-We are choosing to ignore the index value by using `_` [blank identifier](https://golang.org/doc/effective_go.html#blank).
+تتيح لك `range` المرور على مصفوفة. ففي كل تكرار (iteration)، تعيد `range` قيمتين: الفهرس والقيمة.
+ونختار هنا تجاهل قيمة الفهرس باستعمال `_`، أي [المعرّف الفارغ](https://golang.org/doc/effective_go.html#blank).
 
-### Arrays and their type
+### المصفوفات ونوعها
 
-An interesting property of arrays is that the size is encoded in its type. If you try
-to pass an `[4]int` into a function that expects `[5]int`, it won't compile.
-They are different types so it's just the same as trying to pass a `string` into
-a function that wants an `int`.
+من الخصائص المثيرة للاهتمام في المصفوفات أن حجمها جزء من نوعها. فإن حاولت
+تمرير `[4]int` إلى دالة تتوقع `[5]int`، فلن يتم التصريف.
+إنهما نوعان مختلفان، فالأمر تماماً كمحاولة تمرير `string` إلى
+دالة تريد `int`.
 
-You may be thinking it's quite cumbersome that arrays have a fixed length, and most
-of the time you probably won't be using them!
+لعلك تفكر أن الطول الثابت للمصفوفات أمر مزعج جداً، والأرجح أنك
+لن تستعملها في معظم الأحيان!
 
-Go has _slices_ which do not encode the size of the collection and instead can
-have any size.
+لدى غو _الشرائح_ (slices)، وهي لا تتضمن حجم المجموعة في نوعها، بل يمكن
+أن يكون لها أي حجم.
 
-The next requirement will be to sum collections of varying sizes.
+سيكون المتطلب التالي هو جمع مجموعات بأحجام مختلفة.
 
-## Write the test first
+## اكتب الاختبار أولاً
 
-We will now use the [slice type][slice] which allows us to have collections of
-any size. The syntax is very similar to arrays, you just omit the size when
-declaring them
+سنستعمل الآن [نوع الشريحة][slice] الذي يتيح لنا مجموعات
+بأي حجم. والصياغة تشبه كثيراً صياغة المصفوفات، كل ما عليك هو حذف الحجم عند
+التصريح عنها
 
-`mySlice := []int{1,2,3}` rather than `myArray := [3]int{1,2,3}`
+نكتب `mySlice := []int{1,2,3}` بدلاً من `myArray := [3]int{1,2,3}`
 
 ```go
 func TestSum(t *testing.T) {
@@ -157,22 +157,22 @@ func TestSum(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
-This does not compile
+هذا لا يُصرَّف
 
 `./sum_test.go:22:13: cannot use numbers (type []int) as type [5]int in argument to Sum`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-The problem here is we can either
+المشكلة هنا أن أمامنا خيارين
 
-* Break the existing API by changing the argument to `Sum` to be a slice rather
-  than an array. When we do this, we will potentially ruin
-  someone's day because our _other_ test will no longer compile!
-* Create a new function
+* أن نكسر الواجهة البرمجية الحالية بتغيير وسيط (argument) الدالة `Sum` ليكون شريحة بدلاً
+  من مصفوفة. وإن فعلنا ذلك، فقد نفسد
+  يوم أحدهم، لأن اختبارنا _الآخر_ لن يُصرَّف بعد الآن!
+* أن ننشئ دالة جديدة
 
-In our case, no one else is using our function, so rather than having two functions to maintain, let's have just one.
+في حالتنا لا أحد غيرنا يستعمل دالتنا، لذا بدلاً من صيانة دالتين، لنكتفِ بواحدة.
 
 ```go
 func Sum(numbers []int) int {
@@ -184,16 +184,16 @@ func Sum(numbers []int) int {
 }
 ```
 
-If you try to run the tests they will still not compile, you will have to change the first test to pass in a slice rather than an array.
+إن حاولت تشغيل الاختبارات فلن تُصرَّف بعد، وعليك تعديل الاختبار الأول ليمرر شريحة بدلاً من مصفوفة.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-It turns out that fixing the compiler problems were all we need to do here and the tests pass!
+يتضح أن إصلاح مشكلات المصرِّف كان كل ما نحتاج إليه هنا، والاختبارات تنجح!
 
-## Refactor
+## أعد الهيكلة
 
-We already refactored `Sum` - all we did was replace arrays with slices, so no extra changes are required.
-Remember that we must not neglect our test code in the refactoring stage - we can further improve our `Sum` tests.
+لقد أعدنا هيكلة `Sum` بالفعل، فكل ما فعلناه هو استبدال المصفوفات بالشرائح، لذا لا حاجة إلى تغييرات إضافية.
+وتذكّر أنه يجب ألا نهمل شيفرة اختباراتنا في مرحلة إعادة الهيكلة (refactoring)، إذ يمكننا تحسين اختبارات `Sum` أكثر.
 
 ```go
 func TestSum(t *testing.T) {
@@ -223,48 +223,48 @@ func TestSum(t *testing.T) {
 }
 ```
 
-It is important to question the value of your tests. It should not be a goal to
-have as many tests as possible, but rather to have as much _confidence_ as
-possible in your code base. Having too many tests can turn in to a real problem
-and it just adds more overhead in maintenance. **Every test has a cost**.
+من المهم أن تتساءل عن قيمة اختباراتك. فلا ينبغي أن يكون الهدف
+امتلاك أكبر عدد ممكن من الاختبارات، بل امتلاك أكبر قدر ممكن من _الثقة_
+في قاعدة شيفرتك. فكثرة الاختبارات قد تتحول إلى مشكلة حقيقية،
+ولا تضيف إلا مزيداً من أعباء الصيانة. **لكل اختبار تكلفة**.
 
-In our case, you can see that having two tests for this function is redundant.
-If it works for a slice of one size it's very likely it'll work for a slice of
-any size \(within reason\).
+في حالتنا، يمكنك أن ترى أن وجود اختبارين لهذه الدالة أمر زائد عن الحاجة.
+فإن عملت مع شريحة بحجم معيّن، فمن المرجح جداً أن تعمل مع شريحة
+بأي حجم (في حدود المعقول).
 
-Go's built-in testing toolkit features a [coverage tool](https://blog.golang.org/cover).
-Whilst striving for 100% coverage should not be your end goal, the coverage tool can help
-identify areas of your code not covered by tests. If you have been strict with TDD,
-it's quite likely you'll have close to 100% coverage anyway.
+تتضمن عُدّة الاختبار المدمجة في غو [أداة لتغطية الاختبارات (test coverage)](https://blog.golang.org/cover).
+ومع أن السعي إلى تغطية بنسبة 100% لا ينبغي أن يكون هدفك النهائي، فإن أداة التغطية تساعد على
+تحديد أجزاء شيفرتك التي لا تغطيها الاختبارات. وإن كنت صارماً في تطبيق `TDD`،
+فالأرجح أن تكون تغطيتك قريبة من 100% على أي حال.
 
-Try running
+جرّب تشغيل
 
 `go test -cover`
 
-You should see
+ينبغي أن ترى
 
 ```bash
 PASS
 coverage: 100.0% of statements
 ```
 
-Now delete one of the tests and check the coverage again.
+احذف الآن أحد الاختبارين وتحقق من التغطية مجدداً.
 
-Now that we are happy we have a well-tested function you should commit your
-great work before taking on the next challenge.
+والآن بعد أن رضينا بأن لدينا دالة مختبَرة جيداً، ينبغي أن تودع
+عملك الرائع قبل أن تتصدى للتحدي التالي.
 
-We need a new function called `SumAll` which will take a varying number of
-slices, returning a new slice containing the totals for each slice passed in.
+نحتاج إلى دالة جديدة باسم `SumAll` تأخذ عدداً متغيراً من
+الشرائح، وتعيد شريحة جديدة تحتوي على مجموع كل شريحة مُررت إليها.
 
-For example
+على سبيل المثال
 
-`SumAll([]int{1,2}, []int{0,9})` would return `[]int{3, 9}`
+الاستدعاء `SumAll([]int{1,2}, []int{0,9})` يعيد `[]int{3, 9}`
 
-or
+أو
 
-`SumAll([]int{1,1,1})` would return `[]int{3}`
+الاستدعاء `SumAll([]int{1,1,1})` يعيد `[]int{3}`
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -278,15 +278,15 @@ func TestSumAll(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 `./sum_test.go:23:9: undefined: SumAll`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-We need to define `SumAll` according to what our test wants.
+علينا تعريف `SumAll` وفق ما يريده اختبارنا.
 
-Go can let you write [_variadic functions_](https://gobyexample.com/variadic-functions) that can take a variable number of arguments.
+تتيح لك غو كتابة [_دوال متغيرة الوسطاء_](https://gobyexample.com/variadic-functions) يمكنها أن تأخذ عدداً متغيراً من الوسطاء.
 
 ```go
 func SumAll(numbersToSum ...[]int) []int {
@@ -294,14 +294,14 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 ```
 
-This is valid, but our tests still won't compile!
+هذا صحيح، لكن اختباراتنا ما زالت لا تُصرَّف!
 
 `./sum_test.go:26:9: invalid operation: got != want (slice can only be compared to nil)`
 
-Go does not let you use equality operators with slices. You _could_ write
-a function to iterate over each `got` and `want` slice and check their values
-but for convenience sake, we can use [`reflect.DeepEqual`][deepEqual] which is
-useful for seeing if _any_ two variables are the same.
+لا تسمح لك غو باستعمال عوامل المساواة مع الشرائح. _يمكنك_ أن تكتب
+دالة تمر على كل من الشريحتين `got` و`want` وتتحقق من قيمهما،
+لكن للتيسير يمكننا استعمال [`reflect.DeepEqual`][deepEqual]، وهي
+مفيدة لمعرفة ما إذا كان _أي_ متغيرين متطابقين.
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -315,11 +315,11 @@ func TestSumAll(t *testing.T) {
 }
 ```
 
-\(make sure you `import reflect` in the top of your file to have access to `DeepEqual`\)
+(تأكد من كتابة `import reflect` في أعلى ملفك كي تصل إلى `DeepEqual`)
 
-It's important to note that `reflect.DeepEqual` is not "type safe" - the code
-will compile even if you did something a bit silly. To see this in action,
-temporarily change the test to:
+من المهم أن تلاحظ أن `reflect.DeepEqual` ليست "آمنة الأنواع"، فالشيفرة
+ستُصرَّف حتى لو فعلت شيئاً سخيفاً بعض الشيء. ولترى ذلك عملياً،
+غيّر الاختبار مؤقتاً إلى:
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -333,21 +333,21 @@ func TestSumAll(t *testing.T) {
 }
 ```
 
-What we have done here is try to compare a `slice` with a `string`. This makes
-no sense, but the test compiles! So while using `reflect.DeepEqual` is
-a convenient way of comparing slices \(and other things\) you must be careful
-when using it.
+ما فعلناه هنا هو محاولة مقارنة `slice` بـ`string`. هذا
+لا معنى له، لكن الاختبار يُصرَّف! لذا فمع أن استعمال `reflect.DeepEqual`
+طريقة مريحة لمقارنة الشرائح (وأشياء أخرى)، فعليك أن تكون حذراً
+عند استعمالها.
 
-(From Go 1.21, [slices](https://pkg.go.dev/slices#pkg-overview) standard package is available, which has [slices.Equal](https://pkg.go.dev/slices#Equal) function to do a simple shallow compare on slices, where you don't need to worry about the types like the above case. Note that this function expects the elements to be [comparable](https://pkg.go.dev/builtin#comparable). So, it can't be applied to slices with non-comparable elements like 2D slices.)  
+(منذ غو 1.21، صارت الحزمة القياسية [slices](https://pkg.go.dev/slices#pkg-overview) متاحة، وفيها الدالة [slices.Equal](https://pkg.go.dev/slices#Equal) لإجراء مقارنة سطحية بسيطة بين الشرائح، دون أن تقلق بشأن الأنواع كما في الحالة السابقة. لاحظ أن هذه الدالة تتوقع أن تكون العناصر [قابلة للمقارنة](https://pkg.go.dev/builtin#comparable)، لذا لا يمكن تطبيقها على شرائح عناصرها غير قابلة للمقارنة، مثل الشرائح ثنائية الأبعاد.)
 
-Change the test back again and run it. You should have test output like the following
+أعد الاختبار إلى ما كان عليه وشغّله. ينبغي أن تظهر لك مخرجات اختبار كالتالية
 
 `sum_test.go:30: got [] want [3 9]`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
-What we need to do is iterate over the varargs, calculate the sum using our
-existing `Sum` function, then add it to the slice we will return
+ما علينا فعله هو المرور على الوسطاء المتغيرة، وحساب المجموع باستعمال دالتنا
+الحالية `Sum`، ثم إضافته إلى الشريحة التي سنعيدها
 
 ```go
 func SumAll(numbersToSum ...[]int) []int {
@@ -362,23 +362,23 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 ```
 
-Lots of new things to learn!
+أشياء جديدة كثيرة لنتعلمها!
 
-There's a new way to create a slice. `make` allows you to create a slice with
-a starting capacity of the `len` of the `numbersToSum` we need to work through. The length of a slice is the number of elements it holds `len(mySlice)`, while the capacity is the number of elements it can hold in the underlying array `cap(mySlice)`, e.g., `make([]int, 0, 5)` creates a slice with length 0 and capacity 5.
+هناك طريقة جديدة لإنشاء شريحة. تتيح لك `make` إنشاء شريحة
+بسعة ابتدائية تساوي `len` للشريحة `numbersToSum` التي سنمر عليها. طول الشريحة هو عدد العناصر التي تحتويها `len(mySlice)`، أما السعة فهي عدد العناصر التي يمكن أن تتسع لها المصفوفة الأساسية `cap(mySlice)`. فمثلاً، `make([]int, 0, 5)` تنشئ شريحة طولها 0 وسعتها 5.
 
-You can index slices like arrays with `mySlice[N]` to get the value out or
-assign it a new value with `=`
+يمكنك الوصول إلى عناصر الشرائح بالفهرس كالمصفوفات بكتابة `mySlice[N]` لاستخراج القيمة، أو
+إسناد قيمة جديدة إليها بـ`=`
 
-The tests should now pass.
+ينبغي أن تنجح الاختبارات الآن.
 
-## Refactor
+## أعد الهيكلة
 
-As mentioned, slices have a capacity. If you have a slice with a capacity of
-2 and try to do `mySlice[10] = 1` you will get a _runtime_ error.
+كما ذكرنا، للشرائح سعة. فإن كانت لديك شريحة سعتها
+2 وحاولت تنفيذ `mySlice[10] = 1` فستحصل على خطأ في _وقت التشغيل_.
 
-However, you can use the `append` function which takes a slice and a new value,
-then returns a new slice with all the items in it.
+لكن يمكنك استعمال الدالة `append` التي تأخذ شريحة وقيمة جديدة،
+ثم تعيد شريحة جديدة فيها كل العناصر.
 
 ```go
 func SumAll(numbersToSum ...[]int) []int {
@@ -391,14 +391,14 @@ func SumAll(numbersToSum ...[]int) []int {
 }
 ```
 
-In this implementation, we are worrying less about capacity. We start with an
-empty slice `sums` and append to it the result of `Sum` as we work through the varargs.
+في هذا التنفيذ، نقلق أقل بشأن السعة. فنبدأ بشريحة
+فارغة `sums` ونضيف إليها نتيجة `Sum` ونحن نمر على الوسطاء المتغيرة.
 
-Our next requirement is to change `SumAll` to `SumAllTails`, where it will
-calculate the totals of the "tails" of each slice. The tail of a collection is
-all items in the collection except the first one \(the "head"\).
+متطلبنا التالي هو تغيير `SumAll` إلى `SumAllTails`، بحيث
+تحسب مجموع "ذيل" كل شريحة. وذيل المجموعة هو
+كل عناصرها ما عدا العنصر الأول ("الرأس").
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -411,17 +411,17 @@ func TestSumAllTails(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 `./sum_test.go:26:9: undefined: SumAllTails`
 
-## Write the minimal amount of code for the test to run and check the failing test output
+## اكتب أقل قدر من الشيفرة لتشغيل الاختبار وتحقق من مخرجات الاختبار الفاشل
 
-Rename the function to `SumAllTails` and re-run the test
+غيّر اسم الدالة إلى `SumAllTails` وأعد تشغيل الاختبار
 
 `sum_test.go:30: got [3 9] want [2 9]`
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func SumAllTails(numbersToSum ...[]int) []int {
@@ -435,21 +435,21 @@ func SumAllTails(numbersToSum ...[]int) []int {
 }
 ```
 
-Slices can be sliced! The syntax is `slice[low:high]`. If you omit the value on
-one of the sides of the `:` it captures everything to that side of it. In our
-case, we are saying "take from 1 to the end" with `numbers[1:]`. You may wish to
-spend some time writing other tests around slices and experiment with the
-slice operator to get more familiar with it.
+يمكن تقطيع الشرائح! والصياغة هي `slice[low:high]`. فإن حذفت القيمة على
+أحد جانبي `:` فإنها تأخذ كل شيء في ذلك الجانب. وفي
+حالتنا نقول "خذ من 1 إلى النهاية" بكتابة `numbers[1:]`. قد ترغب في
+قضاء بعض الوقت في كتابة اختبارات أخرى حول الشرائح، وتجربة
+عامل التقطيع لتألفه أكثر.
 
-## Refactor
+## أعد الهيكلة
 
-Not a lot to refactor this time.
+لا يوجد الكثير مما يمكن إعادة هيكلته هذه المرة.
 
-What do you think would happen if you passed in an empty slice into our
-function? What is the "tail" of an empty slice? What happens when you tell Go to
-capture all elements from `myEmptySlice[1:]`?
+ما الذي تظن أنه سيحدث لو مررت شريحة فارغة إلى
+دالتنا؟ ما "ذيل" الشريحة الفارغة؟ وماذا يحدث حين تطلب من غو
+أن تأخذ كل العناصر من `myEmptySlice[1:]`؟
 
-## Write the test first
+## اكتب الاختبار أولاً
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -475,19 +475,19 @@ func TestSumAllTails(t *testing.T) {
 }
 ```
 
-## Try and run the test
+## حاول تشغيل الاختبار
 
 ```text
 panic: runtime error: slice bounds out of range [recovered]
     panic: runtime error: slice bounds out of range
 ```
 
-Oh no! It's important to note that while the test _has compiled_, it _has a runtime error_.  
+يا للهول! من المهم أن تلاحظ أنه مع أن الاختبار _قد صُرِّف_، فإن فيه _خطأ في وقت التشغيل_.
 
-Compile time errors are our friend because they help us write software that works,  
-runtime errors are our enemies because they affect our users.
+أخطاء وقت التصريف أصدقاؤنا لأنها تساعدنا على كتابة برمجيات تعمل،
+أما أخطاء وقت التشغيل فأعداؤنا لأنها تؤثر في مستخدمينا.
 
-## Write enough code to make it pass
+## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
 ```go
 func SumAllTails(numbersToSum ...[]int) []int {
@@ -505,9 +505,9 @@ func SumAllTails(numbersToSum ...[]int) []int {
 }
 ```
 
-## Refactor
+## أعد الهيكلة
 
-Our tests have some repeated code around the assertions again, so let's extract those into a function.
+في اختباراتنا مرة أخرى شيفرة مكررة حول التوكيدات (assertions)، فلنستخرجها إلى دالة.
 
 ```go
 func TestSumAllTails(t *testing.T) {
@@ -534,51 +534,51 @@ func TestSumAllTails(t *testing.T) {
 }
 ```
 
-We could've created a new function `checkSums` like we normally do, but in this case, we're showing a new technique, assigning a function to a variable. It might look strange but, it's no different to assigning a variable to a `string`, or an `int`, functions in effect are values too. 
+كان بإمكاننا إنشاء دالة جديدة `checkSums` كما نفعل عادةً، لكننا نعرض في هذه الحالة أسلوباً جديداً، وهو إسناد دالة إلى متغير. قد يبدو ذلك غريباً، لكنه لا يختلف عن إسناد قيمة من النوع `string` أو `int` إلى متغير، فالدوال في الحقيقة قيم أيضاً.
 
-It's not shown here, but this technique can be useful when you want to bind a function to other local variables in "scope" (e.g between some `{}`). It also allows you to reduce the surface area of your API. 
+لا يظهر ذلك هنا، لكن هذا الأسلوب قد يفيد حين تريد ربط دالة بمتغيرات محلية أخرى داخل "نطاق" (مثلاً بين قوسين معقوصين `{}`). كما يتيح لك تقليص مساحة واجهتك البرمجية.
 
-By defining this function inside the test, it cannot be used by other functions in this package. Hiding variables and functions that don't need to be exported is an important design consideration.
+وبتعريف هذه الدالة داخل الاختبار، لا يمكن أن تستعملها دوال أخرى في هذه الحزمة. وإخفاء المتغيرات والدوال التي لا داعي لتصديرها اعتبار مهم في التصميم.
 
-A handy side-effect of this is this adds a little type-safety to our code. If
-a developer mistakenly adds a new test with `checkSums(t, got, "dave")` the compiler
-will stop them in their tracks.
+ومن الآثار الجانبية المفيدة لذلك أنه يضيف قليلاً من أمان الأنواع إلى شيفرتنا. فإن أضاف
+مطور عن طريق الخطأ اختباراً جديداً فيه `checkSums(t, got, "dave")`، فسيوقفه المصرِّف
+في الحال.
 
 ```bash
 $ go test
 ./sum_test.go:52:21: cannot use "dave" (type string) as type []int in argument to checkSums
 ```
 
-## Wrapping up
+## الخلاصة
 
-We have covered
+تناولنا
 
-* Arrays
-* Slices
-  * The various ways to make them
-  * How they have a _fixed_ capacity but you can create new slices from old ones
-    using `append`
-  * How to slice, slices!
-* `len` to get the length of an array or slice
-* Test coverage tool
-* `reflect.DeepEqual` and why it's useful but can reduce the type-safety of your code
+* المصفوفات
+* الشرائح
+  * الطرق المختلفة لإنشائها
+  * كيف أن لها سعة _ثابتة_، لكن يمكنك إنشاء شرائح جديدة من القديمة
+    باستعمال `append`
+  * كيف تُقطَّع الشرائح!
+* الدالة `len` للحصول على طول مصفوفة أو شريحة
+* أداة تغطية الاختبارات
+* الدالة `reflect.DeepEqual`، ولماذا هي مفيدة لكنها قد تقلل أمان الأنواع في شيفرتك
 
-We've used slices and arrays with integers but they work with any other type
-too, including arrays/slices themselves. So you can declare a variable of
-`[][]string` if you need to.
+استعملنا الشرائح والمصفوفات مع الأعداد الصحيحة، لكنها تعمل مع أي نوع آخر
+أيضاً، بما في ذلك المصفوفات والشرائح نفسها. لذا يمكنك التصريح عن متغير من النوع
+`[][]string` إن احتجت إلى ذلك.
 
-[Check out the Go blog post on slices][blog-slice] for an in-depth look into
-slices. Try writing more tests to solidify what you learn from reading it.
+[اطّلع على تدوينة غو عن الشرائح][blog-slice] لنظرة متعمقة إلى
+الشرائح. وحاول كتابة مزيد من الاختبارات لترسيخ ما تتعلمه من قراءتها.
 
-Another handy way to experiment with Go other than writing tests is the Go
-playground. You can try most things out and you can easily share your code if
-you need to ask questions. [I have made a go playground with a slice in it for you to experiment with.](https://play.golang.org/p/ICCWcRGIO68)
+ومن الطرق المفيدة الأخرى لتجربة غو، غير كتابة الاختبارات، ساحةُ تجارب
+غو (Go playground). يمكنك أن تجرّب فيها معظم الأشياء، وأن تشارك شيفرتك بسهولة إن
+احتجت إلى طرح أسئلة. [أعددت لك ساحة تجارب فيها شريحة لتجرّب عليها.](https://play.golang.org/p/ICCWcRGIO68)
 
-[Here is an example](https://play.golang.org/p/bTrRmYfNYCp) of slicing an array
-and how changing the slice affects the original array; but a "copy" of the slice
-will not affect the original array.
-[Another example](https://play.golang.org/p/Poth8JS28sc) of why it's a good idea
-to make a copy of a slice after slicing a very large slice.
+[إليك مثالاً](https://play.golang.org/p/bTrRmYfNYCp) على تقطيع مصفوفة،
+وكيف يؤثر تغيير الشريحة في المصفوفة الأصلية، بينما لا تؤثر "نسخة" من الشريحة
+في المصفوفة الأصلية.
+و[مثال آخر](https://play.golang.org/p/Poth8JS28sc) يبيّن لماذا من الجيد
+أخذ نسخة من الشريحة بعد تقطيع شريحة كبيرة جداً.
 
 [for]: ../iteration.md#
 [blog-slice]: https://blog.golang.org/go-slices-usage-and-internals

@@ -128,3 +128,20 @@
 | assignment | إسناد | مقترح |  |
 | operand | طرف | مقترح | طرف العملية؛ لا يُستعمل معامل حتى لا يلتبس بـ parameter |
 | construct | تركيب لغوي | مقترح |  |
+| element | عنصر | مقترح |  |
+| capacity | سعة | مقترح |  |
+| length | طول | مقترح |  |
+| index | فهرس | مقترح |  |
+| blank identifier | المعرّف الفارغ | مقترح | `_` |
+| variadic function | دالة متغيرة الوسطاء | مقترح |  |
+| varargs | الوسطاء المتغيرة | مقترح |  |
+| type safety | أمان الأنواع | مقترح | type-safe: آمن الأنواع |
+| runtime | وقت التشغيل | مقترح | خطأ في وقت التشغيل |
+| compile time | وقت التصريف | مقترح |  |
+| scope | نطاق | مقترح |  |
+| export | تصدير | مقترح | exported: مُصدَّر |
+| underlying array | المصفوفة الأساسية | مقترح |  |
+| shallow comparison | مقارنة سطحية | مقترح |  |
+| comparable | قابل للمقارنة | مقترح |  |
+| Go playground | ساحة تجارب غو | مقترح |  |
+| collection | مجموعة | مقترح |  |
