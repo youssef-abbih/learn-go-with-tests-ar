@@ -77,3 +77,18 @@
 | software design | تصميم البرمجيات | مقترح | |
 | issue | issue | يبقى بالإنجليزية | مصطلح GitHub؛ الجمع يُكتب `issues` |
 | pull request | طلب سحب | مقترح | الاختصار PR يبقى بالإنجليزية |
+| module path | مسار الوحدة النمطية | مقترح |  |
+| dependency management | إدارة التبعيات | مقترح |  |
+| reproducible build | البناء القابل لإعادة الإنتاج | مقترح |  |
+| build | البناء | مقترح | الاسم؛ والفعل: بنى |
+| directory | مجلد | مقترح |  |
+| linter | أداة التدقيق الساكن | مقترح | linting: التدقيق الساكن |
+| magic value | قيمة سحرية | مقترح |  |
+| IDE | بيئة التطوير المتكاملة | مقترح |  |
+| function signature | توقيع الدالة | مقترح |  |
+| source code | الشيفرة المصدرية | مقترح |  |
+| formatter | منسِّق | مقترح |  |
+| symbol | رمز | مقترح |  |
+| context switching | تبديل السياق | مقترح |  |
+| third-party | طرف ثالث | مقترح | الجمع: أطراف ثالثة |
+| documentation | التوثيق | مقترح |  |

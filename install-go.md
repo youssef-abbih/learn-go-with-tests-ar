@@ -1,20 +1,20 @@
-# Install Go, set up environment for productivity
+# تثبيت غو وإعداد بيئة عمل منتجة
 
-The official installation instructions for Go are available [here](https://golang.org/doc/install).
+تعليمات التثبيت الرسمية للغة غو (Go) متاحة [هنا](https://golang.org/doc/install).
 
-## Go Environment
+## بيئة غو
 
-### Go Modules
+### الوحدات النمطية في غو
 
-Go 1.11 introduced [Modules](https://go.dev/wiki/Modules). This approach is the default build mode since Go 1.16, therefore the use of `GOPATH` is not recommended.
+قدّمت غو 1.11 [الوحدات النمطية (modules)](https://go.dev/wiki/Modules). وهذا الأسلوب هو وضع البناء الافتراضي منذ غو 1.16، لذا لا يُنصح باستعمال `GOPATH`.
 
-Modules aim to solve problems related to dependency management, version selection and reproducible builds; they also enable users to run Go code outside of `GOPATH`.
+تهدف الوحدات النمطية إلى حل المشكلات المتعلقة بإدارة التبعيات (dependency management) واختيار الإصدارات والبناء القابل لإعادة الإنتاج (reproducible builds)، كما تتيح للمستخدمين تشغيل شيفرة (code) غو خارج `GOPATH`.
 
-Using Modules is pretty straightforward. Select any directory outside `GOPATH` as the root of your project, and create a new module with the `go mod init` command.
+استعمال الوحدات النمطية سهل جداً. اختر أي مجلد خارج `GOPATH` ليكون جذر مشروعك، وأنشئ وحدة نمطية جديدة بالأمر `go mod init`.
 
-A `go.mod` file will be generated, containing the module path, a Go version, and its dependency requirements, which are the other modules needed for a successful build.
+سيُولَّد ملف `go.mod` يحتوي على مسار الوحدة النمطية (module path) وإصدار غو ومتطلبات التبعيات، أي الوحدات النمطية الأخرى اللازمة لنجاح البناء.
 
-If no `<modulepath>` is specified, `go mod init` will try to guess the module path from the directory structure. It can also be overridden by supplying an argument.
+إن لم تحدد `<modulepath>`، فسيحاول الأمر `go mod init` تخمين مسار الوحدة النمطية من تنظيم المجلدات. ويمكنك أيضاً تجاوز ذلك بتمرير وسيط (argument).
 
 ```sh
 mkdir my-project
@@ -22,7 +22,7 @@ cd my-project
 go mod init <modulepath>
 ```
 
-A `go.mod` file could look like this:
+قد يبدو ملف `go.mod` هكذا:
 
 ```
 module cmd
@@ -31,45 +31,45 @@ go 1.16
 
 ```
 
-The built-in documentation provides an overview of all available `go mod` commands.
+يقدّم التوثيق المدمج نظرة عامة على كل أوامر `go mod` المتاحة.
 
 ```sh
 go help mod
 go help mod init
 ```
 
-## Go Linting
+## التدقيق الساكن في غو
 
-An improvement over the default linter can be configured using [GolangCI-Lint](https://golangci-lint.run).
+يمكنك إعداد أداة تدقيق ساكن (linter) أفضل من الأداة الافتراضية باستعمال [GolangCI-Lint](https://golangci-lint.run).
 
-This can be installed as follows:
+ويمكن تثبيتها كما يلي:
 
 ```sh
 brew install golangci-lint
 ```
 
-## Refactoring and your tooling
+## إعادة الهيكلة وأدواتك
 
-A big emphasis of this book is the importance of refactoring.
+من أهم ما يركز عليه هذا الكتاب أهميةُ إعادة الهيكلة (refactoring).
 
-Your tools can help you do bigger refactoring with confidence.
+ويمكن لأدواتك أن تساعدك على إجراء عمليات إعادة هيكلة أكبر بثقة.
 
-You should be familiar enough with your editor to perform the following with a simple key combination:
+ينبغي أن تعرف محررك جيداً بما يكفي لتنفيذ ما يلي بضغطة مفاتيح بسيطة:
 
-- **Extract/Inline variable**. Taking magic values and giving them a name lets you simplify your code quickly.
-- **Extract method/function**. It is vital to be able to take a section of code and extract functions/methods
-- **Rename**. You should be able to rename symbols across files confidently.
-- **go fmt**. Go has an opinioned formatter called `go fmt`. Your editor should run this on every file saved.
-- **Run tests**. You should be able to do any of the above and then quickly re-run your tests to ensure your refactoring hasn't broken anything.
+- **استخراج متغير أو تضمينه**. أخذ القيم السحرية (magic values) وإعطاؤها اسماً يتيح لك تبسيط شيفرتك بسرعة.
+- **استخراج طريقة أو دالة**. من الضروري أن تستطيع أخذ جزء من الشيفرة واستخراج دوال (functions) أو طرق (methods) منه
+- **إعادة التسمية**. ينبغي أن تستطيع إعادة تسمية الرموز عبر الملفات بثقة.
+- **التنسيق بالأمر `go fmt`**. لدى غو منسِّق صارم في آرائه اسمه `go fmt`. وينبغي أن يشغّله محررك عند حفظ كل ملف.
+- **تشغيل الاختبارات**. ينبغي أن تستطيع فعل أي مما سبق ثم إعادة تشغيل اختباراتك (tests) بسرعة للتأكد من أن إعادة الهيكلة لم تُفسد شيئاً.
 
-In addition, to help you work with your code, you should be able to:
+إضافة إلى ذلك، ولتساعدك على العمل مع شيفرتك، ينبغي أن تستطيع:
 
-- **View function signature**. You should never be unsure how to call a function in Go. Your IDE should describe a function in terms of its documentation, its parameters and what it returns.
-- **View function definition**. If it's still unclear what a function does, you should be able to jump to the source code and try and figure it out yourself.
-- **Find usages of a symbol**. Understanding a function's context can help you make decisions when refactoring.
+- **عرض توقيع الدالة**. لا ينبغي أبداً أن تكون غير متأكد من كيفية استدعاء دالة في غو. يجب أن تصف لك بيئة التطوير المتكاملة (IDE) الدالة من حيث توثيقها ومعاملاتها (parameters) وما تعيده.
+- **عرض تعريف الدالة**. إن ظل غير واضح ما تفعله الدالة، فينبغي أن تستطيع القفز إلى الشيفرة المصدرية ومحاولة فهمها بنفسك.
+- **إيجاد مواضع استعمال رمز ما**. فهم سياق الدالة يساعدك على اتخاذ القرارات عند إعادة الهيكلة.
 
-Mastering your tools will help you concentrate on the code and reduce context switching.
+إتقان أدواتك سيساعدك على التركيز على الشيفرة ويقلل من تبديل السياق.
 
-## Wrapping up
+## الخلاصة
 
-At this point, you should have Go installed, an editor available, and some basic tooling in place. Go has a very large ecosystem of third-party products. We have identified a few useful components here. For a more complete list, see [https://awesome-go.com](https://awesome-go.com).
+في هذه المرحلة، ينبغي أن تكون قد ثبّتّ غو، وأن يكون لديك محرر، وبعض الأدوات الأساسية جاهزة. لدى غو منظومة كبيرة جداً من منتجات الأطراف الثالثة، وقد أشرنا هنا إلى بعض المكونات المفيدة. وراجع [https://awesome-go.com](https://awesome-go.com) للاطلاع على قائمة أشمل.
