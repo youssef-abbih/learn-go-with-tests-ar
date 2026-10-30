@@ -433,3 +433,6 @@
 | ticker | مؤقّت دوري | مقترح |  |
 | synchronization point | نقطة تزامن | مقترح |  |
 | timer heap | كومة المؤقّتات | مقترح |  |
+| atomic | ذرّي | مقترح | sync/atomic |
+| invariant | ثابت منطقي | مقترح | قد يلتبس مع ثابت (constant) |
+| ad hoc polymorphism | تعدد الأشكال المخصص | مقترح |  |
