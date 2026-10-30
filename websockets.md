@@ -1,6 +1,6 @@
 # الاتصال عبر WebSockets
 
-**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/websockets)**
+[**تجد كل شيفرة هذا الفصل هنا**](https://github.com/quii/learn-go-with-tests/tree/main/websockets)
 
 سنتعلم في هذا الفصل كيف نستعمل WebSockets لتحسين تطبيقنا.
 
@@ -84,6 +84,7 @@ func TestGame(t *testing.T) {
 ```
 
 ## حاول تشغيل الاختبار
+
 ```
 --- FAIL: TestGame (0.00s)
 === RUN   TestGame/GET_/game_returns_200
@@ -135,7 +136,6 @@ func TestGame(t *testing.T) {
 علينا الآن جعل نقطة النهاية تعيد بعض HTML، وإليك ذلك
 
 ```html
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -254,6 +254,7 @@ t.Run("when we get a message over a websocket it is a winner of a game", func(t 
 وأخيراً، نؤكد على مخزن اللاعبين للتحقق من أن الفائز قد سُجّل.
 
 ## حاول تشغيل الاختبار
+
 ```
 === RUN   TestGame/when_we_get_a_message_over_a_websocket_it_is_a_winner_of_a_game
     --- FAIL: TestGame/when_we_get_a_message_over_a_websocket_it_is_a_winner_of_a_game (0.00s)

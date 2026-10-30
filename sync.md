@@ -149,14 +149,37 @@ t.Run("it runs safely concurrently", func(t *testing.T) {
 ## حاول تشغيل الاختبار
 
 ```
-=== RUN   TestCounter/it_runs_safely_in_a_concurrent_envionment
+=== RUN   TestCounter/it_runs_safely_concurrently
 --- FAIL: TestCounter (0.00s)
-    --- FAIL: TestCounter/it_runs_safely_in_a_concurrent_envionment (0.00s)
+    --- FAIL: TestCounter/it_runs_safely_concurrently (0.00s)
     	sync_test.go:26: got 939, want 1000
 FAIL
 ```
 
 _على الأرجح_ سيفشل الاختبار بعدد مختلف، لكنه يبيّن على أي حال أن العدّاد لا يعمل حين تحاول عدة `goroutines` تغيير قيمته في الوقت نفسه.
+
+### لماذا يحدث هذا؟
+
+يبدو `c.value++` عملية واحدة غير قابلة للتجزئة، لكنه ليس كذلك. فهو اختصار لشيء أقرب إلى:
+
+```go
+tmp := c.value // 1. read
+tmp = tmp + 1  // 2. increment
+c.value = tmp  // 3. write
+```
+
+كل خطوة من هذه الخطوات الثلاث عملية منفصلة، ووقت تشغيل غو حرّ في التبديل بين الـ`goroutines` في أي لحظة بينها. فإن استدعت اثنتان من الـ`goroutines` الطريقة `Inc` في الوقت نفسه تقريباً، فقد تتداخل خطواتهما، مثلاً:
+
+```
+goroutine A: reads c.value (0)
+goroutine B: reads c.value (0)
+goroutine A: increments its copy to 1
+goroutine B: increments its copy to 1
+goroutine A: writes c.value = 1
+goroutine B: writes c.value = 1
+```
+
+استدعت كل `goroutine` من الاثنتين `Inc` مرة واحدة، فكنا نريد أن تصبح قيمة `c.value` في النهاية `2`، لكنها تصبح `1`. فقد ضاعت إحدى الزيادتين بصمت، لأن الـ`goroutines` كلتيهما قرأتا قيمة البداية نفسها قبل أن تكتب أي منهما نتيجتها. وهذا ما يُسمى _تسابقاً_ (race condition)، ومع ألف `goroutine` تتسابق كلها للقراءة والزيادة والكتابة في آن واحد، فلا عجب أن تضيع بعض تلك الزيادات.
 
 ## اكتب ما يكفي من الشيفرة لينجح الاختبار
 
@@ -245,12 +268,39 @@ func NewCounter() *Counter {
 
 استعمل هذه الدالة في اختباراتك عند تهيئة `Counter`.
 
+## بديل آخر: الحزمة sync/atomic
+
+النوع `Mutex` أداة عامة الغرض، فهو يستطيع حماية أي عدد من الحقول وأي ثابت منطقي (invariant) يربط بينها، ما دمت تتذكر استدعاء `Lock` و`Unlock` حول كل وصول. لكن `Counter` لدينا من أبسط ما يمكن أن تكون عليه الحالة المشتركة: عدد صحيح واحد تزيده عدة `goroutines`. ولهذا النوع من الحالات بالضبط، توفر الحزمة [`sync/atomic`](https://pkg.go.dev/sync/atomic) أنواعاً مثل [`atomic.Int64`](https://pkg.go.dev/sync/atomic#Int64) تمنحك وصولاً متزامناً آمناً إلى قيمة واحدة دون قفل منفصل على الإطلاق:
+
+```go
+type Counter struct {
+	value atomic.Int64
+}
+
+func NewCounter() *Counter {
+	return &Counter{}
+}
+
+func (c *Counter) Inc() {
+	c.value.Add(1)
+}
+
+func (c *Counter) Value() int64 {
+	return c.value.Load()
+}
+```
+
+لا `Mutex`، ولا `Lock` أو `Unlock`، ومع ذلك يظل استدعاء `Inc` آمناً من أي عدد تشاء من الـ`goroutines` في آن واحد، والاختبار نفسه الذي كتبناه سابقاً ينجح دون تغيير. ففي الخفاء تستعمل هذه الأنواع تعليمات منخفضة المستوى في المعالج لتجعل الزيادة نفسها ذرّية (atomic)، وهذا عادةً أسرع من `Mutex` في الحالات البسيطة كهذه. كما أن `atomic.Int64` (وأشقاءه، مثل `atomic.Int32` و`atomic.Bool`) لا يمكن استعمالها استعمالاً خاطئاً على النحو الذي كان ممكناً مع استدعاءات الدوال الخام من نوع `atomic.AddInt64(&x, 1)` في إصدارات غو الأقدم، فلا يمكنك أن تنسى تمرير مؤشر، ولا يمكنك قراءة الحقل خطأً دون المرور بـ`Load`.
+
+استعمل أنواع `sync/atomic` حين تحمي قيمة واحدة، واستعمل `Mutex` حين تحتاج إلى إبقاء عدة حقول، أو ثابت منطقي يربط بينها، متسقة معاً.
+
 ## الخلاصة
 
 تناولنا بعض الأشياء من [الحزمة sync](https://golang.org/pkg/sync/)
 
 - يتيح لنا `Mutex` إضافة أقفال إلى بياناتنا
 - و`WaitGroup` وسيلة لانتظار الـ`goroutines` حتى تنهي أعمالها
+- وتوفر الحزمة `sync/atomic` وصولاً آمناً بلا أقفال إلى القيم المفردة، ويستحق اللجوء إليها حين يكون `Mutex` كامل مبالغة
 
 ### متى تستعمل الأقفال بدلاً من القنوات والـ`goroutines`؟
 

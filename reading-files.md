@@ -12,6 +12,7 @@
 ### بيانات المثال
 
 الملف `hello world.md`
+
 ```markdown
 Title: Hello, TDD world!
 Description: First post on our wonderful blog
@@ -99,10 +100,10 @@ posts = blogposts.NewPostsFromFS(someFS)
 
 أنشئ مشروعاً جديداً لتعمل عليه خلال هذا الفصل.
 
-- `mkdir blogposts`
-- `cd blogposts`
-- `go mod init github.com/{your-name}/blogposts`
-- `touch blogposts_test.go`
+* `mkdir blogposts`
+* `cd blogposts`
+* `go mod init github.com/{your-name}/blogposts`
+* `touch blogposts_test.go`
 
 ```go
 package blogposts_test
@@ -124,7 +125,6 @@ func TestNewBlogPosts(t *testing.T) {
 		t.Errorf("got %d posts, wanted %d posts", len(posts), len(fs))
 	}
 }
-
 ```
 
 لاحظ أن حزمة اختبارنا هي `blogposts_test`. وتذكّر أنه حين يُمارس `TDD` جيداً فإننا نتبع أسلوباً _مقاداً بالمستهلك_: فلا نريد اختبار التفاصيل الداخلية لأن _المستهلكين_ لا يهتمون بها. وبإلحاق `_test` باسم الحزمة المقصودة، لا نصل إلا إلى العناصر المُصدَّرة من حزمتنا، تماماً كما يفعل مستخدم حقيقي لها.
@@ -284,6 +284,7 @@ func (s StubFailingFS) Open(name string) (fs.File, error) {
 	return nil, errors.New("oh no, i always fail")
 }
 ```
+
 ```go
 // later
 _, err := blogposts.NewPostsFromFS(StubFailingFS{})
@@ -300,6 +301,7 @@ _, err := blogposts.NewPostsFromFS(StubFailingFS{})
 سنبدأ بالسطر الأول من مخطط التدوينة المقترح، أي حقل العنوان.
 
 علينا تغيير محتويات ملفات الاختبار لتطابق ما حُدد، ثم يمكننا إجراء توكيد (assertion) على أنه يُحلَّل بشكل صحيح.
+
 ```go
 func TestNewBlogPosts(t *testing.T) {
 	fs := fstest.MapFS{
@@ -318,6 +320,7 @@ func TestNewBlogPosts(t *testing.T) {
 ```
 
 ## حاول تشغيل الاختبار
+
 ```
 ./blogpost_test.go:58:26: unknown field 'Title' in struct literal of type blogposts.Post
 ```
@@ -384,7 +387,7 @@ func getPost(fileSystem fs.FS, f fs.DirEntry) (Post, error) {
 
 لقد منحنا الأسلوب التكراري تغذية راجعة سريعة بأن فهمنا للمتطلبات غير مكتمل.
 
-تتيح لنا `fs.FS` فتح ملف داخلها باسمه عبر طريقتها `Open`. ومن هناك نقرأ البيانات من الملف، ولا نحتاج الآن إلى أي تحليل متطور، بل نقتطع فقط النص `Title: ` بتقطيع السلسلة النصية.
+تتيح لنا `fs.FS` فتح ملف داخلها باسمه عبر طريقتها `Open`. ومن هناك نقرأ البيانات من الملف، ولا نحتاج الآن إلى أي تحليل متطور، بل نقتطع فقط النص `Title:` بتقطيع السلسلة النصية.
 
 ## أعد الهيكلة
 
@@ -769,11 +772,11 @@ func newPost(postBody io.Reader) (Post, error) {
 
 	scanner.Scan() // ignore a line
 
-	buf := bytes.Buffer{}
+	var b strings.Builder
 	for scanner.Scan() {
-		fmt.Fprintln(&buf, scanner.Text())
+		fmt.Fprintln(&b, scanner.Text())
 	}
-	body := strings.TrimSuffix(buf.String(), "\n")
+	body := strings.TrimSuffix(b.String(), "\n")
 
 	return Post{
 		Title:       title,
@@ -811,11 +814,11 @@ func newPost(postBody io.Reader) (Post, error) {
 
 func readBody(scanner *bufio.Scanner) string {
 	scanner.Scan() // ignore a line
-	buf := bytes.Buffer{}
+	var b strings.Builder
 	for scanner.Scan() {
-		fmt.Fprintln(&buf, scanner.Text())
+		fmt.Fprintln(&b, scanner.Text())
 	}
-	return strings.TrimSuffix(buf.String(), "\n")
+	return strings.TrimSuffix(b.String(), "\n")
 }
 ```
 

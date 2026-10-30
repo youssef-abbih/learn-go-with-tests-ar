@@ -485,17 +485,17 @@ func assertScoreEquals(t testing.TB, got, want int) {
 
 تنشئ [CreateTemp](https://pkg.go.dev/os#CreateTemp) ملفاً مؤقتاً لنستعمله. والقيمة `"db"` التي مررناها بادئة تُوضع على اسم ملف عشوائي ستنشئه. وهذا لضمان ألا يتعارض مع ملفات أخرى عن طريق الخطأ.
 
-ستلاحظ أننا لا نعيد `ReadWriteSeeker` (الملف) فقط، بل دالة أيضاً. فعلينا التأكد من حذف الملف بمجرد انتهاء الاختبار. ولا نريد تسريب تفاصيل الملفات إلى الاختبار، لأن ذلك عرضة للأخطاء وغير مثير لاهتمام القارئ. وبإعادة الدالة `removeFile` يمكننا الاعتناء بالتفاصيل في دالتنا المساعدة، وكل ما على المستدعي فعله هو تنفيذ `defer cleanDatabase()`.
+ستلاحظ أننا لا نعيد `ReadWriteSeeker` (الملف) فقط، بل دالة أيضاً. فعلينا التأكد من حذف الملف بمجرد انتهاء الاختبار. ولا نريد تسريب تفاصيل الملفات إلى الاختبار، لأن ذلك عرضة للأخطاء وغير مثير لاهتمام القارئ. وبإعادة الدالة `removeFile` يمكننا الاعتناء بالتفاصيل في دالتنا المساعدة، وكل ما على المستدعي فعله هو تنفيذ `defer removeFile()`.
 
 ```go
 //file_system_store_test.go
 func TestFileSystemStore(t *testing.T) {
 
 	t.Run("league from a reader", func(t *testing.T) {
-		database, cleanDatabase := createTempFile(t, `[
+		database, removeFile := createTempFile(t, `[
 			{"Name": "Cleo", "Wins": 10},
 			{"Name": "Chris", "Wins": 33}]`)
-		defer cleanDatabase()
+		defer removeFile()
 
 		store := FileSystemPlayerStore{database}
 
@@ -514,10 +514,10 @@ func TestFileSystemStore(t *testing.T) {
 	})
 
 	t.Run("get player score", func(t *testing.T) {
-		database, cleanDatabase := createTempFile(t, `[
+		database, removeFile := createTempFile(t, `[
 			{"Name": "Cleo", "Wins": 10},
 			{"Name": "Chris", "Wins": 33}]`)
-		defer cleanDatabase()
+		defer removeFile()
 
 		store := FileSystemPlayerStore{database}
 
@@ -535,10 +535,10 @@ func TestFileSystemStore(t *testing.T) {
 ```go
 //file_system_store_test.go
 t.Run("store wins for existing players", func(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, `[
+	database, removeFile := createTempFile(t, `[
 		{"Name": "Cleo", "Wins": 10},
 		{"Name": "Chris", "Wins": 33}]`)
-	defer cleanDatabase()
+	defer removeFile()
 
 	store := FileSystemPlayerStore{database}
 
@@ -660,10 +660,10 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 ```go
 //file_system_store_test.go
 t.Run("store wins for new players", func(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, `[
+	database, removeFile := createTempFile(t, `[
 		{"Name": "Cleo", "Wins": 10},
 		{"Name": "Chris", "Wins": 33}]`)
-	defer cleanDatabase()
+	defer removeFile()
 
 	store := FileSystemPlayerStore{database}
 
@@ -710,8 +710,8 @@ func (f *FileSystemPlayerStore) RecordWin(name string) {
 
 ```go
 //server_integration_test.go
-database, cleanDatabase := createTempFile(t, "")
-defer cleanDatabase()
+database, removeFile := createTempFile(t, "")
+defer removeFile()
 store := &FileSystemPlayerStore{database}
 ```
 
@@ -951,6 +951,8 @@ func NewFileSystemPlayerStore(file *os.File) *FileSystemPlayerStore {
 }
 ```
 
+تنتقل `tape.Write` إلى بداية الملف في _كل_ استدعاء، لذا يستحق الأمر أن نتوقف لنتحقق من أن هذا الجمع آمن فعلاً: فلو استدعت `Encode` الطريقة `Write` أكثر من مرة في استدعاء واحد، لعادت كل عملية كتابة لاحقة إلى البداية وكتبت فوق السابقة، فتفسد المخرجات. لكنها لا تفعل ذلك، إذ تحوّل `Encoder.Encode` دائماً القيمة كاملة إلى صيغتها التسلسلية في الذاكرة أولاً، ثم تسلّمها إلى `Writer` الأساسي في استدعاء `Write` واحد، فلا تنتقل `tape` إلا مرة واحدة لكل `Encode`، وهذا بالضبط سلوك "الكتابة دائماً من البداية" الذي نريده.
+
 استعمله في `RecordWin`.
 
 ```go
@@ -1000,9 +1002,9 @@ type ReadWriteSeekTruncate interface {
 
 قبل أن نبدأ العمل على الترتيب، ينبغي أن نتأكد من رضانا عن شيفرتنا الحالية ونزيل أي دَين تقني قد يكون لدينا. فمن المبادئ المهمة الوصول إلى برنامج يعمل بأسرع ما يمكن (البقاء خارج الحالة الحمراء)، لكن هذا لا يعني أن نتجاهل حالات الخطأ!
 
-إن عدنا إلى `FileSystemStore.go` فسنجد في الدالة البانية `league, _ := NewLeague(f.database)`.
+إن عدنا إلى `file_system_store.go` فسنجد في الدالة البانية `league, _ := NewLeague(file)`.
 
-يمكن أن تعيد `NewLeague` خطأً (error) إن لم تستطع تحليل الدوري من `io.Reader` الذي نقدّمه.
+يمكن أن تعيد `NewLeague` خطأً (error) إن لم تستطع تحليل الدوري من `*os.File` الذي نقدّمه.
 
 كان من العملي تجاهل ذلك في حينه لأن لدينا بالفعل اختبارات فاشلة. ولو حاولنا معالجته في الوقت نفسه، لكنا نتلاعب بأمرين معاً.
 
@@ -1084,7 +1086,7 @@ func assertNoError(t testing.TB, err error) {
 ```go
 //server_integration_test.go
 func TestRecordingWinsAndRetrievingThem(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, `[]`)
+	database, removeFile := createTempFile(t, `[]`)
 	//etc...
 }
 ```
@@ -1096,8 +1098,8 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 ```go
 //file_system_store_test.go
 t.Run("works with an empty file", func(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, "")
-	defer cleanDatabase()
+	database, removeFile := createTempFile(t, "")
+	defer removeFile()
 
 	_, err := NewFileSystemPlayerStore(database)
 
@@ -1209,10 +1211,10 @@ func NewFileSystemPlayerStore(file *os.File) (*FileSystemPlayerStore, error) {
 ```go
 //file_system_store_test.go
 t.Run("league sorted", func(t *testing.T) {
-	database, cleanDatabase := createTempFile(t, `[
+	database, removeFile := createTempFile(t, `[
 		{"Name": "Cleo", "Wins": 10},
 		{"Name": "Chris", "Wins": 33}]`)
-	defer cleanDatabase()
+	defer removeFile()
 
 	store, err := NewFileSystemPlayerStore(database)
 

@@ -1,6 +1,6 @@
 # المؤشرات والأخطاء
 
-**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/pointers)**
+[**تجد كل شيفرة هذا الفصل هنا**](https://github.com/quii/learn-go-with-tests/tree/main/pointers)
 
 تعلّمنا في القسم السابق عن البنى (structs)، التي تتيح لنا جمع عدد من القيم المترابطة حول مفهوم واحد.
 
@@ -28,7 +28,7 @@ func TestWallet(t *testing.T) {
 }
 ```
 
-في [المثال السابق](./structs-methods-and-interfaces.md) وصلنا إلى الحقول مباشرة باسم الحقل، لكننا في _محفظتنا الآمنة جداً_ لا نريد أن نكشف حالتنا الداخلية لبقية العالم، بل نريد التحكم بالوصول عبر الطرق.
+في [المثال السابق](structs-methods-and-interfaces.md) وصلنا إلى الحقول مباشرة باسم الحقل، لكننا في _محفظتنا الآمنة جداً_ لا نريد أن نكشف حالتنا الداخلية لبقية العالم، بل نريد التحكم بالوصول عبر الطرق.
 
 ## حاول تشغيل الاختبار
 
@@ -143,7 +143,7 @@ func (w Wallet) Deposit(amount int) {
 
 أعد الآن تشغيل الاختبار
 
-```text
+```
 address of balance in Deposit is 0xc420012268
 address of balance in test is 0xc420012260
 ```
@@ -245,12 +245,26 @@ func (b Bitcoin) String() string {
 
 كما ترى، صياغة إنشاء طريقة على نوع مصرّح عنه هي نفسها صياغة إنشائها على بنية.
 
-بعد ذلك علينا تحديث سلاسل التنسيق في اختبارنا لتستعمل `String()` بدلاً من ذلك.
+لم نكن منضبطين هنا: فقد أضفنا طريقة دون أن نكتب لها اختباراً أولاً. لا بأس، فلسنا قديسين دائماً، لكن لا ينبغي أن نتغاضى عن ذلك أيضاً. فتشغيل `go test -cover` سيُظهر لنا أن `String` غير مغطاة، وهذا دافع جيد للعودة والتساؤل عما إذا كان اختبارها بأثر رجعي يستحق العناء. لا ينبغي أن نطارد تغطية 100% لذاتها، لكن في هذه الحالة لدى `String` منطقها الخاص (`fmt.Sprintf`) الذي يستحق التثبيت، فلنضف اختباراً.
 
 ```go
+t.Run("Bitcoin String", func(t *testing.T) {
+	btc := Bitcoin(10)
+	got := btc.String()
+	want := "10 BTC"
+
 	if got != want {
 		t.Errorf("got %s want %s", got, want)
 	}
+})
+```
+
+بعد ذلك علينا تحديث سلاسل التنسيق في اختبارنا لتستعمل `String()` بدلاً من ذلك.
+
+```go
+if got != want {
+	t.Errorf("got %s want %s", got, want)
+}
 ```
 
 لترى هذا عملياً، أفشل الاختبار عمداً كي نراه
@@ -652,6 +666,46 @@ func assertError(t testing.TB, got error, want error) {
 	}
 }
 ```
+
+## إضافة السياق بتغليف الأخطاء
+
+مقارنة `err` بـ`ErrInsufficientFunds` تعمل جيداً هنا لأن `Withdraw` هي الشيء الوحيد الذي يمكن أن ينتجها. لكن البرامج الحقيقية لها طبقات، فقد يستعمل `Bank` محفظةً من النوع `Wallet`، ويستعمل `Bank` بدوره معالجُ HTTP، وهكذا. وإن كانت كل طبقة تعيد ببساطة الخطأ الذي تلقته دون تغيير، فكل ما يراه مستدعٍ على بعد عدة طبقات هو `insufficient funds`، دون أي فكرة عن الحساب أو العملية التي فشلت فعلاً.
+
+لنفترض أن لدينا دالة تعالج عملية سحب لحساب مسمّى:
+
+```go
+func ProcessWithdrawal(wallet *Wallet, accountID string, amount Bitcoin) error {
+	if err := wallet.Withdraw(amount); err != nil {
+		return fmt.Errorf("processing withdrawal for account %s: %w", accountID, err)
+	}
+	return nil
+}
+```
+
+فعل التنسيق `%w` (الذي قُدّم في غو 1.13) يشبه `%v` في أنه يضع مكانه السلسلة النصية لـ`err`، لكنه يفعل أيضاً شيئاً لا يفعله `%v`: فهو _يغلّف_ `err` داخل الخطأ الجديد الذي تعيده `fmt.Errorf`، بدلاً من مجرد نسخ رسالته إلى سلسلة نصية جديدة لا صلة لها به. جرّبه:
+
+```go
+wallet := Wallet{Bitcoin(10)}
+err := ProcessWithdrawal(&wallet, "acc-123", Bitcoin(100))
+fmt.Println(err)
+// processing withdrawal for account acc-123: cannot withdraw, insufficient funds
+```
+
+لقد احتفظنا بالسياق المفيد ("أي حساب، وأي عملية") دون أن نفقد تفاصيل ما حدث خطأً فعلاً في الأسفل.
+
+### التحقق من الأخطاء المغلَّفة
+
+الآن وقد صارت `ProcessWithdrawal` تعيد قيمة خطأ _مختلفة_ عن `ErrInsufficientFunds`، فإن المقارنة بـ`==` (أو بدالتنا المساعدة `assertError` أعلاه) ستفشل، رغم أن السبب الأساسي هو نفسه. وهذه بالضبط المشكلة التي تحلها [`errors.Is`](https://pkg.go.dev/errors#Is)، فهي تفحص سلسلة الأخطاء المغلَّفة كلها، لا الخطأ الخارجي وحده:
+
+```go
+if errors.Is(err, ErrInsufficientFunds) {
+	// still true, even though err's message now also mentions the account
+}
+```
+
+تعمل `errors.Is` باستدعاء [`errors.Unwrap`](https://pkg.go.dev/errors#Unwrap) مراراً على `err` (وهي تعرف كيف تستخرج الخطأ المغلَّف، لأن `fmt.Errorf` مع `%w` تنتج قيمة لها الطريقة `Unwrap() error`) حتى تجد تطابقاً أو تنفد الأخطاء التي يمكن فك تغليفها. وسترى `errors.Is` مستعملة مرة أخرى لهذا السبب بالضبط في الدالة المساعدة `assertError` في فصل [الخرائط](maps.md) بدلاً من `==`، فهي خيار افتراضي آمن يعمل أيضاً مع الأخطاء التي لم تُغلَّف أصلاً.
+
+وإن احتجت إلى استخراج خطأ _ذي نوع محدد_ (بدلاً من المقارنة بقيمة حارسة مثل `ErrInsufficientFunds`) من سلسلة أخطاء مغلَّفة، فهناك دالة مقابلة لذلك أيضاً: [`errors.As`](https://pkg.go.dev/errors#As). ويتناول فصل [أنواع الأخطاء](error-types.md) ذلك بمزيد من التعمق.
 
 ## الخلاصة
 

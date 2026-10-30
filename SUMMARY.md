@@ -41,6 +41,7 @@
 * [الإدخال والإخراج والترتيب](io.md)
 * [سطر الأوامر وبنية الحزم](command-line.md)
 * [الوقت](time.md)
+* [عودة إلى الوقت مع `testing/synctest`](revisiting-time-with-synctest.md)
 * [الاتصال عبر WebSockets](websockets.md)
 
 ## أسئلة وأجوبة

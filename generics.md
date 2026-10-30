@@ -94,7 +94,7 @@ func AssertNotEqual(got, want interface{})
 
 ### المشكلة في `interface{}`
 
-دوالنا `AssertX` ساذجة إلى حد ما، لكنها من حيث المفهوم لا تختلف كثيراً عن الطريقة التي [توفر بها مكتبات شائعة أخرى هذه الوظيفة](https://github.com/matryer/is/blob/master/is.go#L150)
+دوالنا `AssertX` ساذجة إلى حد ما، لكنها من حيث المفهوم لا تختلف كثيراً عن الطريقة التي [توفر بها مكتبات شائعة أخرى هذه الوظيفة](https://github.com/matryer/is/blob/master/is.go#L160)
 
 ```go
 func (is *I) Equal(a, b interface{})

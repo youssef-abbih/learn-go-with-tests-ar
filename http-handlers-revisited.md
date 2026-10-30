@@ -1,6 +1,6 @@
 # عودة إلى معالجات HTTP
 
-**[تجد كل الشيفرة هنا](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)**
+[**تجد كل الشيفرة هنا**](https://github.com/quii/learn-go-with-tests/tree/main/q-and-a/http-handlers-revisited)
 
 في هذا الكتاب فصل بالفعل عن [اختبار معالج HTTP](http-server.md)، لكن هذا الفصل سيتضمن نقاشاً أوسع حول تصميمها، بحيث تكون بسيطة الاختبار.
 
@@ -120,10 +120,10 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 
 حين تفصل هذه الاهتمامات:
 
- - يصبح اختبار المعالجات يسيراً، ويركز على عدد صغير من الاهتمامات.
- - والأهم أن اختبار `ImportantBusinessLogic` لم يعد يحتاج إلى الاهتمام بـ`HTTP`، فيمكنك اختبار منطق الأعمال بنظافة.
- - يمكنك استعمال `ImportantBusinessLogic` في سياقات أخرى دون الحاجة إلى تعديلها.
- - وإن غيّرت `ImportantBusinessLogic` ما تفعله، فما دامت الواجهة (interface) باقية كما هي فلا تحتاج إلى تغيير معالجاتك.
+* يصبح اختبار المعالجات يسيراً، ويركز على عدد صغير من الاهتمامات.
+* والأهم أن اختبار `ImportantBusinessLogic` لم يعد يحتاج إلى الاهتمام بـ`HTTP`، فيمكنك اختبار منطق الأعمال بنظافة.
+* يمكنك استعمال `ImportantBusinessLogic` في سياقات أخرى دون الحاجة إلى تعديلها.
+* وإن غيّرت `ImportantBusinessLogic` ما تفعله، فما دامت الواجهة (interface) باقية كما هي فلا تحتاج إلى تغيير معالجاتك.
 
 ## المعالجات في غو
 
@@ -143,8 +143,8 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 
 وهي تنسجم جيداً مع التعليق أعلاه:
 
-- تأخذ [`http.Request`](https://golang.org/pkg/net/http/#Request)، وهو مجرد حزمة من البيانات نفحصها ونحللها ونتحقق من صحتها.
-- > [تستعمل معالجات HTTP الواجهة `http.ResponseWriter` لبناء استجاباتها.](https://golang.org/pkg/net/http/#ResponseWriter)
+* تأخذ [`http.Request`](https://golang.org/pkg/net/http/#Request)، وهو مجرد حزمة من البيانات نفحصها ونحللها ونتحقق من صحتها.
+* > [تستعمل معالجات HTTP الواجهة `http.ResponseWriter` لبناء استجاباتها.](https://golang.org/pkg/net/http/#ResponseWriter)
 
 ### مثال اختبار بسيط جداً
 

@@ -196,7 +196,7 @@ Tags: <ul><li>go</li><li>tdd</li></ul>`
 
 ```go
 func Render(w io.Writer, p Post) error {
-	_, err := fmt.Fprintf(w, "<h1>%s</h1><p>%s</p>", p.Title, p.Description)
+	_, err := fmt.Fprintf(w, "<h1>%s</h1>\n<p>%s</p>\n", p.Title, p.Description)
 	if err != nil {
 		return err
 	}
@@ -268,11 +268,7 @@ func Render(w io.Writer, p Post) error {
 		return err
 	}
 
-	if err := templ.Execute(w, p); err != nil {
-		return err
-	}
-
-	return nil
+	return templ.Execute(w, p)
 }
 ```
 
@@ -318,11 +314,7 @@ func Render(w io.Writer, p Post) error {
 		return err
 	}
 
-	if err := templ.Execute(w, p); err != nil {
-		return err
-	}
-
-	return nil
+	return templ.Execute(w, p)
 }
 ```
 
@@ -368,7 +360,7 @@ Tags: <ul>{{range .Tags}}<li>{{.}}</li>{{end}}</ul>
 
 الفكرة تشبه الملفات "الذهبية" أو اختبار اللقطات. فبدلاً من صيانة السلاسل النصية بعناء داخل ملف اختبار، تستطيع أداة الموافقة مقارنة المخرجات لك بملف "معتمد" أنشأته. ثم تنسخ ببساطة النسخة الجديدة إن وافقت عليها. أعد تشغيل الاختبار فتعود إلى الأخضر.
 
-أضف تبعية على `"github.com/approvals/go-approval-tests"` إلى مشروعك، وعدّل الاختبار إلى ما يلي
+أضف تبعية على `"github.com/approvals/go-approval-tests"` (بالأمر `go get github.com/approvals/go-approval-tests`) إلى مشروعك، وعدّل الاختبار إلى ما يلي
 
 ```go
 func TestRender(t *testing.T) {
@@ -531,11 +523,7 @@ func Render(w io.Writer, p Post) error {
 		return err
 	}
 
-	if err := templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
-		return err
-	}
-
-	return nil
+	return templ.ExecuteTemplate(w, "blog.gohtml", p)
 }
 ```
 
@@ -557,8 +545,7 @@ func BenchmarkRender(b *testing.B) {
 		}
 	)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		blogrenderer.Render(io.Discard, aPost)
 	}
 }
@@ -587,12 +574,7 @@ func NewPostRenderer() (*PostRenderer, error) {
 }
 
 func (r *PostRenderer) Render(w io.Writer, p Post) error {
-
-	if err := r.templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
-		return err
-	}
-
-	return nil
+	return r.templ.ExecuteTemplate(w, "blog.gohtml", p)
 }
 ```
 
@@ -646,8 +628,7 @@ func BenchmarkRender(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		postRenderer.Render(io.Discard, aPost)
 	}
 }
@@ -947,8 +928,7 @@ var (
 )
 
 type PostRenderer struct {
-	templ    *template.Template
-	mdParser *parser.Parser
+	templ *template.Template
 }
 
 func NewPostRenderer() (*PostRenderer, error) {
@@ -957,14 +937,11 @@ func NewPostRenderer() (*PostRenderer, error) {
 		return nil, err
 	}
 
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	parser := parser.NewWithExtensions(extensions)
-
-	return &PostRenderer{templ: templ, mdParser: parser}, nil
+	return &PostRenderer{templ: templ}, nil
 }
 
 func (r *PostRenderer) Render(w io.Writer, p Post) error {
-	return r.templ.ExecuteTemplate(w, "blog.gohtml", newPostVM(p, r))
+	return r.templ.ExecuteTemplate(w, "blog.gohtml", newPostVM(p))
 }
 
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
@@ -976,14 +953,18 @@ type postViewModel struct {
 	HTMLBody template.HTML
 }
 
-func newPostVM(p Post, r *PostRenderer) postViewModel {
+func newPostVM(p Post) postViewModel {
 	vm := postViewModel{Post: p}
-	vm.HTMLBody = template.HTML(markdown.ToHTML([]byte(p.Body), r.mdParser, nil))
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+	mdParser := parser.NewWithExtensions(extensions)
+	vm.HTMLBody = template.HTML(markdown.ToHTML([]byte(p.Body), mdParser, nil))
 	return vm
 }
 ```
 
 استعملت مكتبة [gomarkdown](https://github.com/gomarkdown/markdown) الممتازة التي عملت تماماً كما كنت آمل.
+
+لاحظ أننا ننشئ `parser.Parser` جديداً في كل استدعاء لـ`newPostVM`، بدلاً من إنشائه مرة واحدة وتخزينه في `PostRenderer`. عادةً، إن استطعت إنشاء شيء مرة واحدة وإعادة استعماله، فهذا يستحق الفعل، لأنه يوفر كلفة الإنشاء المتكرر. لكن هذه الغريزة العامة لا تصح هنا: فمحلل gomarkdown يحتفظ بحالة داخلية أثناء بنائه شجرة المستند، وليس آمناً لإعادة الاستعمال عبر عدة استدعاءات لـ`Parse`، وستواجه إطلاق ذعر (panic) (أو، في الإصدارات الأقدم، خطأً أقل فائدة بكثير هو إلغاء الإشارة إلى مؤشر `nil`) في المرة الثانية التي تستعمل فيها المحلل نفسه. وبما أن `PostRenderer` يُفترض أن يعرض بـ`Render` منشورات كثيرة طوال عمره، فإن إنشاء محلل جديد في كل استدعاء هو الطريقة الصحيحة لاستعماله، وهو رخيص على أي حال، لأن إنشاءه أمر تافه مقارنة بعمل التحليل نفسه.
 
 إن حاولت فعل هذا بنفسك، فربما وجدت أن عرض المتن عندك قد هرّب HTML. وهذه ميزة أمنية في الحزمة `html/template` في غو لمنع إخراج HTML خبيث من طرف ثالث.
 

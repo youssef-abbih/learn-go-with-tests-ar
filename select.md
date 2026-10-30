@@ -50,11 +50,17 @@ func Racer(a, b string) (winner string) {
 ```go
 func Racer(a, b string) (winner string) {
 	startA := time.Now()
-	http.Get(a)
+	resp, err := http.Get(a)
+	if err == nil {
+		resp.Body.Close()
+	}
 	aDuration := time.Since(startA)
 
 	startB := time.Now()
-	http.Get(b)
+	resp, err = http.Get(b)
+	if err == nil {
+		resp.Body.Close()
+	}
 	bDuration := time.Since(startB)
 
 	if aDuration < bDuration {
@@ -68,7 +74,7 @@ func Racer(a, b string) (winner string) {
 نفعل ما يلي لكل عنوان URL على حدة:
 
 1. نستعمل `time.Now()` لتسجيل الوقت قبل أن نحاول جلب `URL` مباشرة.
-1. ثم نستعمل [`http.Get`](https://golang.org/pkg/net/http/#Client.Get) لمحاولة تنفيذ طلب HTTP من نوع `GET` إلى `URL`. تعيد هذه الدالة [`http.Response`](https://golang.org/pkg/net/http/#Response) و`error`، لكن هذه القيم لا تهمنا حتى الآن.
+1. ثم نستعمل [`http.Get`](https://golang.org/pkg/net/http/#Client.Get) لمحاولة تنفيذ طلب HTTP من نوع `GET` إلى `URL`. تعيد هذه الدالة [`http.Response`](https://golang.org/pkg/net/http/#Response) و`error`. ونغلق جسم الاستجابة لتجنب تسريب واصفات الملفات، فإن لم نفعل يترك كل طلب اتصالاً مفتوحاً.
 1. تأخذ `time.Since` وقت البدء وتعيد الفرق على شكل `time.Duration`.
 
 بعد ذلك نقارن المدد ببساطة لنرى أيها الأسرع.
@@ -148,7 +154,10 @@ func Racer(a, b string) (winner string) {
 
 func measureResponseTime(url string) time.Duration {
 	start := time.Now()
-	http.Get(url)
+	resp, err := http.Get(url)
+	if err == nil {
+		resp.Body.Close()
+	}
 	return time.Since(start)
 }
 ```
@@ -215,7 +224,10 @@ func Racer(a, b string) (winner string) {
 func ping(url string) chan struct{} {
 	ch := make(chan struct{})
 	go func() {
-		http.Get(url)
+		resp, err := http.Get(url)
+		if err == nil {
+			resp.Body.Close()
+		}
 		close(ch)
 	}()
 	return ch
@@ -231,7 +243,7 @@ func ping(url string) chan struct{} {
 لماذا `struct{}` وليس نوعاً آخر مثل `bool`؟ لأن `chan struct{}` هو أصغر نوع بيانات متاح من ناحية الذاكرة، فلا
 نحصل على أي تخصيص للذاكرة مقارنة بـ`bool`. وبما أننا نغلق القناة ولا نرسل عليها شيئاً، فلماذا نخصص أي شيء؟
 
-داخل الدالة نفسها، نبدأ `goroutine` سترسل إشارة إلى تلك القناة بمجرد أن ننتهي من `http.Get(url)`.
+داخل الدالة نفسها، نبدأ `goroutine` سترسل إشارة إلى تلك القناة بمجرد أن ننتهي من `http.Get(url)`. ونغلق جسم الاستجابة فوراً، فكل ما يهمنا أن الطلب اكتمل لا محتوى الاستجابة، وتركه مفتوحاً سيسرّب واصفات الملفات.
 
 ##### أنشئ القنوات دائماً بـ`make`
 
@@ -314,8 +326,6 @@ func Racer(a, b string) (winner string, error error) {
 ```
 
 غيّر توقيع `Racer` لتعيد الفائز و`error`، وأعد `nil` في الحالات الناجحة.
-
-سيعترض المصرِّف (compiler) على أن _اختبارك الأول_ لا ينتظر إلا قيمة واحدة، فغيّر ذلك السطر إلى `got, err := Racer(slowURL, fastURL)`، مع العلم أن علينا التحقق من أننا _لا_ نحصل على خطأ في السيناريو الناجح.
 
 إن شغّلته الآن فسيفشل بعد 11 ثانية.
 

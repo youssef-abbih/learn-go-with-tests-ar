@@ -4,16 +4,16 @@
   <img src="red-green-blue-gophers-smaller-ar.png" />
 </div>
 
-[رسم دينيس](https://twitter.com/deniseyu21)
+[رسم دينيس](https://deniseyu.io/)
 
 ## ادعمني
 
 أفخر بتقديم هذا المصدر مجاناً، لكن إن أردت أن تعبّر عن تقديرك فيمكنك أن:
 
-- [تغرّد لي على @quii](https://twitter.com/quii)
-- <a rel="me" href="https://mastodon.cloud/@quii">تتابعني على Mastodon</a>
-- [تشتري لي فنجان قهوة](https://www.buymeacoffee.com/quii)
-- [ترعاني على GitHub](https://github.com/sponsors/quii)
+* [تغرّد لي على @quii](https://twitter.com/quii)
+* [تتابعني على Mastodon](https://mastodon.cloud/@quii)
+* [تشتري لي فنجان قهوة](https://www.buymeacoffee.com/quii)
+* [ترعاني على GitHub](https://github.com/sponsors/quii)
 
 ## تعلّم التطوير المقاد بالاختبارات (test-driven development) مع غو
 
@@ -23,11 +23,16 @@
 
 الترجمات:
 
-- [中文](https://studygolang.gitbook.io/learn-go-with-tests)
-- [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
-- [日本語](https://andmorefine.gitbook.io/learn-go-with-tests/)
-- [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
-- [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
+* [中文](https://studygolang.gitbook.io/learn-go-with-tests)
+* [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
+* [日本語](https://andmorefine.gitbook.io/learn-go-with-tests/)
+* [Français](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests)
+* [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
+* [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
+* [فارسی](https://go-yaad-begir.gitbook.io/go-ba-test/)
+* [Nederlands](https://bobkosse.gitbook.io/leer-go-met-tests/)
+* [Tiếng Việt](https://sons-organization-15.gitbook.io/learn-go-with-tests)
+* [Русский](https://eda-1.gitbook.io/lgwt/)
 
 ## الخلفية
 
@@ -86,4 +91,4 @@
 
 * افتح `issues` أو أرسل طلبات سحب (pull requests) [هنا](https://github.com/quii/learn-go-with-tests)، أو [غرّد لي على @quii](https://twitter.com/quii)
 
-[رخصة MIT](https://github.com/quii/learn-go-with-tests/blob/main/LICENSE.md)
+[رخصة MIT](LICENSE.md)

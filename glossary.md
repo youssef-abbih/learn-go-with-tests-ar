@@ -409,3 +409,27 @@
 | observability | قابلية الرصد | مقترح |  |
 | vanity metric | مقياس تباهٍ | مقترح |  |
 | backward compatibility | التوافق مع الإصدارات السابقة | مقترح |  |
+| data race | تسابق البيانات | مقترح |  |
+| environment variable | متغير بيئة | مقترح |  |
+| working directory | مجلد العمل الحالي | مقترح |  |
+| convention | اصطلاح | مقترح |  |
+| file descriptor | واصف الملف | مقترح |  |
+| short variable declaration | التصريح المختصر عن المتغيرات | مقترح | := |
+| Minimum Version Selection | اختيار الإصدار الأدنى | مقترح | MVS |
+| cryptographic hash | بصمة تجزئة تشفيرية | مقترح |  |
+| loop variable | متغير الحلقة | مقترح |  |
+| semantics | دلالات | مقترح |  |
+| parser | محلل | مقترح | gomarkdown |
+| error wrapping | تغليف الأخطاء | مقترح | wrap: غلّف، wrapped: مغلَّف |
+| sentinel value | قيمة حارسة | مقترح | ErrInsufficientFunds |
+| verb | فعل التنسيق | مقترح | %w و%v |
+| coverage | تغطية | مقترح | go test -cover |
+| bubble | فقاعة | مقترح | testing/synctest |
+| durably blocked | محجوب حجباً دائماً | مقترح | testing/synctest |
+| fake clock | ساعة مزيفة | مقترح | testing/synctest |
+| deadlock | جمود | مقترح |  |
+| callback | دالة رد النداء | مقترح |  |
+| timer | مؤقّت | مقترح |  |
+| ticker | مؤقّت دوري | مقترح |  |
+| synchronization point | نقطة تزامن | مقترح |  |
+| timer heap | كومة المؤقّتات | مقترح |  |

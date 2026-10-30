@@ -493,7 +493,7 @@ type SpyTime struct {
 	durationSlept time.Duration
 }
 
-func (s *SpyTime) Sleep(duration time.Duration) {
+func (s *SpyTime) SetDurationSlept(duration time.Duration) {
 	s.durationSlept = duration
 }
 ```
@@ -505,7 +505,7 @@ func TestConfigurableSleeper(t *testing.T) {
 	sleepTime := 5 * time.Second
 
 	spyTime := &SpyTime{}
-	sleeper := ConfigurableSleeper{sleepTime, spyTime.Sleep}
+	sleeper := ConfigurableSleeper{sleepTime, spyTime.SetDurationSlept}
 	sleeper.Sleep()
 
 	if spyTime.durationSlept != sleepTime {
@@ -580,7 +580,7 @@ func main() {
 
 كثرة المحاكاة تشير عادةً إلى _تجريد سيئ_ في شيفرتك.
 
-**ما يراه الناس هنا نقطة ضعف في `TDD` هو في الحقيقة نقطة قوة**، فشيفرة الاختبار الرديئة تنتج في أغلب الأحيان عن تصميم سيئ، أو بعبارة ألطف: الشيفرة جيدة التصميم سهلة الاختبار.
+**ما يراه الناس هنا نقطة ضعف في `TDD` هو في الحقيقة نقطة قوة**. فشيفرة الاختبار الرديئة تنتج في أغلب الأحيان عن تصميم سيئ، أو بعبارة ألطف: الشيفرة جيدة التصميم سهلة الاختبار.
 
 ### لكن البدائل الوهمية والاختبارات ما زالت تصعّب حياتي!
 
@@ -636,3 +636,45 @@ func main() {
 > [بديل الاختبار مصطلح عام لأي حالة تستبدل فيها كائناً من شيفرة الإنتاج لأغراض الاختبار.](https://martinfowler.com/bliki/TestDouble.html)
 
 وتحت بدائل الاختبار هناك أنواع مختلفة مثل البدائل الثابتة (stubs) والجواسيس، والبدائل الوهمية بالطبع! اطّلع على [مقال مارتن فاولر](https://martinfowler.com/bliki/TestDouble.html) لمزيد من التفاصيل.
+
+## إضافة: مثال على المكررات (iterators) منذ غو 1.23
+
+في غو 1.23 [قُدّمت المكررات](https://tip.golang.org/doc/go1.23). ويمكننا استعمال المكررات بطرق مختلفة، وفي هذه الحالة يمكننا إنشاء المكرر `countdownFrom`، الذي سيعيد أرقام العد التنازلي بترتيب معكوس.
+
+قبل أن ندخل في كيفية كتابة مكررات مخصصة، لنرَ كيف نستعملها. فبدلاً من كتابة حلقة ذات طابع أمري واضح للعد التنازلي من رقم ما، يمكننا جعل هذه الشيفرة أكثر تعبيراً بالمرور بـ`range` على مكررنا المخصص `countdownFrom`.
+
+```go
+func Countdown(out io.Writer, sleeper Sleeper) {
+	for i := range countDownFrom(3) {
+		fmt.Fprintln(out, i)
+		sleeper.Sleep()
+	}
+
+	fmt.Fprint(out, finalWord)
+}
+```
+
+لكتابة مكرر مثل `countDownFrom`، عليك أن تكتب دالة بطريقة معينة. ومن التوثيق:
+
+    The “range” clause in a “for-range” loop now accepts iterator functions of the following types
+        func(func() bool)
+        func(func(K) bool)
+        func(func(K, V) bool)
+
+(يرمز `K` و`V` إلى نوعي المفتاح والقيمة على الترتيب.)
+
+في حالتنا ليست لدينا مفاتيح، بل قيم فقط. وتوفر غو أيضاً نوعاً مريحاً هو `iter.Seq[T]`، وهو اسم بديل للنوع `func(func(T) bool)`.
+
+```go
+func countDownFrom(from int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for i := from; i > 0; i-- {
+			if !yield(i) {
+				return
+			}
+		}
+	}
+}
+```
+
+هذا مكرر بسيط، سيُنتج الأرقام بترتيب معكوس بدءاً من `from`، وهذا مثالي لحالتنا.

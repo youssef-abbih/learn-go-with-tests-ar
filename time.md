@@ -1,6 +1,6 @@
 # الوقت
 
-**[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/time)**
+[**تجد كل شيفرة هذا الفصل هنا**](https://github.com/quii/learn-go-with-tests/tree/main/time)
 
 تريد مالكة المنتج أن نوسّع وظائف تطبيق سطر الأوامر بمساعدة مجموعة من الناس على لعب بوكر تكساس هولدم.
 
@@ -113,7 +113,6 @@ func (s *SpyBlindAlerter) ScheduleAlertAt(duration time.Duration, amount int) {
 		amount      int
 	}{duration, amount})
 }
-
 ```
 
 
@@ -473,7 +472,7 @@ func NewCLI(store PlayerStore, in io.Reader, out io.Writer, alerter BlindAlerter
 
 والآن ستفشل الاختبارات _الأخرى_ في التصريف لأنها لا تمرر `io.Writer` إلى `NewCLI`.
 
-أضف `dummyStdout` للاختبارات الأخرى.
+أضف `dummyStdOut` للاختبارات الأخرى.
 
 ينبغي أن يفشل الاختبار الجديد هكذا
 
@@ -927,6 +926,7 @@ t.Run("it prints an error when a non numeric value is entered and does not start
 ستحتاج إلى إضافة حقل `StartCalled` إلى `GameSpy`، لا يُضبط إلا إن استُدعيت `Start`
 
 ## حاول تشغيل الاختبار
+
 ```
 === RUN   TestCLI/it_prints_an_error_when_a_non_numeric_value_is_entered_and_does_not_start_the_game
     --- FAIL: TestCLI/it_prints_an_error_when_a_non_numeric_value_is_entered_and_does_not_start_the_game (0.00s)

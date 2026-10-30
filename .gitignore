@@ -9,6 +9,9 @@ _book/
 *.mobi
 *.pdf
 
+# templated files
+meta.tex
+
 game.db.json
 .DS_Store
 

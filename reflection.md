@@ -2,7 +2,7 @@
 
 **[تجد كل شيفرة هذا الفصل هنا](https://github.com/quii/learn-go-with-tests/tree/main/reflection)**
 
-[من تويتر](https://twitter.com/peterbourgon/status/1011403901419937792?s=09)
+[من X](https://x.com/peterbourgon/status/1011403901419937792?s=09)
 
 > تحدٍّ في غو: اكتب دالة `walk(x interface{}, fn func(string))` تأخذ بنية `x` وتستدعي `fn` لكل حقول السلاسل النصية الموجودة فيها. مستوى الصعوبة: بشكل عَوْدي.
 
@@ -194,7 +194,7 @@ func TestWalk(t *testing.T) {
         City string
     }{"Chris", "London"},
     []string{"Chris", "London"},
-}
+},
 ```
 
 ## حاول تشغيل الاختبار
@@ -777,6 +777,37 @@ func assertContains(t testing.TB, haystack []string, needle string) {
 
 بما أننا نقلنا الخرائط إلى اختبار جديد، فلم نرَ رسالة الفشل. أفشل الاختبار `with maps` هنا عمداً كي تتحقق من رسالة الخطأ، ثم أصلحه مجدداً لتنجح كل الاختبارات.
 
+تخلّينا عن التحقق من _ترتيب_ `got` لأن الخرائط لا تضمن ترتيباً، لكن هذا لا يعني أن علينا التخلي عن التحقق من كل ما يخص شكلها. فالدالة `assertContains` وحدها ستنجح حتى لو زارت `walk` مدخلاً من مدخلات الخريطة مرتين، أو أغفلت أحدها ولم تتحقق إلا من المدخلات الباقية، ما دامت القيم المحددة التي نبحث عنها موجودة في مكان ما، أياً كان عدد مرات ظهورها. وعلى خلاف الترتيب، فإن _طول_ `got` متوقع تماماً بغض النظر عن الترتيب الذي يُمرّ به على الخريطة، فلنتحقق منه أيضاً.
+
+```go
+func assertLength(t testing.TB, got []string, want int) {
+	t.Helper()
+	if len(got) != want {
+		t.Errorf("got %d values but expected %d", len(got), want)
+	}
+}
+```
+
+أضف استدعاءً لها في بداية الاختبار `with maps`.
+
+```go
+t.Run("with maps", func(t *testing.T) {
+	aMap := map[string]string{
+		"Cow":   "Moo",
+		"Sheep": "Baa",
+	}
+
+	var got []string
+	walk(aMap, func(input string) {
+		got = append(got, input)
+	})
+
+	assertLength(t, got, len(aMap))
+	assertContains(t, got, "Moo")
+	assertContains(t, got, "Baa")
+})
+```
+
 النوع التالي الذي نريد معالجته هو `chan`.
 
 ## اكتب الاختبار أولاً
@@ -928,3 +959,19 @@ func walk(x interface{}, fn func(input string)) {
 - أجرينا إعادة هيكلة تبيّن بأثر رجعي أنها سيئة، لكننا لم ننزعج منها كثيراً. فبالعمل التكراري مع الاختبارات لا يكون الأمر بتلك الخطورة.
 - لم نتناول هنا إلا جانباً صغيراً من الانعكاس. [وفي مدونة غو مقال ممتاز يتناول مزيداً من التفاصيل](https://blog.golang.org/laws-of-reflection).
 - والآن بعد أن عرفت الانعكاس، ابذل قصارى جهدك لتجنب استعماله.
+
+### قيد معروف: المراجع الدائرية
+
+ستتسبب `walk` لدينا في فيض المكدس (stack overflow) إن مررت إليها بنية تحتوي على مؤشر يعود إليها نفسها (أو أي حلقة من المؤشرات). مثلاً:
+
+```go
+type Person struct {
+    Name   string
+    Friend *Person
+}
+p := Person{Name: "Alice"}
+p.Friend = &p  // cycle!
+walk(p, fn)  // fatal error: stack overflow
+```
+
+إصلاح هذا متروك تمريناً لك. والطريقة المعتادة هي تتبّع عناوين المؤشرات التي زُرت من قبل وتخطيها عند الدخول إليها مجدداً. ستحتاج إلى `map[uintptr]bool`، والنوع `uintptr` هو العنوان العددي الخام لمؤشر، ويمكن الحصول عليه عبر `reflect.Value.Pointer()` لأنواع المؤشرات. ولأن الخريطة يجب أن تبقى طوال عملية المرور كلها، فستحتاج إلى دالة مساعدة داخلية تحملها بوصفها معاملاً، بينما تنشئ الدالة العامة `walk` الخريطة وتستدعي تلك الدالة المساعدة.

@@ -6,7 +6,7 @@
   <img src="red-green-blue-gophers-smaller-ar.png" />
 </p>
 
-[رسم دينيس](https://twitter.com/deniseyu21)
+[رسم دينيس](https://github.com/deniseyu)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/quii/learn-go-with-tests)](https://goreportcard.com/report/github.com/quii/learn-go-with-tests)
 
@@ -20,9 +20,13 @@
 - [中文](https://studygolang.gitbook.io/learn-go-with-tests)
 - [Português](https://larien.gitbook.io/aprenda-go-com-testes/)
 - [日本語](https://andmorefine.gitbook.io/learn-go-with-tests/)
+- [Français](https://goosegeesejeez.gitbook.io/apprendre-go-par-les-tests)
 - [한국어](https://miryang.gitbook.io/learn-go-with-tests/)
 - [Türkçe](https://halilkocaoz.gitbook.io/go-programlama-dilini-ogren/)
 - [فارسی](https://go-yaad-begir.gitbook.io/go-ba-test/)
+- [Nederlands](https://bobkosse.gitbook.io/leer-go-met-tests/)
+- [Tiếng Việt](https://sons-organization-15.gitbook.io/learn-go-with-tests)
+- [Русский](https://eda-1.gitbook.io/lgwt/)
 
 ## ادعمني
 
@@ -83,6 +87,7 @@
 * [الإدخال والإخراج والترتيب](io.md) - سنحفظ بياناتنا على القرص ونقرؤها منه، ونتناول ترتيب البيانات.
 * [سطر الأوامر وبنية المشروع](command-line.md) - دعم عدة تطبيقات من قاعدة شيفرة واحدة، وقراءة المدخلات من سطر الأوامر.
 * [الوقت](time.md) - استعمال الحزمة `time` لجدولة الأنشطة.
+* [عودة إلى الوقت مع `testing/synctest`](revisiting-time-with-synctest.md) - استعمال الحزمة `testing/synctest` من غو 1.25 لاختبار الشيفرة الحقيقية القائمة على المؤقّتات من فصل الوقت اختباراً سليماً، دون اختبارات بطيئة أو متقلبة.
 * [الاتصال عبر WebSockets](websockets.md) - تعلّم كتابة خادم يستعمل WebSockets واختباره.
 
 ### أساسيات الاختبار
@@ -115,7 +120,7 @@
 ## المساهمة
 
 * _هذا المشروع قيد العمل_، فإن أردت المساهمة فتواصل معي.
-* اقرأ [contributing.md](https://github.com/quii/learn-go-with-tests/tree/842f4f24d1f1c20ba3bb23cbc376c7ca6f7ca79a/contributing.md) للاطلاع على الإرشادات.
+* اقرأ [contributing.md](contributing.md) للاطلاع على الإرشادات.
 * هل لديك أفكار؟ افتح مسألة.
 
 ## الخلفية

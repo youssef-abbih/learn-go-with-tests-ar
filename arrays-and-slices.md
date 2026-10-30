@@ -5,7 +5,7 @@
 تتيح لك المصفوفات (arrays) تخزين عدة عناصر من النوع (type) نفسه في متغير (variable) واحد
 بترتيب معيّن.
 
-وحين تكون لديك مصفوفة، فمن الشائع جداً أن تحتاج إلى المرور على عناصرها. لذا لنستعمل
+وحين تكون لديك مصفوفات، فمن الشائع جداً أن تحتاج إلى المرور على عناصرها. لذا لنستعمل
 [معرفتنا الجديدة بـ`for`](iteration.md) لكتابة دالة (function) باسم `Sum`. ستأخذ الدالة `Sum`
 مصفوفة من الأعداد وتعيد مجموعها.
 
@@ -300,8 +300,13 @@ func SumAll(numbersToSum ...[]int) []int {
 
 لا تسمح لك غو باستعمال عوامل المساواة مع الشرائح. _يمكنك_ أن تكتب
 دالة تمر على كل من الشريحتين `got` و`want` وتتحقق من قيمهما،
-لكن للتيسير يمكننا استعمال [`reflect.DeepEqual`][deepEqual]، وهي
-مفيدة لمعرفة ما إذا كان _أي_ متغيرين متطابقين.
+لكن ماذا لو كانت لدينا طريقة أكثر تيسيراً لفعل ذلك؟
+
+منذ غو 1.21، صارت الحزمة القياسية [slices](https://pkg.go.dev/slices#pkg-overview) متاحة، وفيها الدالة [slices.Equal](https://pkg.go.dev/slices#Equal) لإجراء مقارنة سطحية بسيطة بين الشرائح، دون أن تقلق بشأن الأنواع كما في الحالة السابقة.
+لاحظ أن هذه الدالة تتوقع أن تكون العناصر [قابلة للمقارنة](https://pkg.go.dev/builtin#comparable).
+لذا لا يمكن تطبيقها على شرائح عناصرها غير قابلة للمقارنة، مثل الشرائح ثنائية الأبعاد.
+
+فلنطبّق هذا عملياً!
 
 ```go
 func TestSumAll(t *testing.T) {
@@ -309,39 +314,13 @@ func TestSumAll(t *testing.T) {
 	got := SumAll([]int{1, 2}, []int{0, 9})
 	want := []int{3, 9}
 
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
 ```
 
-(تأكد من كتابة `import reflect` في أعلى ملفك كي تصل إلى `DeepEqual`)
-
-من المهم أن تلاحظ أن `reflect.DeepEqual` ليست "آمنة الأنواع"، فالشيفرة
-ستُصرَّف حتى لو فعلت شيئاً سخيفاً بعض الشيء. ولترى ذلك عملياً،
-غيّر الاختبار مؤقتاً إلى:
-
-```go
-func TestSumAll(t *testing.T) {
-
-	got := SumAll([]int{1, 2}, []int{0, 9})
-	want := "bob"
-
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v want %v", got, want)
-	}
-}
-```
-
-ما فعلناه هنا هو محاولة مقارنة `slice` بـ`string`. هذا
-لا معنى له، لكن الاختبار يُصرَّف! لذا فمع أن استعمال `reflect.DeepEqual`
-طريقة مريحة لمقارنة الشرائح (وأشياء أخرى)، فعليك أن تكون حذراً
-عند استعمالها.
-
-(منذ غو 1.21، صارت الحزمة القياسية [slices](https://pkg.go.dev/slices#pkg-overview) متاحة، وفيها الدالة [slices.Equal](https://pkg.go.dev/slices#Equal) لإجراء مقارنة سطحية بسيطة بين الشرائح، دون أن تقلق بشأن الأنواع كما في الحالة السابقة. لاحظ أن هذه الدالة تتوقع أن تكون العناصر [قابلة للمقارنة](https://pkg.go.dev/builtin#comparable)، لذا لا يمكن تطبيقها على شرائح عناصرها غير قابلة للمقارنة، مثل الشرائح ثنائية الأبعاد.)
-
-أعد الاختبار إلى ما كان عليه وشغّله. ينبغي أن تظهر لك مخرجات اختبار كالتالية
-
+ينبغي أن تظهر لك مخرجات اختبار كالتالية:
 `sum_test.go:30: got [] want [3 9]`
 
 ## اكتب ما يكفي من الشيفرة لينجح الاختبار
@@ -405,7 +384,7 @@ func TestSumAllTails(t *testing.T) {
 	got := SumAllTails([]int{1, 2}, []int{0, 9})
 	want := []int{2, 9}
 
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
@@ -458,7 +437,7 @@ func TestSumAllTails(t *testing.T) {
 		got := SumAllTails([]int{1, 2}, []int{0, 9})
 		want := []int{2, 9}
 
-		if !reflect.DeepEqual(got, want) {
+		if !slices.Equal(got, want) {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
@@ -467,7 +446,7 @@ func TestSumAllTails(t *testing.T) {
 		got := SumAllTails([]int{}, []int{3, 4, 5})
 		want := []int{0, 9}
 
-		if !reflect.DeepEqual(got, want) {
+		if !slices.Equal(got, want) {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
@@ -512,9 +491,9 @@ func SumAllTails(numbersToSum ...[]int) []int {
 ```go
 func TestSumAllTails(t *testing.T) {
 
-	checkSums := func(t testing.TB, got, want []int) {
+	checkSums := func(t *testing.T, got, want []int) {
 		t.Helper()
-		if !reflect.DeepEqual(got, want) {
+		if !slices.Equal(got, want) {
 			t.Errorf("got %v want %v", got, want)
 		}
 	}
@@ -561,7 +540,7 @@ $ go test
   * كيف تُقطَّع الشرائح!
 * الدالة `len` للحصول على طول مصفوفة أو شريحة
 * أداة تغطية الاختبارات
-* الدالة `reflect.DeepEqual`، ولماذا هي مفيدة لكنها قد تقلل أمان الأنواع في شيفرتك
+* الدالة `slices.Equal`، ولماذا نحتاج إليها بدلاً من عوامل المساواة العادية
 
 استعملنا الشرائح والمصفوفات مع الأعداد الصحيحة، لكنها تعمل مع أي نوع آخر
 أيضاً، بما في ذلك المصفوفات والشرائح نفسها. لذا يمكنك التصريح عن متغير من النوع
