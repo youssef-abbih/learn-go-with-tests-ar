@@ -1,7 +1,7 @@
 # تعلّم غو بالاختبارات
 
 <div style="text-align: center">
-  <img src="red-green-blue-gophers-smaller.png" />
+  <img src="red-green-blue-gophers-smaller-ar.png" />
 </div>
 
 [رسم دينيس](https://twitter.com/deniseyu21)

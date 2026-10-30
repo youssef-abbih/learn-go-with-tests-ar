@@ -3,7 +3,7 @@
 هذه ترجمة عربية لكتاب كريس جيمس [Learn Go with Tests](https://github.com/quii/learn-go-with-tests) بنسخته الإنجليزية الأصلية.
 
 <p align="center">
-  <img src="red-green-blue-gophers-smaller.png" />
+  <img src="red-green-blue-gophers-smaller-ar.png" />
 </p>
 
 [رسم دينيس](https://twitter.com/deniseyu21)

@@ -1,1 +1,1 @@
-![](epub-cover.png)
+![](epub-cover-ar.png)
