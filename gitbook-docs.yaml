@@ -1,0 +1,12 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: taallam-go-bil-ikhtibarat
+  structure:
+    - type: space
+      key: space-1
+      title: تعلّم غو بالاختبارات
+      path: tal-m-ghw-balakhtbarat
+      default: true
+      content:
+        directory: ./tal-m-ghw-balakhtbarat
+        language: ar
